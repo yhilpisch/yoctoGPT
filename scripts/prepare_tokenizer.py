@@ -21,15 +21,16 @@ if ROOT not in sys.path:
 import numpy as np
 
 from picoGPT.data import save_ids_bin
-from picoGPT.tokenizer import WordLevelTokenizer
+from picoGPT.tokenizer import train_tokenizer
 
 
 def parse_args():
-    p = argparse.ArgumentParser(description="Prepare token-level dataset with WordLevelTokenizer")
+    p = argparse.ArgumentParser(description="Prepare token-level dataset (BPE by default)")
     p.add_argument("--text_path", type=str, default="data/philosophy.txt")
     p.add_argument("--out_dir", type=str, default="data/token")
     p.add_argument("--vocab_size", type=int, default=8000)
     p.add_argument("--val_ratio", type=float, default=0.1)
+    p.add_argument("--backend", type=str, default="bpe", choices=["bpe", "word"], help="Tokenizer backend")
     return p.parse_args()
 
 
@@ -37,7 +38,7 @@ def main() -> None:
     args = parse_args()
     text = Path(args.text_path).read_text(encoding="utf-8")
 
-    tok = WordLevelTokenizer.train(text, vocab_size=args.vocab_size)
+    tok = train_tokenizer(text, vocab_size=args.vocab_size, backend=args.backend)
     ids = np.array(tok.encode(text), dtype=np.int32)
 
     # Train/val split by contiguous slicing

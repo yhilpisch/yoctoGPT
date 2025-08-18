@@ -3,7 +3,7 @@
 Minimal GPT from scratch in PyTorch. Supports:
 
 - Character-level training and sampling
-- Token-level training with a simple word-level tokenizer
+- Token-level training with a BPE tokenizer (falls back to simple word-level if unavailable)
 - A tiny REPL-style chat interface on top of the sampler
 
 The default example corpus is `data/philosophy.txt`. Replace it with your own
@@ -31,12 +31,18 @@ python -m picoGPT.sampler --mode char --ckpt checkpoints/char/latest.pt --vocab_
 
 ---
 
-Token-level path:
+Token-level path (BPE by default):
 
 1) Prepare data:
 
 ```
 python -m scripts.prepare_tokenizer --text_path data/philosophy.txt --out_dir data/token --vocab_size 8000
+```
+
+If `tokenizers` (Hugging Face) is not installed, the script falls back to a simple word-level tokenizer. Force the backend if needed:
+
+```
+python -m scripts.prepare_tokenizer --text_path data/philosophy.txt --out_dir data/token --vocab_size 8000 --backend word
 ```
 
 2) Train:
@@ -59,8 +65,10 @@ python -m picoGPT.chat --mode token --ckpt checkpoints/token/latest.pt --tokeniz
 Resume or warm-start full training:
 
 ```
-# Resume training from a saved checkpoint (restores optimizer)
-python -m picoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char --resume checkpoints/char/latest.pt
+# Resume training from a saved checkpoint (restores optimizer).
+# Note: --max_iters means additional steps to run. The progress bar shows
+# total steps completed across all runs.
+python -m picoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char --resume checkpoints/char/latest.pt --max_iters 1000
 
 # Warm start from weights only
 python -m picoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char --init_from checkpoints/char/best.pt

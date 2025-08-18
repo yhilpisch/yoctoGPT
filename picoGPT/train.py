@@ -23,7 +23,7 @@ from tqdm import tqdm
 from .config import TrainConfig
 from .data import CharVocab, load_bin, make_windows
 from .model import GPT, GPTConfig
-from .tokenizer import WordLevelTokenizer
+from .tokenizer import load_tokenizer
 
 
 def detect_device(explicit: str | None = None) -> str:
@@ -57,12 +57,12 @@ def parse_args() -> TrainConfig:
 
     # Training hyperparameters
     p.add_argument("--batch_size", type=int, default=64)
-    p.add_argument("--max_iters", type=int, default=5000)
+    p.add_argument("--max_iters", type=int, default=100)
     p.add_argument("--lr", type=float, default=3e-4)
     p.add_argument("--weight_decay", type=float, default=0.1)
     p.add_argument("--grad_clip", type=float, default=1.0)
-    p.add_argument("--eval_interval", type=int, default=500)
-    p.add_argument("--eval_iters", type=int, default=100)
+    p.add_argument("--eval_interval", type=int, default=50)
+    p.add_argument("--eval_iters", type=int, default=20)
     p.add_argument("--seed", type=int, default=1337)
     p.add_argument("--device", type=str, default=None)
 
@@ -71,7 +71,7 @@ def parse_args() -> TrainConfig:
     p.add_argument("--n_layer", type=int, default=6)
     p.add_argument("--n_head", type=int, default=6)
     p.add_argument("--n_embd", type=int, default=384)
-    p.add_argument("--dropout", type=float, default=0.0)
+    p.add_argument("--dropout", type=float, default=0.1)
 
     args = p.parse_args()
     tc = TrainConfig(
@@ -165,7 +165,7 @@ def main() -> None:
         vocab_size = char_vocab.vocab_size
     else:  # token mode
         assert cfg.tokenizer_path is not None, "--tokenizer_path is required for token mode"
-        tokenizer = WordLevelTokenizer.load(cfg.tokenizer_path)
+        tokenizer = load_tokenizer(cfg.tokenizer_path)
         vocab_size = tokenizer.vocab_size
 
     # Create model; support warm-start or resume
@@ -219,8 +219,17 @@ def main() -> None:
     ckpt_dir = Path(cfg.ckpt_dir)
     ckpt_dir.mkdir(parents=True, exist_ok=True)
 
-    pbar = tqdm(range(start_iter, cfg.max_iters), initial=start_iter, total=cfg.max_iters, desc="training")
+    # Interpret --max_iters as additional steps from the current state.
+    # If resuming, we will run `cfg.max_iters` more steps on top of `start_iter`.
+    end_iter = start_iter + cfg.max_iters
+    pbar = tqdm(
+        range(start_iter, end_iter),
+        initial=start_iter,
+        total=end_iter,
+        desc="training",
+    )
     best_val = float("inf")
+    last_val_loss = None  # remember last validation loss for display between evals
     for it in pbar:
         xb, yb = get_batch(train_ids, cfg.block_size, cfg.batch_size, device)
         logits = model(xb)
@@ -231,14 +240,22 @@ def main() -> None:
         nn.utils.clip_grad_norm_(model.parameters(), cfg.grad_clip)
         optimizer.step()
 
+        # Lightweight progress update: refresh train loss every 10 steps to keep tqdm current
+        if (it + 1) % 10 == 0 or it == start_iter:
+            postfix = {"train_loss": loss.item()}
+            if last_val_loss is not None:
+                postfix["val_loss"] = last_val_loss
+            pbar.set_postfix(postfix)
+
         if (it + 1) % cfg.eval_interval == 0 or it == start_iter:
             val_loss = evaluate(model, val_ids, cfg, device)
+            last_val_loss = val_loss
             pbar.set_postfix({"train_loss": loss.item(), "val_loss": val_loss})
             # Save a checkpoint if improved
             if val_loss < best_val:
                 best_val = val_loss
-            ckpt = {
-                "model_state": model.state_dict(),
+                ckpt = {
+                    "model_state": model.state_dict(),
                     "model_config": desired_config.__dict__,
                     "mode": cfg.mode,
                     "tokenizer_path": cfg.tokenizer_path,
@@ -261,6 +278,10 @@ def main() -> None:
                 "train_config": cfg.to_dict(),
             }
             torch.save(ckpt, ckpt_dir / "latest.pt")
+
+    # Ensure a final evaluation at the end regardless of eval_interval
+    final_val = evaluate(model, val_ids, cfg, device)
+    print({"final_val_loss": final_val})
 
 
 if __name__ == "__main__":

@@ -1,12 +1,17 @@
-"""A minimal word-level tokenizer for token-mode training.
+"""Tokenization utilities for picoGPT.
 
-This implementation intentionally favors simplicity and readability:
-- Splits text on whitespace and basic punctuation boundaries.
-- Learns a vocabulary of the most frequent tokens up to `vocab_size`.
-- Provides `encode`/`decode` along with JSON serialization.
+Default: Use a standard Byte-Pair Encoding (BPE) tokenizer via Hugging Face
+`tokenizers` if available, which typically improves training and sampling
+results versus a simple word-level tokenizer. If the dependency is not
+installed, gracefully fall back to a minimal word-level tokenizer.
 
-While not as powerful as BPE, it is adequate to demonstrate token-level GPT
-training with a compact, dependency-free tokenizer.
+Both implementations expose the same minimal interface:
+- encode(str) -> List[int]
+- decode(List[int]) -> str
+- vocab_size: int property
+- save(path) / load(path)
+
+The auto-loader inspects the file and returns an appropriate tokenizer.
 """
 
 from __future__ import annotations
@@ -16,7 +21,7 @@ import re
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional, Any
 
 
 TOKEN_UNK = "<unk>"
@@ -103,3 +108,109 @@ class WordLevelTokenizer:
         stoi: Dict[str, int] = {tok: i for i, tok in enumerate(itos)}
         return cls(stoi=stoi, itos=itos)
 
+
+# ---- BPE (preferred) using Hugging Face `tokenizers` if available ----
+
+def _hf_available() -> bool:
+    try:
+        import tokenizers  # noqa: F401
+        return True
+    except Exception:
+        return False
+
+
+class BPETokenizer:
+    """Adapter over Hugging Face `tokenizers` to present the same interface.
+
+    When training, we construct a whitespace-pretokenized, lowercasing BPE
+    tokenizer with a provided vocab size and standard special tokens.
+    """
+
+    def __init__(self, hf_tokenizer: Any) -> None:  # `Any` to avoid hard dep
+        self._tok = hf_tokenizer
+
+    @property
+    def vocab_size(self) -> int:
+        return self._tok.get_vocab_size()
+
+    def encode(self, text: str) -> List[int]:
+        return self._tok.encode(text).ids
+
+    def decode(self, ids: List[int]) -> str:
+        return self._tok.decode(ids)
+
+    def save(self, path: str | Path) -> None:
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        self._tok.save(str(path))
+
+    @classmethod
+    def load(cls, path: str | Path) -> "BPETokenizer":
+        from tokenizers import Tokenizer as HFTokenizer
+
+        tok = HFTokenizer.from_file(str(path))
+        return cls(tok)
+
+    @classmethod
+    def train(cls, text: str, vocab_size: int = 8000) -> "BPETokenizer":
+        from tokenizers import Tokenizer as HFTokenizer
+        from tokenizers.models import BPE
+        from tokenizers.trainers import BpeTrainer
+        from tokenizers.pre_tokenizers import Whitespace
+        try:
+            from tokenizers.normalizers import Lowercase
+            normalizer = Lowercase()
+        except Exception:
+            normalizer = None
+
+        tok = HFTokenizer(BPE(unk_token=TOKEN_UNK))
+        if normalizer is not None:
+            tok.normalizer = normalizer
+        tok.pre_tokenizer = Whitespace()
+        trainer = BpeTrainer(
+            vocab_size=vocab_size,
+            special_tokens=[TOKEN_UNK, TOKEN_BOS, TOKEN_EOS],
+        )
+        tok.train_from_iterator([text], trainer=trainer)
+        return cls(tok)
+
+
+# ---- Public helpers ----
+
+def train_tokenizer(text: str, vocab_size: int = 8000, backend: str = "bpe"):
+    """Train a tokenizer and return a compatible object.
+
+    - backend="bpe" (default): requires `tokenizers` installed; falls back to
+      word-level with a warning if unavailable.
+    - backend="word": always use WordLevelTokenizer.
+    """
+
+    backend = backend.lower()
+    if backend == "bpe":
+        if _hf_available():
+            return BPETokenizer.train(text, vocab_size=vocab_size)
+        else:
+            # Fallback with a gentle note
+            print("[picoGPT] tokenizers not installed; falling back to word-level tokenizer.")
+            return WordLevelTokenizer.train(text, vocab_size=vocab_size)
+    elif backend == "word":
+        return WordLevelTokenizer.train(text, vocab_size=vocab_size)
+    else:
+        raise ValueError(f"Unknown tokenizer backend: {backend}")
+
+
+def load_tokenizer(path: str | Path):
+    """Auto-load a tokenizer from disk.
+
+    Tries to load as a Hugging Face `tokenizers` JSON first; if that fails,
+    falls back to the simple word-level format.
+    """
+
+    path = str(path)
+    if _hf_available():
+        try:
+            return BPETokenizer.load(path)
+        except Exception:
+            pass
+    # Fallback to word-level
+    return WordLevelTokenizer.load(path)

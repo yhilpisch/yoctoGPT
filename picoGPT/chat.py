@@ -16,7 +16,7 @@ import torch
 
 from .data import CharVocab
 from .model import GPT, GPTConfig
-from .tokenizer import WordLevelTokenizer
+from .tokenizer import load_tokenizer
 
 
 def parse_args():
@@ -51,7 +51,7 @@ def main() -> None:
     else:
         tok_path = args.tokenizer_path or ckpt.get("tokenizer_path")
         assert tok_path, "Provide --tokenizer_path or ensure checkpoint stores tokenizer_path"
-        tokenizer = WordLevelTokenizer.load(tok_path)
+        tokenizer = load_tokenizer(tok_path)
         encode = lambda s: tokenizer.encode(s)
         decode = lambda ids: tokenizer.decode(ids)
 
@@ -99,4 +99,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
