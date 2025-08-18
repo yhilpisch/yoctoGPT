@@ -26,7 +26,9 @@ from picoGPT.tokenizer import train_tokenizer
 
 def parse_args():
     p = argparse.ArgumentParser(description="Prepare token-level dataset (BPE by default)")
-    p.add_argument("--text_path", type=str, default="data/philosophy.txt")
+    p.add_argument("--text_path", type=str, default="data/philosophy.txt", help="Single text file to use")
+    p.add_argument("--all_txt_in_dir", action="store_true", help="Use all .txt files in --text_dir (ignores --text_path)")
+    p.add_argument("--text_dir", type=str, default="data", help="Directory to scan for .txt files when --all_txt_in_dir is set")
     p.add_argument("--out_dir", type=str, default="data/token")
     p.add_argument("--vocab_size", type=int, default=8000)
     p.add_argument("--val_ratio", type=float, default=0.1)
@@ -36,7 +38,15 @@ def parse_args():
 
 def main() -> None:
     args = parse_args()
-    text = Path(args.text_path).read_text(encoding="utf-8")
+    if args.all_txt_in_dir:
+        dir_path = Path(args.text_dir)
+        files = sorted([p for p in dir_path.glob("*.txt") if p.is_file()])
+        assert files, f"No .txt files found in {dir_path}"
+        print(f"Found {len(files)} .txt files in {dir_path}")
+        texts = [p.read_text(encoding="utf-8") for p in files]
+        text = "\n\n".join(texts)
+    else:
+        text = Path(args.text_path).read_text(encoding="utf-8")
 
     tok = train_tokenizer(text, vocab_size=args.vocab_size, backend=args.backend)
     ids = np.array(tok.encode(text), dtype=np.int32)

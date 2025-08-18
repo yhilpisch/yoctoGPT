@@ -9,6 +9,22 @@ Minimal GPT from scratch in PyTorch. Supports:
 The default example corpus is `data/philosophy.txt`. Replace it with your own
 text to experiment.
 
+![TPQ Logo](https://hilpisch.com/tpq_logo.png)
+
+Authors: The Python Quants with Codex and GPT-5
+
+## Purpose and Approach
+
+The aim of picoGPT is to provide a compact, readable, end-to-end GPT implementation for learning and lightweight experiments.
+
+- Minimal PyTorch model: no external model frameworks; clear, well-commented code.
+- Two training modes: character-level and token-level; BPE tokenizer by default (Hugging Face `tokenizers`) with a simple word-level fallback.
+- Small-first design: friendly to CPU and Apple Silicon (MPS) with modest defaults for quick iteration.
+- Simple data pipeline: raw `.txt` → `{train,val}.bin`; supports multiple texts via `--all_txt_in_dir`.
+- CLIs included: data preparation, training, sampling, and a tiny chat REPL.
+- Checkpointing: warm start (`--init_from`) and full resume (`--resume`); when resuming, `--max_iters` means additional steps and the progress bar reflects total steps.
+- Educational, not production: defaults favor clarity over speed; easy to extend.
+
 ## Quickstart
 
 1) Prepare data (char-level):
@@ -43,6 +59,12 @@ If `tokenizers` (Hugging Face) is not installed, the script falls back to a simp
 
 ```
 python -m scripts.prepare_tokenizer --text_path data/philosophy.txt --out_dir data/token --vocab_size 8000 --backend word
+```
+
+Use multiple texts by including all `.txt` files from a directory (non-recursive):
+
+```
+python -m scripts.prepare_tokenizer --all_txt_in_dir --text_dir data --out_dir data/token --vocab_size 8000
 ```
 
 2) Train:
@@ -131,3 +153,7 @@ python -m picoGPT.train --device cpu ...
 ```
 
 If you prefer CUDA on a multi-backend system, pass `--device cuda`.
+
+## Disclaimer
+
+This repository and its contents are provided solely for illustration and educational purposes. No guarantees or representations of any kind are given, express or implied, including but not limited to fitness for a particular purpose or non-infringement, to the extent permitted by law. Use at your own risk.
