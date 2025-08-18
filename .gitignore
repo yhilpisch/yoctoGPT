@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.DS_Store
+.idea/
+.vscode/
+checkpoints/
+data/char/*.bin
+data/token/*.bin
+data/char/vocab.json
+data/token/tokenizer.json
+*.pt
