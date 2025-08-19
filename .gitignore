@@ -10,3 +10,4 @@ data/char/vocab.json
 data/token/tokenizer.json
 *.pt
 *.txt
+.ipynb_checkpoints/

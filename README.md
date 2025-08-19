@@ -9,7 +9,7 @@ Minimal GPT from scratch in PyTorch. Supports:
 The default example corpus is `data/philosophy.txt`. Replace it with your own
 text to experiment.
 
-![TPQ Logo](https://hilpisch.com/tpq_logo.png)
+<img src="https://hilpisch.com/tpq_logo.png" alt="TPQ Logo" width="350" />
 
 Authors: The Python Quants with Codex and GPT-5
 
@@ -111,6 +111,12 @@ Use multiple texts by including all `.txt` files from a directory (non-recursive
 python -m scripts.prepare_tokenizer --all_txt_in_dir --text_dir data --out_dir data/token --vocab_size 8000
 ```
 
+Randomize the train/val split (helps reduce distribution shift):
+
+```
+python -m scripts.prepare_tokenizer --all_txt_in_dir --text_dir data --out_dir data/token --vocab_size 8000 --random_split --split_seed 1337
+```
+
 2) Train:
 
 ```
@@ -127,6 +133,7 @@ python -m picoGPT.sampler --mode token --ckpt checkpoints/token/latest.pt --toke
 
 ```
 python -m picoGPT.chat --mode token --ckpt checkpoints/token/latest.pt --tokenizer_path data/token/tokenizer.json --system_prompt "You are picoGPT, a helpful assistant."
+```
 
 Resume or warm-start full training:
 
@@ -142,16 +149,61 @@ python -m picoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/
 # If the vocab/head changed and you want to ignore mismatches
 python -m picoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char --init_from checkpoints/char/best.pt --no_strict_init
 ```
-```
 
 ## Notes
 
 - The implementation prioritizes readability and minimalism over speed.
-- The tokenizer is intentionally simple; feel free to swap in a more advanced
-  implementation later.
+- Default tokenization uses a BPE tokenizer (via `tokenizers`); a simple word-level fallback is available.
 - Checkpoints store model state and enough metadata to reload the encoder.
 - Prompts in smoke tests are normalized to characters present in the corpus to
   avoid unknown-character errors in char-level mode.
+
+## Avoiding Overfitting
+
+Overfitting appears when training loss continues to fall while validation loss rises. Common causes: model too large for the dataset, too little regularization, aggressive learning rate, or distribution shift between train and validation. Practical strategies:
+
+- Regularize more:
+  - Dropout: increase `--dropout` from 0.0 up to 0.1–0.3. Typical starting point: `--dropout 0.1`.
+  - Weight decay: set `--weight_decay 0.01`–`0.1`. A balanced default is `--weight_decay 0.05`.
+  - Label smoothing: set `--label_smoothing 0.05`–`0.1` to soften targets and improve generalization.
+  - Weight tying: add `--tie_weights` to share the token embedding and LM head weights (fewer params; better generalization on small data).
+  - Auto weight tying: add `--auto_tie_weights` to enable tying automatically for small datasets (< 1M tokens).
+
+- Reduce capacity:
+  - Use smaller dims/layers: e.g., `--n_layer 4 --n_head 4 --n_embd 128`.
+  - Keep `block_size` to 128–256 for small corpora to limit compute and stabilize training.
+
+- Train gentler and monitor:
+  - Lower LR (e.g., `--lr 1e-4` or `2e-4`).
+  - Use cosine LR with warmup: `--cosine_lr --warmup_iters 100 --min_lr 1e-5`.
+  - Evaluate more frequently and with enough samples: `--eval_interval 100 --eval_iters 100–200`.
+  - Early stop manually: rely on `best.pt` and stop when val no longer improves.
+
+- Improve validation signal & data:
+  - Use more data (`--all_txt_in_dir`) to broaden coverage and reduce variance.
+  - Use `--random_split` in tokenization prep to reduce distribution drift between train and val.
+  - Consider a randomized validation split (not yet built in) if your corpus is ordered by topic; contiguous splits can exaggerate distribution shift.
+
+- Tokenization choices:
+  - Prefer BPE (default) with a reasonable `--vocab_size` (e.g., 4k–16k for small–medium corpora).
+  - If overfitting persists, you can reduce vocab to shrink embedding/head params (trade-off: more `<unk>` or longer subword sequences).
+
+Notes:
+- Dropout and label smoothing apply only during training; sampling runs with `model.eval()`.
+- Changing architecture or vocab requires a fresh run (new `--ckpt_dir`). You may warm start with `--init_from ... --no_strict_init` but results depend on compatibility.
+
+## M1 (8 GB) Best‑Practice Configs
+
+Suggested configurations for Apple Silicon M1 with 8 GB RAM (using MPS). Adjust `batch_size` downwards if you hit OOM; prefer reducing batch size before shrinking `block_size`.
+
+- Tiny (fastest):
+  - `--n_layer 4 --n_head 4 --n_embd 128 --block_size 128 --batch_size 32 --dropout 0.1 --weight_decay 0.05 --lr 2e-4 --eval_interval 100 --eval_iters 100`
+- Small (balanced):
+  - `--n_layer 6 --n_head 8 --n_embd 256 --block_size 256 --batch_size 32 --dropout 0.1 --weight_decay 0.05 --lr 2e-4 --eval_interval 100 --eval_iters 200`
+- Regularized small (overfitting observed):
+  - add `--dropout 0.2 --weight_decay 0.1 --label_smoothing 0.1 --tie_weights` and consider `--cosine_lr --warmup_iters 100 --min_lr 1e-5`
+
+Tokens/step ≈ `batch_size × block_size`. For ~0.4M tokens, 20× coverage is ≈ 500 steps at 8k tokens/step. Use `--max_iters` accordingly and rely on `best.pt` for early stopping by hand.
 
 ## CPU Smoke Test
 

@@ -33,11 +33,15 @@ def parse_args():
     p.add_argument("--vocab_size", type=int, default=8000)
     p.add_argument("--val_ratio", type=float, default=0.1)
     p.add_argument("--backend", type=str, default="bpe", choices=["bpe", "word"], help="Tokenizer backend")
+    p.add_argument("--random_split", action="store_true", help="Randomize train/val split (file-based if multiple files; chunk-based otherwise)")
+    p.add_argument("--split_seed", type=int, default=1337)
     return p.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    files = []
+    texts = []
     if args.all_txt_in_dir:
         dir_path = Path(args.text_dir)
         files = sorted([p for p in dir_path.glob("*.txt") if p.is_file()])
@@ -49,14 +53,46 @@ def main() -> None:
         text = Path(args.text_path).read_text(encoding="utf-8")
 
     tok = train_tokenizer(text, vocab_size=args.vocab_size, backend=args.backend)
-    ids = np.array(tok.encode(text), dtype=np.int32)
+    # Encode and split
+    rng = np.random.default_rng(args.split_seed)
 
-    # Train/val split by contiguous slicing
-    n = len(ids)
-    n_val = int(n * args.val_ratio)
-    n_train = n - n_val
-    train_ids = ids[:n_train]
-    val_ids = ids[n_train:]
+    if args.all_txt_in_dir and args.random_split and files:
+        # File-level random split: allocate whole files to train or val
+        idxs = np.arange(len(files))
+        rng.shuffle(idxs)
+        n_val_files = max(1, int(len(files) * args.val_ratio))
+        val_set = set(idxs[:n_val_files].tolist())
+        train_ids_list = []
+        val_ids_list = []
+        for i, txt in enumerate(texts):
+            enc = np.array(tok.encode(txt), dtype=np.int32)
+            if i in val_set:
+                val_ids_list.append(enc)
+            else:
+                train_ids_list.append(enc)
+        train_ids = np.concatenate(train_ids_list) if train_ids_list else np.empty((0,), dtype=np.int32)
+        val_ids = np.concatenate(val_ids_list) if val_ids_list else np.empty((0,), dtype=np.int32)
+    else:
+        # Single file or non-random split path; optionally use chunk-level shuffle
+        ids = np.array(tok.encode(text), dtype=np.int32)
+        if args.random_split:
+            # Chunk into ~2048-token pieces and shuffle chunks before splitting
+            chunk = 2048
+            num_chunks = max(1, (len(ids) + chunk - 1) // chunk)
+            chunks = [ids[i * chunk : (i + 1) * chunk] for i in range(num_chunks)]
+            rng.shuffle(chunks)
+            n_val_chunks = max(1, int(len(chunks) * args.val_ratio))
+            val_chunks = chunks[:n_val_chunks]
+            train_chunks = chunks[n_val_chunks:]
+            train_ids = np.concatenate(train_chunks) if train_chunks else np.empty((0,), dtype=np.int32)
+            val_ids = np.concatenate(val_chunks) if val_chunks else np.empty((0,), dtype=np.int32)
+        else:
+            # Contiguous tail split
+            n = len(ids)
+            n_val = int(n * args.val_ratio)
+            n_train = n - n_val
+            train_ids = ids[:n_train]
+            val_ids = ids[n_train:]
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)

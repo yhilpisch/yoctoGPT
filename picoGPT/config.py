@@ -50,10 +50,14 @@ class TrainConfig:
     batch_size: int = 64
     max_iters: int = 5000
     lr: float = 3e-4
+    min_lr: float = 1e-5
     weight_decay: float = 0.1
     grad_clip: float = 1.0
     eval_interval: int = 500
     eval_iters: int = 100
+    label_smoothing: float = 0.0
+    cosine_lr: bool = False
+    warmup_iters: int = 100
 
     # Model
     block_size: int = 256
@@ -61,6 +65,8 @@ class TrainConfig:
     n_head: int = 6
     n_embd: int = 384
     dropout: float = 0.0
+    tie_weights: bool = False
+    auto_tie_weights: bool = False
 
     # Misc
     ckpt_dir: str = "checkpoints/run"
@@ -84,4 +90,3 @@ class TrainConfig:
 
     def to_dict(self):  # convenience for checkpoint serialization
         return asdict(self)
-

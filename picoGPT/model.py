@@ -26,6 +26,7 @@ class GPTConfig:
     n_head: int = 6
     n_embd: int = 384
     dropout: float = 0.0
+    tie_weights: bool = False
 
 
 class CausalSelfAttention(nn.Module):
@@ -135,6 +136,11 @@ class GPT(nn.Module):
         # Init parameters following GPT-2 style (approx.)
         self.apply(self._init_weights)
 
+        # Optionally tie token embedding and output head weights
+        if config.tie_weights:
+            # Share storage so gradients update both consistently
+            self.head.weight = self.tok_emb.weight
+
     def _init_weights(self, module: nn.Module) -> None:
         if isinstance(module, nn.Linear):
             nn.init.normal_(module.weight, mean=0.0, std=0.02)
@@ -221,4 +227,3 @@ def _top_k_top_p_mask(logits: torch.Tensor, top_k: Optional[int], top_p: Optiona
         indices_to_remove.scatter_(dim=-1, index=sorted_indices, src=mask)
         logits = logits.masked_fill(indices_to_remove, float("-inf"))
     return logits
-

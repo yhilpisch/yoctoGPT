@@ -59,10 +59,14 @@ def parse_args() -> TrainConfig:
     p.add_argument("--batch_size", type=int, default=64)
     p.add_argument("--max_iters", type=int, default=100)
     p.add_argument("--lr", type=float, default=3e-4)
+    p.add_argument("--min_lr", type=float, default=1e-5, help="Min LR for cosine schedule")
     p.add_argument("--weight_decay", type=float, default=0.1)
     p.add_argument("--grad_clip", type=float, default=1.0)
     p.add_argument("--eval_interval", type=int, default=50)
     p.add_argument("--eval_iters", type=int, default=20)
+    p.add_argument("--label_smoothing", type=float, default=0.0)
+    p.add_argument("--cosine_lr", action="store_true", help="Use cosine learning rate schedule with warmup")
+    p.add_argument("--warmup_iters", type=int, default=100)
     p.add_argument("--seed", type=int, default=1337)
     p.add_argument("--device", type=str, default=None)
 
@@ -72,6 +76,8 @@ def parse_args() -> TrainConfig:
     p.add_argument("--n_head", type=int, default=6)
     p.add_argument("--n_embd", type=int, default=384)
     p.add_argument("--dropout", type=float, default=0.1)
+    p.add_argument("--tie_weights", action="store_true", help="Tie token embedding and LM head weights")
+    p.add_argument("--auto_tie_weights", action="store_true", help="Enable weight tying automatically for small datasets")
 
     args = p.parse_args()
     tc = TrainConfig(
@@ -82,10 +88,14 @@ def parse_args() -> TrainConfig:
         batch_size=args.batch_size,
         max_iters=args.max_iters,
         lr=args.lr,
+        min_lr=args.min_lr,
         weight_decay=args.weight_decay,
         grad_clip=args.grad_clip,
         eval_interval=args.eval_interval,
         eval_iters=args.eval_iters,
+        label_smoothing=args.label_smoothing,
+        cosine_lr=args.cosine_lr,
+        warmup_iters=args.warmup_iters,
         seed=args.seed,
         device=args.device,
         block_size=args.block_size,
@@ -93,6 +103,8 @@ def parse_args() -> TrainConfig:
         n_head=args.n_head,
         n_embd=args.n_embd,
         dropout=args.dropout,
+        tie_weights=args.tie_weights,
+        auto_tie_weights=args.auto_tie_weights,
         resume=args.resume,
         init_from=args.init_from,
         strict_init=args.strict_init,
@@ -120,7 +132,11 @@ def evaluate(model: GPT, ids: torch.LongTensor, cfg: TrainConfig, device: str) -
         for _ in range(cfg.eval_iters):
             xb, yb = get_batch(ids, cfg.block_size, cfg.batch_size, device)
             logits = model(xb)
-            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), yb.view(-1))
+            loss = F.cross_entropy(
+                logits.view(-1, logits.size(-1)),
+                yb.view(-1),
+                label_smoothing=cfg.label_smoothing if cfg.label_smoothing > 0 else 0.0,
+            )
             losses.append(loss.item())
     model.train()
     return float(np.mean(losses))
@@ -174,6 +190,15 @@ def main() -> None:
     init_from_path = cfg.init_from
 
     # Desired architecture from CLI/current dataset
+    # Decide weight tying policy
+    auto_tie = False
+    if cfg.auto_tie_weights and not cfg.tie_weights:
+        # Heuristic: enable tying for smaller datasets (< 1M tokens)
+        try:
+            auto_tie = (len(train_ids) < 1_000_000)
+        except Exception:
+            auto_tie = False
+
     desired_config = GPTConfig(
         vocab_size=vocab_size,
         block_size=cfg.block_size,
@@ -181,6 +206,7 @@ def main() -> None:
         n_head=cfg.n_head,
         n_embd=cfg.n_embd,
         dropout=cfg.dropout,
+        tie_weights=(cfg.tie_weights or auto_tie),
     )
 
     model = GPT(desired_config).to(device)
@@ -230,15 +256,41 @@ def main() -> None:
     )
     best_val = float("inf")
     last_val_loss = None  # remember last validation loss for display between evals
+
+    # LR scheduling helpers
+    base_lr = cfg.lr
+    min_lr = cfg.min_lr
+    warmup_iters = cfg.warmup_iters
+    total_iters = end_iter
+
+    def get_lr(step: int) -> float:
+        if not cfg.cosine_lr:
+            return base_lr
+        if step < warmup_iters:
+            return base_lr * step / max(1, warmup_iters)
+        # Cosine decay from base_lr to min_lr
+        progress = (step - warmup_iters) / max(1, (total_iters - warmup_iters))
+        progress = min(max(progress, 0.0), 1.0)
+        import math as _math
+        return min_lr + 0.5 * (base_lr - min_lr) * (1 + _math.cos(_math.pi * progress))
+
     for it in pbar:
         xb, yb = get_batch(train_ids, cfg.block_size, cfg.batch_size, device)
         logits = model(xb)
-        loss = F.cross_entropy(logits.view(-1, logits.size(-1)), yb.view(-1))
+        loss = F.cross_entropy(
+            logits.view(-1, logits.size(-1)),
+            yb.view(-1),
+            label_smoothing=cfg.label_smoothing if cfg.label_smoothing > 0 else 0.0,
+        )
 
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
         nn.utils.clip_grad_norm_(model.parameters(), cfg.grad_clip)
         optimizer.step()
+        # Update learning rate
+        new_lr = get_lr(it + 1)
+        for g in optimizer.param_groups:
+            g["lr"] = new_lr
 
         # Lightweight progress update: refresh train loss every 10 steps to keep tqdm current
         if (it + 1) % 10 == 0 or it == start_iter:
