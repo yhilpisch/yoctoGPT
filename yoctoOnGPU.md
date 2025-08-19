@@ -9,14 +9,17 @@ This guide shows how to install dependencies and train yoctoGPT on a DigitalOcea
 
 ## 1) Setup
 
-Assuming you cloned this repo and are in its root directory:
+Assume the repository is cloned at `/root/yoctoGPT/` and mirrors your local layout.
 
 ```
+# Go to the repo root
+cd /root/yoctoGPT
+
 # Update packages, create a venv, install CUDA-enabled PyTorch and project deps
 bash scripts/setup_gpu_ubuntu.sh
 
 # Activate the environment for this session
-source .venv/bin/activate
+source /root/yoctoGPT/.venv/bin/activate
 ```
 
 Verify CUDA is visible to PyTorch:
@@ -30,33 +33,35 @@ print('device:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else
 PY
 ```
 
-## 2) Data Placement (use the scratch disk)
+## 2) Data Placement
 
-For large corpora, place data and checkpoints on the scratch NVMe for speed and space, e.g. `/mnt/scratch`:
+By default, keep data and checkpoints under the repo to match local conventions:
 
 ```
-# Example layout (adjust paths for your mount point)
-mkdir -p /mnt/scratch/yocto/data /mnt/scratch/yocto/checkpoints
+# Default local-style layout
+mkdir -p /root/yoctoGPT/data /root/yoctoGPT/checkpoints
 ```
+
+For very large corpora and long runs, consider using the scratch NVMe (e.g., `/mnt/scratch`) and point `--data_dir` / `--ckpt_dir` there.
 
 ## 3) Tokenization (BPE by default)
 
 Prepare tokens from a single file or all `.txt` files in a directory.
 
-- Single file:
+- Single file (local-style paths):
 ```
 python -m scripts.prepare_tokenizer \
-  --text_path /mnt/scratch/yocto/data/corpus.txt \
-  --out_dir   /mnt/scratch/yocto/data/token \
+  --text_path /root/yoctoGPT/data/corpus.txt \
+  --out_dir   /root/yoctoGPT/data/token \
   --vocab_size 32000 \
   --random_split --split_seed 1337
 ```
 
-- Multiple files (non-recursive) with randomized split:
+- Multiple files (non-recursive) with randomized split (local-style paths):
 ```
 python -m scripts.prepare_tokenizer \
-  --all_txt_in_dir --text_dir /mnt/scratch/yocto/data/texts \
-  --out_dir   /mnt/scratch/yocto/data/token \
+  --all_txt_in_dir --text_dir /root/yoctoGPT/data/texts \
+  --out_dir   /root/yoctoGPT/data/token \
   --vocab_size 32000 \
   --random_split --split_seed 1337
 ```
@@ -70,13 +75,13 @@ Notes:
 
 Below are conservative starting points without AMP. Increase `batch_size` as memory allows; if you hit OOM, reduce it first, then consider reducing `block_size`.
 
-- Base (balanced):
+- Base (balanced) — local-style paths:
 ```
 python -m yoctoGPT.train \
   --mode token \
-  --data_dir /mnt/scratch/yocto/data/token \
-  --tokenizer_path /mnt/scratch/yocto/data/token/tokenizer.json \
-  --ckpt_dir /mnt/scratch/yocto/checkpoints/base \
+  --data_dir /root/yoctoGPT/data/token \
+  --tokenizer_path /root/yoctoGPT/data/token/tokenizer.json \
+  --ckpt_dir /root/yoctoGPT/checkpoints/base \
   --n_layer 12 --n_head 12 --n_embd 768 \
   --block_size 1024 --batch_size 32 \
   --dropout 0.1 --weight_decay 0.05 \
@@ -85,13 +90,13 @@ python -m yoctoGPT.train \
   --eval_interval 200 --eval_iters 200 --max_iters 20000
 ```
 
-- Large:
+- Large — local-style paths:
 ```
 python -m yoctoGPT.train \
   --mode token \
-  --data_dir /mnt/scratch/yocto/data/token \
-  --tokenizer_path /mnt/scratch/yocto/data/token/tokenizer.json \
-  --ckpt_dir /mnt/scratch/yocto/checkpoints/large \
+  --data_dir /root/yoctoGPT/data/token \
+  --tokenizer_path /root/yoctoGPT/data/token/tokenizer.json \
+  --ckpt_dir /root/yoctoGPT/checkpoints/large \
   --n_layer 24 --n_head 16 --n_embd 1024 \
   --block_size 1024 --batch_size 16 \
   --dropout 0.1 --weight_decay 0.1 \
@@ -100,13 +105,13 @@ python -m yoctoGPT.train \
   --eval_interval 200 --eval_iters 200 --max_iters 50000
 ```
 
-- XL (push further if memory allows):
+- XL (push further if memory allows) — local-style paths:
 ```
 python -m yoctoGPT.train \
   --mode token \
-  --data_dir /mnt/scratch/yocto/data/token \
-  --tokenizer_path /mnt/scratch/yocto/data/token/tokenizer.json \
-  --ckpt_dir /mnt/scratch/yocto/checkpoints/xl \
+  --data_dir /root/yoctoGPT/data/token \
+  --tokenizer_path /root/yoctoGPT/data/token/tokenizer.json \
+  --ckpt_dir /root/yoctoGPT/checkpoints/xl \
   --n_layer 24 --n_head 20 --n_embd 1280 \
   --block_size 1024 --batch_size 8 \
   --dropout 0.1 --weight_decay 0.1 \
@@ -128,22 +133,22 @@ Notes:
 
 ## 6) Sampling and Chat
 
-- Sampling:
+- Sampling — local-style paths:
 ```
 python -m yoctoGPT.sampler \
   --mode token \
-  --ckpt /mnt/scratch/yocto/checkpoints/base/latest.pt \
-  --tokenizer_path /mnt/scratch/yocto/data/token/tokenizer.json \
+  --ckpt /root/yoctoGPT/checkpoints/base/latest.pt \
+  --tokenizer_path /root/yoctoGPT/data/token/tokenizer.json \
   --prompt "The philosophy of science begins with" \
   --max_new_tokens 200 --temperature 0.9 --top_p 0.95
 ```
 
-- Chat (toy REPL):
+- Chat (toy REPL) — local-style paths:
 ```
 python -m yoctoGPT.chat \
   --mode token \
-  --ckpt /mnt/scratch/yocto/checkpoints/base/latest.pt \
-  --tokenizer_path /mnt/scratch/yocto/data/token/tokenizer.json \
+  --ckpt /root/yoctoGPT/checkpoints/base/latest.pt \
+  --tokenizer_path /root/yoctoGPT/data/token/tokenizer.json \
   --system_prompt "You are yoctoGPT, a concise helpful assistant."
 ```
 
@@ -158,4 +163,3 @@ python -m yoctoGPT.chat \
 - CUDA not visible: ensure the droplet image includes NVIDIA drivers and reboot if needed. `nvidia-smi` should work.
 - OOM: lower `--batch_size` first; then consider reducing `--block_size`, `--n_embd`, or `--n_layer`.
 - Overfitting: increase `--dropout`, `--weight_decay`, enable `--label_smoothing`, and consider `--tie_weights`. See README “Avoiding Overfitting”.
-
