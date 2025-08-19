@@ -9,3 +9,4 @@ data/token/*.bin
 data/char/vocab.json
 data/token/tokenizer.json
 *.pt
+*.txt

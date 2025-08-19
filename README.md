@@ -13,6 +13,50 @@ text to experiment.
 
 Authors: The Python Quants with Codex and GPT-5
 
+## Installation
+
+Assuming you already created and activated a virtual environment (e.g., `python -m venv .venv && source .venv/bin/activate`), install dependencies and verify the setup:
+
+1) Upgrade core packaging tools
+
+```
+python -m pip install -U pip setuptools wheel
+```
+
+2) Install project requirements
+
+```
+pip install -r requirements.txt
+```
+
+Notes:
+- BPE tokenizer: `tokenizers` is included and provides the default BPE backend.
+- PyTorch: If your platform requires a specific wheel (CUDA vs. CPU, Apple Silicon/MPS), follow the official selector to install the right build, then re-run step (2) if needed:
+  - https://pytorch.org/get-started/locally/
+
+3) Optional: Apple Silicon verification (MPS)
+
+```
+python - <<'PY'
+import torch
+print('torch version:', torch.__version__)
+print('mps available:', hasattr(torch.backends,'mps') and torch.backends.mps.is_available())
+PY
+```
+
+4) Package sanity check
+
+```
+python - <<'PY'
+import picoGPT
+from picoGPT.model import GPT, GPTConfig
+print('picoGPT version:', getattr(picoGPT, '__version__', 'unknown'))
+cfg = GPTConfig(vocab_size=100)
+model = GPT(cfg)
+print('model params:', sum(p.numel() for p in model.parameters()))
+PY
+```
+
 ## Purpose and Approach
 
 The aim of picoGPT is to provide a compact, readable, end-to-end GPT implementation for learning and lightweight experiments.
