@@ -1,4 +1,4 @@
-"""Data utilities for picoGPT.
+"""Data utilities for yoctoGPT.
 
 This module provides:
 - A minimal character vocabulary (`CharVocab`) for char-level training.
@@ -89,4 +89,3 @@ def make_windows(data_ids: torch.LongTensor, block_size: int, ixs: torch.LongTen
     x = torch.stack([data_ids[i : i + block_size] for i in ixs])
     y = torch.stack([data_ids[i + 1 : i + 1 + block_size] for i in ixs])
     return x, y
-

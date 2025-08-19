@@ -1,4 +1,4 @@
-"""CPU generation smoke test for picoGPT.
+"""CPU generation smoke test for yoctoGPT.
 
 This script exercises the minimal end-to-end generation stack on CPU without
 requiring a pre-trained checkpoint. It:
@@ -27,12 +27,12 @@ if ROOT not in sys.path:
 
 import torch
 
-from picoGPT.data import CharVocab
-from picoGPT.model import GPT, GPTConfig
+from yoctoGPT.data import CharVocab
+from yoctoGPT.model import GPT, GPTConfig
 
 
 def parse_args():
-    p = argparse.ArgumentParser(description="CPU generation smoke test for picoGPT (char-level)")
+    p = argparse.ArgumentParser(description="CPU generation smoke test for yoctoGPT (char-level)")
     p.add_argument("--text_path", type=str, default="data/philosophy.txt")
     p.add_argument("--prompt", type=str, default="What is virtue?\n")
     p.add_argument("--max_new_tokens", type=int, default=128)

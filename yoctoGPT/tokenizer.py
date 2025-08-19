@@ -1,4 +1,4 @@
-"""Tokenization utilities for picoGPT.
+"""Tokenization utilities for yoctoGPT.
 
 Default: Use a standard Byte-Pair Encoding (BPE) tokenizer via Hugging Face
 `tokenizers` if available, which typically improves training and sampling
@@ -191,7 +191,7 @@ def train_tokenizer(text: str, vocab_size: int = 8000, backend: str = "bpe"):
             return BPETokenizer.train(text, vocab_size=vocab_size)
         else:
             # Fallback with a gentle note
-            print("[picoGPT] tokenizers not installed; falling back to word-level tokenizer.")
+            print("[yoctoGPT] tokenizers not installed; falling back to word-level tokenizer.")
             return WordLevelTokenizer.train(text, vocab_size=vocab_size)
     elif backend == "word":
         return WordLevelTokenizer.train(text, vocab_size=vocab_size)

@@ -1,4 +1,4 @@
-"""Training smoke test for picoGPT (prefers Apple Silicon).
+"""Training smoke test for yoctoGPT (prefers Apple Silicon).
 
 This script performs a very short training run on the default corpus using a
 tiny model and prints losses to verify backprop, optimizer steps, and device
@@ -22,8 +22,8 @@ ROOT = os.path.dirname(os.path.dirname(__file__))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from picoGPT.data import CharVocab
-from picoGPT.model import GPT, GPTConfig
+from yoctoGPT.data import CharVocab
+from yoctoGPT.model import GPT, GPTConfig
 
 
 def detect_device(explicit: str | None = None) -> str:
@@ -37,7 +37,7 @@ def detect_device(explicit: str | None = None) -> str:
 
 
 def parse_args():
-    p = argparse.ArgumentParser(description="picoGPT training smoke test (short run)")
+    p = argparse.ArgumentParser(description="yoctoGPT training smoke test (short run)")
     p.add_argument("--text_path", type=str, default="data/philosophy.txt")
     p.add_argument("--device", type=str, default=None, help="cpu|mps|cuda (auto if None)")
     p.add_argument("--block_size", type=int, default=128)

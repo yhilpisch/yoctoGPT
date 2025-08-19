@@ -1,4 +1,4 @@
-"""Prepare token-level training data for picoGPT using a minimal tokenizer.
+"""Prepare token-level training data for yoctoGPT using a minimal tokenizer.
 
 Trains a simple word-level tokenizer on the provided text (default:
 data/philosophy.txt), then encodes the corpus to token IDs, splits into
@@ -20,8 +20,8 @@ if ROOT not in sys.path:
 
 import numpy as np
 
-from picoGPT.data import save_ids_bin
-from picoGPT.tokenizer import train_tokenizer
+from yoctoGPT.data import save_ids_bin
+from yoctoGPT.tokenizer import train_tokenizer
 
 
 def parse_args():

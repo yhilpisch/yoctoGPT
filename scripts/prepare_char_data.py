@@ -1,4 +1,4 @@
-"""Prepare character-level training data for picoGPT.
+"""Prepare character-level training data for yoctoGPT.
 
 Reads a text corpus (default: data/philosophy.txt), builds a character
 vocabulary, encodes the entire text to integer IDs, splits into train/val, and
@@ -19,7 +19,7 @@ if ROOT not in sys.path:
 
 import numpy as np
 
-from picoGPT.data import CharVocab, save_ids_bin
+from yoctoGPT.data import CharVocab, save_ids_bin
 
 
 def parse_args():

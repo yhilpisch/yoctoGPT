@@ -1,4 +1,4 @@
-"""Training entry point for picoGPT.
+"""Training entry point for yoctoGPT.
 
 Supports both character-level and token-level training by sharing a common
 training loop and only switching out the vocabulary/encoding and dataset

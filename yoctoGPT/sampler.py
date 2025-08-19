@@ -1,4 +1,4 @@
-"""Sampling script for picoGPT.
+"""Sampling script for yoctoGPT.
 
 Loads a trained checkpoint and generates text from a user-provided prompt
 using the same encoding used during training (char or token mode).
@@ -17,7 +17,7 @@ from .tokenizer import load_tokenizer
 
 
 def parse_args():
-    p = argparse.ArgumentParser(description="Generate text from a picoGPT checkpoint")
+    p = argparse.ArgumentParser(description="Generate text from a yoctoGPT checkpoint")
     p.add_argument("--ckpt", type=str, required=True, help="Path to model checkpoint .pt")
     p.add_argument("--mode", choices=["char", "token"], default="char")
     p.add_argument("--tokenizer_path", type=str, default=None)

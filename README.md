@@ -1,4 +1,4 @@
-# picoGPT
+# yoctoGPT
 
 Minimal GPT from scratch in PyTorch. Supports:
 
@@ -48,9 +48,9 @@ PY
 
 ```
 python - <<'PY'
-import picoGPT
-from picoGPT.model import GPT, GPTConfig
-print('picoGPT version:', getattr(picoGPT, '__version__', 'unknown'))
+import yoctoGPT
+from yoctoGPT.model import GPT, GPTConfig
+print('yoctoGPT version:', getattr(yoctoGPT, '__version__', 'unknown'))
 cfg = GPTConfig(vocab_size=100)
 model = GPT(cfg)
 print('model params:', sum(p.numel() for p in model.parameters()))
@@ -59,7 +59,7 @@ PY
 
 ## Purpose and Approach
 
-The aim of picoGPT is to provide a compact, readable, end-to-end GPT implementation for learning and lightweight experiments.
+The aim of yoctoGPT is to provide a compact, readable, end-to-end GPT implementation for learning and lightweight experiments.
 
 - Minimal PyTorch model: no external model frameworks; clear, well-commented code.
 - Two training modes: character-level and token-level; BPE tokenizer by default (Hugging Face `tokenizers`) with a simple word-level fallback.
@@ -80,13 +80,13 @@ python -m scripts.prepare_char_data --text_path data/philosophy.txt --out_dir da
 2) Train (char-level):
 
 ```
-python -m picoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char --n_layer 4 --n_head 4 --n_embd 256 --block_size 256 --batch_size 64 --max_iters 2000
+python -m yoctoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char --n_layer 4 --n_head 4 --n_embd 256 --block_size 256 --batch_size 64 --max_iters 2000
 ```
 
 3) Sample (char-level):
 
 ```
-python -m picoGPT.sampler --mode char --ckpt checkpoints/char/latest.pt --vocab_path data/char/vocab.json --prompt "What is wisdom?\n" --max_new_tokens 200
+python -m yoctoGPT.sampler --mode char --ckpt checkpoints/char/latest.pt --vocab_path data/char/vocab.json --prompt "What is wisdom?\n" --max_new_tokens 200
 ```
 
 ---
@@ -120,19 +120,19 @@ python -m scripts.prepare_tokenizer --all_txt_in_dir --text_dir data --out_dir d
 2) Train:
 
 ```
-python -m picoGPT.train --mode token --data_dir data/token --tokenizer_path data/token/tokenizer.json --ckpt_dir checkpoints/token --n_layer 6 --n_head 6 --n_embd 384 --block_size 256 --batch_size 64 --max_iters 5000
+python -m yoctoGPT.train --mode token --data_dir data/token --tokenizer_path data/token/tokenizer.json --ckpt_dir checkpoints/token --n_layer 6 --n_head 6 --n_embd 384 --block_size 256 --batch_size 64 --max_iters 5000
 ```
 
 3) Sample:
 
 ```
-python -m picoGPT.sampler --mode token --ckpt checkpoints/token/latest.pt --tokenizer_path data/token/tokenizer.json --prompt "Q: What is knowledge?\nA:" --max_new_tokens 200
+python -m yoctoGPT.sampler --mode token --ckpt checkpoints/token/latest.pt --tokenizer_path data/token/tokenizer.json --prompt "Q: What is knowledge?\nA:" --max_new_tokens 200
 ```
 
 4) Chat:
 
 ```
-python -m picoGPT.chat --mode token --ckpt checkpoints/token/latest.pt --tokenizer_path data/token/tokenizer.json --system_prompt "You are picoGPT, a helpful assistant."
+python -m yoctoGPT.chat --mode token --ckpt checkpoints/token/latest.pt --tokenizer_path data/token/tokenizer.json --system_prompt "You are yoctoGPT, a helpful assistant."
 ```
 
 Resume or warm-start full training:
@@ -141,13 +141,13 @@ Resume or warm-start full training:
 # Resume training from a saved checkpoint (restores optimizer).
 # Note: --max_iters means additional steps to run. The progress bar shows
 # total steps completed across all runs.
-python -m picoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char --resume checkpoints/char/latest.pt --max_iters 1000
+python -m yoctoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char --resume checkpoints/char/latest.pt --max_iters 1000
 
 # Warm start from weights only
-python -m picoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char --init_from checkpoints/char/best.pt
+python -m yoctoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char --init_from checkpoints/char/best.pt
 
 # If the vocab/head changed and you want to ignore mismatches
-python -m picoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char --init_from checkpoints/char/best.pt --no_strict_init
+python -m yoctoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char --init_from checkpoints/char/best.pt --no_strict_init
 ```
 
 ## Notes
@@ -245,7 +245,7 @@ python scripts/train_smoke_test.py --init_from checkpoints/smoke/latest.pt --ite
 Training defaults to Apple Silicon `mps` device when available. To override:
 
 ```
-python -m picoGPT.train --device cpu ...
+python -m yoctoGPT.train --device cpu ...
 ```
 
 If you prefer CUDA on a multi-backend system, pass `--device cuda`.

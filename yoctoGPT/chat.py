@@ -1,8 +1,8 @@
-"""Simple terminal chat interface for picoGPT.
+"""Simple terminal chat interface for yoctoGPT.
 
 This module builds on the sampler to provide a stateful REPL that preserves a
 rolling context window. It formats turns as `User:` and `Assistant:` to guide
-the model's style. Since picoGPT is trained as a plain LM, this interface is a
+the model's style. Since yoctoGPT is trained as a plain LM, this interface is a
 thin usability layer rather than a full instruction-following system.
 """
 
@@ -20,12 +20,12 @@ from .tokenizer import load_tokenizer
 
 
 def parse_args():
-    p = argparse.ArgumentParser(description="Chat with a picoGPT checkpoint")
+    p = argparse.ArgumentParser(description="Chat with a yoctoGPT checkpoint")
     p.add_argument("--ckpt", type=str, required=True)
     p.add_argument("--mode", choices=["char", "token"], default="token")
     p.add_argument("--tokenizer_path", type=str, default=None)
     p.add_argument("--vocab_path", type=str, default=None)
-    p.add_argument("--system_prompt", type=str, default="You are picoGPT, a concise helpful assistant.")
+    p.add_argument("--system_prompt", type=str, default="You are yoctoGPT, a concise helpful assistant.")
     p.add_argument("--max_ctx_tokens", type=int, default=384)
     p.add_argument("--max_new_tokens", type=int, default=128)
     p.add_argument("--temperature", type=float, default=0.9)

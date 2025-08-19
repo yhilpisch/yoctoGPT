@@ -1,4 +1,4 @@
-"""picoGPT package
+"""yoctoGPT package
 
 Minimal GPT implementation and tooling.
 
@@ -10,4 +10,3 @@ from .model import GPT, GPTConfig
 
 __all__ = ["GPT", "GPTConfig"]
 __version__ = "0.1.0"
-

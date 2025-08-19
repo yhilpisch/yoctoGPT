@@ -1,4 +1,4 @@
-# picoGPT — Minimal GPT from scratch (PyTorch)
+# yoctoGPT — Minimal GPT from scratch (PyTorch)
 
 This document outlines a minimal, end-to-end project structure to:
 - Implement a small GPT model from scratch in PyTorch
@@ -12,8 +12,8 @@ The emphasis is on minimal, readable code with clear seams to extend later.
 ## Directory Layout
 
 ```
-picogpt/
-├─ picoGPT/
+yoctogpt/
+├─ yoctoGPT/
 │  ├─ __init__.py
 │  ├─ config.py
 │  ├─ data.py
@@ -38,26 +38,26 @@ picogpt/
 
 - Char-level path:
   1) `scripts/prepare_char_data.py` builds char vocab from raw text and writes encoded `train.bin` and `val.bin`.
-  2) `picoGPT/train.py --mode char` trains GPT using `CharDataset` from `data.py`.
-  3) `picoGPT/sampler.py --mode char` loads checkpoint and generates text.
+  2) `yoctoGPT/train.py --mode char` trains GPT using `CharDataset` from `data.py`.
+  3) `yoctoGPT/sampler.py --mode char` loads checkpoint and generates text.
 
 - Token-level path:
   1) `scripts/prepare_tokenizer.py` trains/loads a tokenizer and encodes raw text into token IDs.
-  2) `picoGPT/train.py --mode token` trains GPT using `TokenDataset` from `data.py`.
-  3) `picoGPT/sampler.py --mode token` loads checkpoint, tokenizer, and generates text.
+  2) `yoctoGPT/train.py --mode token` trains GPT using `TokenDataset` from `data.py`.
+  3) `yoctoGPT/sampler.py --mode token` loads checkpoint, tokenizer, and generates text.
 
 - Chat interface:
-  - `picoGPT/chat.py` wraps the sampler with a simple REPL, preserving context and applying generation settings.
+  - `yoctoGPT/chat.py` wraps the sampler with a simple REPL, preserving context and applying generation settings.
 
 
 ## File-by-File Details
 
-### `picoGPT/__init__.py`
+### `yoctoGPT/__init__.py`
 - Purpose: Mark the package; optionally expose convenience imports.
 - Minimal content: set `__version__`, re-export `GPT`, `GPTConfig`.
 
 
-### `picoGPT/config.py`
+### `yoctoGPT/config.py`
 - Purpose: Centralize configuration via small dataclasses to keep scripts clean.
 - Contents:
   - `ModelConfig`: `vocab_size`, `block_size`, `n_layer`, `n_head`, `n_embd`, `dropout`.
@@ -66,7 +66,7 @@ picogpt/
   - Simple `from_cli()` helper to parse `argparse` flags into configs.
 
 
-### `picoGPT/data.py`
+### `yoctoGPT/data.py`
 - Purpose: Datasets and simple utilities for producing model inputs.
 - Contents:
   - `CharVocab`: build char-to-id and id-to-char from raw text; `encode`, `decode`.
@@ -76,7 +76,7 @@ picogpt/
   - Splitting & batching assumptions: fixed `block_size`, random index sampling to produce subsequences.
 
 
-### `picoGPT/tokenizer.py`
+### `yoctoGPT/tokenizer.py`
 - Purpose: Provide a minimal tokenization interface for the token-level path.
 - Contents:
   - `BaseTokenizer` protocol: `encode(str) -> List[int]`, `decode(List[int]) -> str`, `vocab_size`.
@@ -86,7 +86,7 @@ picogpt/
   - Optional adapter to Hugging Face `tokenizers` or `tiktoken` if available; otherwise use the simple built-in.
 
 
-### `picoGPT/model.py`
+### `yoctoGPT/model.py`
 - Purpose: Implement a small GPT in PyTorch, no external model libs.
 - Contents:
   - `GPTConfig` (could alias `ModelConfig`).
@@ -100,7 +100,7 @@ picogpt/
   - Masking: use a fixed causal mask or upper-triangular attention mask.
 
 
-### `picoGPT/train.py`
+### `yoctoGPT/train.py`
 - Purpose: Single training entry point for both char-level and token-level modes.
 - Key CLI flags:
   - `--mode {char,token}`
@@ -123,7 +123,7 @@ picogpt/
     - Save checkpoints: model weights, optimizer state, config, vocab/tokenizer artifacts.
 
 
-### `picoGPT/sampler.py`
+### `yoctoGPT/sampler.py`
 - Purpose: Load a checkpoint + tokenizer/vocab and generate text.
 - Key CLI flags:
   - `--mode {char,token}`, `--ckpt`, `--tokenizer_path` (token), `--vocab_path` (char)
@@ -133,7 +133,7 @@ picogpt/
   - Encode prompt with the correct path (char or token), call `model.generate`, decode and print.
 
 
-### `picoGPT/chat.py`
+### `yoctoGPT/chat.py`
 - Purpose: Minimal terminal chat on top of the sampler.
 - Contents:
   - REPL loop that maintains a running prompt/context window truncated to `block_size`.
@@ -233,22 +233,22 @@ def get_batch(data_ids: torch.LongTensor, block_size: int, batch_size: int, devi
   - `python -m scripts.prepare_char_data --text_path data/philosophy.txt --out_dir data/char`
 
 - Char-level training:
-  - `python -m picoGPT.train --mode char --data_dir data/char --n_layer 4 --n_head 4 --n_embd 256 --block_size 256 --batch_size 64 --max_iters 5000`
+  - `python -m yoctoGPT.train --mode char --data_dir data/char --n_layer 4 --n_head 4 --n_embd 256 --block_size 256 --batch_size 64 --max_iters 5000`
 
 - Char-level sampling:
-  - `python -m picoGPT.sampler --mode char --ckpt checkpoints/char/latest.pt --vocab_path data/char/vocab.json --prompt "To be, or not to be" --max_new_tokens 200`
+  - `python -m yoctoGPT.sampler --mode char --ckpt checkpoints/char/latest.pt --vocab_path data/char/vocab.json --prompt "To be, or not to be" --max_new_tokens 200`
 
 - Token-level preparation:
   - `python -m scripts.prepare_tokenizer --text_path data/philosophy.txt --out_dir data/token --vocab_size 8000`
 
 - Token-level training:
-  - `python -m picoGPT.train --mode token --data_dir data/token --tokenizer_path data/token/tokenizer.json --n_layer 8 --n_head 8 --n_embd 512 --block_size 512 --batch_size 32 --max_iters 20000`
+  - `python -m yoctoGPT.train --mode token --data_dir data/token --tokenizer_path data/token/tokenizer.json --n_layer 8 --n_head 8 --n_embd 512 --block_size 512 --batch_size 32 --max_iters 20000`
 
 - Token-level sampling:
-  - `python -m picoGPT.sampler --mode token --ckpt checkpoints/token/latest.pt --tokenizer_path data/token/tokenizer.json --prompt "Q: What is love?\nA:" --max_new_tokens 200`
+  - `python -m yoctoGPT.sampler --mode token --ckpt checkpoints/token/latest.pt --tokenizer_path data/token/tokenizer.json --prompt "Q: What is love?\nA:" --max_new_tokens 200`
 
 - Chat interface:
-  - `python -m picoGPT.chat --mode token --ckpt checkpoints/token/latest.pt --tokenizer_path data/token/tokenizer.json --system_prompt "You are picoGPT, a helpful assistant."`
+  - `python -m yoctoGPT.chat --mode token --ckpt checkpoints/token/latest.pt --tokenizer_path data/token/tokenizer.json --system_prompt "You are yoctoGPT, a helpful assistant."`
 
 
 ## Checkpoints and Artifacts
