@@ -62,25 +62,32 @@ def apply_rope(
     head_dim: int,
     base: float,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
-    """Apply rotary position embeddings to last-dim pairs of q and k.
+    """Apply rotary position embeddings to q and k (pairwise interleaved dims).
 
-    Expects q,k shape (B, H, T, D). Builds cos/sin of shape (1,1,T,D) by
-    computing half-dim frequencies and repeating each along the last axis.
+    Expects q,k shape (B, H, T, D). We treat the last dimension as pairs of
+    size 2: D = 2 * (D/2). For each pair (x1, x2) and angle θ_t we apply:
+      x1' = x1 * cos θ_t - x2 * sin θ_t
+      x2' = x1 * sin θ_t + x2 * cos θ_t
     """
+    B, H, T, D = q.shape
     device = q.device
     dtype = q.dtype
     half = head_dim // 2
-    theta = 1.0 / (base ** (torch.arange(0, half, device=device, dtype=dtype) / half))
+    inv_freq = 1.0 / (base ** (torch.arange(0, head_dim, 2, device=device, dtype=dtype) / head_dim))
     pos = torch.arange(seq_len, device=device, dtype=dtype)
-    freqs = torch.einsum("t,d->td", pos, theta)  # (T, half)
-    cos = torch.cos(freqs).unsqueeze(0).unsqueeze(0)  # (1,1,T,half)
-    sin = torch.sin(freqs).unsqueeze(0).unsqueeze(0)  # (1,1,T,half)
-    # Expand to full D by repeating each along the last axis
-    cos = torch.repeat_interleave(cos, 2, dim=-1)  # (1,1,T,D)
-    sin = torch.repeat_interleave(sin, 2, dim=-1)  # (1,1,T,D)
-    q = (q * cos) + (_rotate_half(q) * sin)
-    k = (k * cos) + (_rotate_half(k) * sin)
-    return q, k
+    freqs = torch.einsum("t,d->td", pos, inv_freq)  # (T, half)
+    cos = torch.cos(freqs).view(1, 1, T, half)
+    sin = torch.sin(freqs).view(1, 1, T, half)
+
+    def _apply(x: torch.Tensor) -> torch.Tensor:
+        x = x.view(B, H, T, half, 2)
+        x1 = x[..., 0]
+        x2 = x[..., 1]
+        y1 = x1 * cos - x2 * sin
+        y2 = x1 * sin + x2 * cos
+        return torch.stack((y1, y2), dim=-1).view(B, H, T, D)
+
+    return _apply(q), _apply(k)
 
 
 class CausalSelfAttention(nn.Module):

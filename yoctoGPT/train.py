@@ -11,6 +11,8 @@ import argparse
 import json
 import math
 import os
+import csv
+import time
 from pathlib import Path
 from typing import Tuple
 
@@ -264,6 +266,40 @@ def main() -> None:
     # Training loop
     ckpt_dir = Path(cfg.ckpt_dir)
     ckpt_dir.mkdir(parents=True, exist_ok=True)
+    # Metrics CSV in checkpoint directory
+    metrics_path = ckpt_dir / "metrics.csv"
+    metrics_fields = [
+        "iter",
+        "train_loss",
+        "val_loss",
+        "lr",
+        "time_sec",
+        "tokens_seen",
+        "throughput_tps",
+        "grad_norm",
+    ]
+    if not metrics_path.exists():
+        with metrics_path.open("w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=metrics_fields)
+            writer.writeheader()
+    # Persist a one-time run metadata JSON for later analysis
+    meta_path = ckpt_dir / "run_meta.json"
+    if not meta_path.exists():
+        try:
+            param_count = int(sum(p.numel() for p in model.parameters()))
+        except Exception:
+            param_count = None
+        meta = {
+            "arch": arch,
+            "device": device,
+            "train_config": cfg.to_dict(),
+            "model_config": desired_config.__dict__,
+            "params": param_count,
+            "tokens_per_step": cfg.batch_size * cfg.block_size,
+            "created_at": time.time(),
+        }
+        with meta_path.open("w") as f:
+            json.dump(meta, f, indent=2)
 
     # Interpret --max_iters as additional steps from the current state.
     # If resuming, we will run `cfg.max_iters` more steps on top of `start_iter`.
@@ -294,6 +330,8 @@ def main() -> None:
         import math as _math
         return min_lr + 0.5 * (base_lr - min_lr) * (1 + _math.cos(_math.pi * progress))
 
+    start_wall = time.time()
+    tokens_per_step = cfg.batch_size * cfg.block_size
     for it in pbar:
         xb, yb = get_batch(train_ids, cfg.block_size, cfg.batch_size, device)
         logits = model(xb)
@@ -305,7 +343,7 @@ def main() -> None:
 
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
-        nn.utils.clip_grad_norm_(model.parameters(), cfg.grad_clip)
+        grad_total_norm = float(nn.utils.clip_grad_norm_(model.parameters(), cfg.grad_clip))
         optimizer.step()
         # Update learning rate
         new_lr = get_lr(it + 1)
@@ -353,9 +391,49 @@ def main() -> None:
             }
             torch.save(ckpt, ckpt_dir / "latest.pt")
 
+        # Append metrics row
+        elapsed = time.time() - start_wall
+        tokens_seen = (it + 1 - start_iter) * tokens_per_step
+        tps = tokens_seen / max(elapsed, 1e-9)
+        with metrics_path.open("a", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=metrics_fields)
+            writer.writerow(
+                {
+                    "iter": it + 1,
+                    "train_loss": float(loss.item()),
+                    "val_loss": float(last_val_loss) if last_val_loss is not None else "",
+                    "lr": float(new_lr),
+                    "time_sec": float(elapsed),
+                    "tokens_seen": int(tokens_seen),
+                    "throughput_tps": float(tps),
+                    "grad_norm": float(grad_total_norm),
+                }
+            )
+
     # Ensure a final evaluation at the end regardless of eval_interval
     final_val = evaluate(model, val_ids, cfg, device)
     print({"final_val_loss": final_val})
+    # Append a final metrics row capturing final validation
+    try:
+        elapsed = time.time() - start_wall
+        tokens_seen = (end_iter - start_iter) * tokens_per_step
+        tps = tokens_seen / max(elapsed, 1e-9)
+        with metrics_path.open("a", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=metrics_fields)
+            writer.writerow(
+                {
+                    "iter": end_iter,
+                    "train_loss": "",
+                    "val_loss": float(final_val),
+                    "lr": float(get_lr(end_iter)),
+                    "time_sec": float(elapsed),
+                    "tokens_seen": int(tokens_seen),
+                    "throughput_tps": float(tps),
+                    "grad_norm": "",
+                }
+            )
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":

@@ -16,6 +16,8 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn.functional as F
+import csv
+import time
 
 # Ensure project root is on sys.path when running as a file: `python scripts/...`
 ROOT = os.path.dirname(os.path.dirname(__file__))
@@ -131,7 +133,18 @@ def main() -> None:
             model = GPT(cfg).to(device)
         opt = torch.optim.AdamW(model.parameters(), lr=args.lr)
 
+    # Metrics CSV alongside checkpoint
+    ckpt_path = Path(args.ckpt)
+    metrics_path = ckpt_path.parent / "metrics.csv"
+    fields = ["iter", "train_loss", "lr", "time_sec", "tokens_seen", "throughput_tps"]
+    if not metrics_path.exists():
+        metrics_path.parent.mkdir(parents=True, exist_ok=True)
+        with metrics_path.open("w", newline="") as f:
+            csv.DictWriter(f, fieldnames=fields).writeheader()
+
     model.train()
+    start_wall = time.time()
+    tokens_per_step = args.batch_size * args.block_size
     for it in range(start_iter + 1, start_iter + args.iters + 1):
         xb, yb = get_batch(ids, args.block_size, args.batch_size, device)
         logits = model(xb)
@@ -141,6 +154,22 @@ def main() -> None:
         opt.step()
         if it % max(1, args.iters // 10) == 0 or it == start_iter + 1:
             print(f"iter {it:4d}/{start_iter + args.iters}  loss {loss.item():.4f}")
+        # Append metrics row
+        elapsed = time.time() - start_wall
+        tokens_seen = (it - start_iter) * tokens_per_step
+        tps = tokens_seen / max(elapsed, 1e-9)
+        with metrics_path.open("a", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fields)
+            writer.writerow(
+                {
+                    "iter": it,
+                    "train_loss": float(loss.item()),
+                    "lr": float(args.lr),
+                    "time_sec": float(elapsed),
+                    "tokens_seen": int(tokens_seen),
+                    "throughput_tps": float(tps),
+                }
+            )
 
     # Quick sample after short training
     model.eval()

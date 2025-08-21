@@ -287,6 +287,13 @@ python scripts/train_smoke_test.py --resume checkpoints/smoke/latest.pt --iters 
 python scripts/train_smoke_test.py --init_from checkpoints/smoke/latest.pt --iters 200
 ```
 
+## Metrics Logging
+
+- Training (`yoctoGPT.train`) writes a CSV log to the checkpoint directory as `metrics.csv` with columns:
+  - `iter, train_loss, val_loss, lr, time_sec, tokens_seen, throughput_tps, grad_norm`.
+  - A `run_meta.json` is written once with training/model configs, device, parameter count, and tokens per step.
+- The training smoke test also writes `metrics.csv` (without validation columns) in the same folder as its `--ckpt` path.
+
 ## Apple Silicon (MPS)
 
 Training defaults to Apple Silicon `mps` device when available. To override:
