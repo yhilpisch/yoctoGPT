@@ -67,6 +67,7 @@ class TrainConfig:
     dropout: float = 0.0
     tie_weights: bool = False
     auto_tie_weights: bool = False
+    model_type: str = "gpt"  # "gpt" or "gpt_plus"
 
     # Misc
     ckpt_dir: str = "checkpoints/run"

@@ -24,6 +24,7 @@ if ROOT not in sys.path:
 
 from yoctoGPT.data import CharVocab
 from yoctoGPT.model import GPT, GPTConfig
+from yoctoGPT.advanced_model import AdvancedGPT, AdvancedGPTConfig
 
 
 def detect_device(explicit: str | None = None) -> str:
@@ -54,6 +55,7 @@ def parse_args():
     p.add_argument("--strict_init", dest="strict_init", action="store_true")
     p.add_argument("--no_strict_init", dest="strict_init", action="store_false")
     p.set_defaults(strict_init=True)
+    p.add_argument("--model_type", choices=["gpt", "gpt_plus"], default="gpt", help="Select baseline or advanced variant")
     return p.parse_args()
 
 
@@ -78,8 +80,13 @@ def main() -> None:
     start_iter = 0
     if args.resume:
         ckpt = torch.load(args.resume, map_location="cpu")
-        cfg = GPTConfig(**ckpt["model_config"])
-        model = GPT(cfg).to(device)
+        arch = ckpt.get("arch", "gpt")
+        if arch == "gpt_plus":
+            cfg = AdvancedGPTConfig(**ckpt["model_config"])
+            model = AdvancedGPT(cfg).to(device)
+        else:
+            cfg = GPTConfig(**ckpt["model_config"])
+            model = GPT(cfg).to(device)
         model.load_state_dict(ckpt["model_state"])
         opt = torch.optim.AdamW(model.parameters(), lr=args.lr)
         if "opt_state" in ckpt:
@@ -88,8 +95,13 @@ def main() -> None:
         print(f"Resumed from {args.resume} at iter {start_iter}")
     elif args.init_from:
         ckpt = torch.load(args.init_from, map_location="cpu")
-        cfg = GPTConfig(**ckpt["model_config"])
-        model = GPT(cfg).to(device)
+        arch = ckpt.get("arch", "gpt")
+        if arch == "gpt_plus":
+            cfg = AdvancedGPTConfig(**ckpt["model_config"])
+            model = AdvancedGPT(cfg).to(device)
+        else:
+            cfg = GPTConfig(**ckpt["model_config"])
+            model = GPT(cfg).to(device)
         missing, unexpected = model.load_state_dict(ckpt["model_state"], strict=args.strict_init)
         print(
             f"Warm-start from {args.init_from}; strict={args.strict_init} "
@@ -97,15 +109,26 @@ def main() -> None:
         )
         opt = torch.optim.AdamW(model.parameters(), lr=args.lr)
     else:
-        cfg = GPTConfig(
-            vocab_size=vocab.vocab_size,
-            block_size=args.block_size,
-            n_layer=args.n_layer,
-            n_head=args.n_head,
-            n_embd=args.n_embd,
-            dropout=0.0,
-        )
-        model = GPT(cfg).to(device)
+        if args.model_type == "gpt_plus":
+            cfg = AdvancedGPTConfig(
+                vocab_size=vocab.vocab_size,
+                block_size=args.block_size,
+                n_layer=args.n_layer,
+                n_head=args.n_head,
+                n_embd=args.n_embd,
+                dropout=0.0,
+            )
+            model = AdvancedGPT(cfg).to(device)
+        else:
+            cfg = GPTConfig(
+                vocab_size=vocab.vocab_size,
+                block_size=args.block_size,
+                n_layer=args.n_layer,
+                n_head=args.n_head,
+                n_embd=args.n_embd,
+                dropout=0.0,
+            )
+            model = GPT(cfg).to(device)
         opt = torch.optim.AdamW(model.parameters(), lr=args.lr)
 
     model.train()
@@ -148,6 +171,7 @@ def main() -> None:
         {
             "model_state": model.state_dict(),
             "model_config": cfg.__dict__,
+            "arch": ("gpt_plus" if isinstance(model, AdvancedGPT) else "gpt"),
             "opt_state": opt.state_dict(),
             "iters_completed": start_iter + args.iters,
         },

@@ -23,6 +23,7 @@ from tqdm import tqdm
 from .config import TrainConfig
 from .data import CharVocab, load_bin, make_windows
 from .model import GPT, GPTConfig
+from .advanced_model import AdvancedGPT, AdvancedGPTConfig
 from .tokenizer import load_tokenizer
 
 
@@ -78,6 +79,7 @@ def parse_args() -> TrainConfig:
     p.add_argument("--dropout", type=float, default=0.1)
     p.add_argument("--tie_weights", action="store_true", help="Tie token embedding and LM head weights")
     p.add_argument("--auto_tie_weights", action="store_true", help="Enable weight tying automatically for small datasets")
+    p.add_argument("--model_type", choices=["gpt", "gpt_plus"], default="gpt", help="Choose baseline GPT or advanced accuracy-focused variant")
 
     args = p.parse_args()
     tc = TrainConfig(
@@ -105,6 +107,7 @@ def parse_args() -> TrainConfig:
         dropout=args.dropout,
         tie_weights=args.tie_weights,
         auto_tie_weights=args.auto_tie_weights,
+        model_type=args.model_type,
         resume=args.resume,
         init_from=args.init_from,
         strict_init=args.strict_init,
@@ -199,17 +202,29 @@ def main() -> None:
         except Exception:
             auto_tie = False
 
-    desired_config = GPTConfig(
-        vocab_size=vocab_size,
-        block_size=cfg.block_size,
-        n_layer=cfg.n_layer,
-        n_head=cfg.n_head,
-        n_embd=cfg.n_embd,
-        dropout=cfg.dropout,
-        tie_weights=(cfg.tie_weights or auto_tie),
-    )
-
-    model = GPT(desired_config).to(device)
+    arch = cfg.model_type if hasattr(cfg, "model_type") else "gpt"
+    if arch == "gpt_plus":
+        desired_config = AdvancedGPTConfig(
+            vocab_size=vocab_size,
+            block_size=cfg.block_size,
+            n_layer=cfg.n_layer,
+            n_head=cfg.n_head,
+            n_embd=cfg.n_embd,
+            dropout=cfg.dropout,
+            tie_weights=(cfg.tie_weights or auto_tie),
+        )
+        model = AdvancedGPT(desired_config).to(device)
+    else:
+        desired_config = GPTConfig(
+            vocab_size=vocab_size,
+            block_size=cfg.block_size,
+            n_layer=cfg.n_layer,
+            n_head=cfg.n_head,
+            n_embd=cfg.n_embd,
+            dropout=cfg.dropout,
+            tie_weights=(cfg.tie_weights or auto_tie),
+        )
+        model = GPT(desired_config).to(device)
 
     # Optionally load weights (warm start) or full state (resume)
     optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
@@ -217,9 +232,11 @@ def main() -> None:
         ckpt = torch.load(resume_path, map_location="cpu")
         ckpt_cfg = ckpt.get("model_config")
         assert ckpt_cfg, "Checkpoint missing model_config"
-        diffs = _diff_model_configs(ckpt_cfg, desired_config)
-        if diffs:
-            raise ValueError(f"Cannot resume: model config mismatch {diffs}")
+        ckpt_arch = ckpt.get("arch", "gpt")
+        if ckpt_arch != arch:
+            raise ValueError(f"Cannot resume: arch mismatch ckpt={ckpt_arch} vs requested={arch}")
+        if ckpt_cfg != desired_config.__dict__:
+            raise ValueError("Cannot resume: model config mismatch with checkpoint")
         model.load_state_dict(ckpt["model_state"], strict=True)
         if "opt_state" in ckpt:
             optimizer.load_state_dict(ckpt["opt_state"])
@@ -229,13 +246,16 @@ def main() -> None:
         ckpt = torch.load(init_from_path, map_location="cpu")
         ckpt_cfg = ckpt.get("model_config")
         assert ckpt_cfg, "Checkpoint missing model_config"
-        diffs = _diff_model_configs(ckpt_cfg, desired_config)
-        if diffs and cfg.strict_init:
-            raise ValueError(
-                "Warm start strict mode: model config mismatch. "
-                f"Pass --no_strict_init to allow partial load. Diffs: {diffs}"
-            )
-        missing, unexpected = model.load_state_dict(ckpt["model_state"], strict=cfg.strict_init)
+        ckpt_arch = ckpt.get("arch", "gpt")
+        if cfg.strict_init:
+            if ckpt_arch != arch or ckpt_cfg != desired_config.__dict__:
+                raise ValueError(
+                    "Warm start strict mode: model/arch mismatch. "
+                    "Pass --no_strict_init to allow partial load."
+                )
+            missing, unexpected = model.load_state_dict(ckpt["model_state"], strict=True)
+        else:
+            missing, unexpected = model.load_state_dict(ckpt["model_state"], strict=False)
         print(
             f"Warm-started from {init_from_path}; strict={cfg.strict_init} "
             f"missing={len(missing)} unexpected={len(unexpected)}"
@@ -309,6 +329,7 @@ def main() -> None:
                 ckpt = {
                     "model_state": model.state_dict(),
                     "model_config": desired_config.__dict__,
+                    "arch": arch,
                     "mode": cfg.mode,
                     "tokenizer_path": cfg.tokenizer_path,
                     "char_vocab_path": str(data_dir / "vocab.json") if cfg.mode == "char" else None,
@@ -322,6 +343,7 @@ def main() -> None:
             ckpt = {
                 "model_state": model.state_dict(),
                 "model_config": desired_config.__dict__,
+                "arch": arch,
                 "mode": cfg.mode,
                 "tokenizer_path": cfg.tokenizer_path,
                 "char_vocab_path": str(data_dir / "vocab.json") if cfg.mode == "char" else None,

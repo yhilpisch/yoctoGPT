@@ -5,6 +5,7 @@ Minimal GPT from scratch in PyTorch. Supports:
 - Character-level training and sampling
 - Token-level training with a BPE tokenizer (falls back to simple word-level if unavailable)
 - A tiny REPL-style chat interface on top of the sampler
+- Two model variants: baseline GPT and an accuracy-focused AdvancedGPT
 
 The default example corpus is `data/philosophy.txt`. Replace it with your own
 text to experiment.
@@ -50,6 +51,7 @@ PY
 python - <<'PY'
 import yoctoGPT
 from yoctoGPT.model import GPT, GPTConfig
+from yoctoGPT.advanced_model import AdvancedGPT, AdvancedGPTConfig  # optional
 print('yoctoGPT version:', getattr(yoctoGPT, '__version__', 'unknown'))
 cfg = GPTConfig(vocab_size=100)
 model = GPT(cfg)
@@ -69,6 +71,27 @@ The aim of yoctoGPT is to provide a compact, readable, end-to-end GPT implementa
 - Checkpointing: warm start (`--init_from`) and full resume (`--resume`); when resuming, `--max_iters` means additional steps and the progress bar reflects total steps.
 - Educational, not production: defaults favor clarity over speed; easy to extend.
 
+### Model Variants
+
+yoctoGPT now offers two selectable architectures:
+
+- `gpt` (default): the original minimal GPT with learned positional embeddings and GELU MLP.
+- `gpt_plus`: an accuracy‑focused variant with Rotary Positional Embeddings (RoPE), RMSNorm, biasless Linear layers, SwiGLU MLP, and stabilized initialization/residual scaling. Intended to improve validation loss on small/mid‑size setups while remaining compact and readable.
+
+Select the variant at train time via `--model_type` and it will be recorded in the checkpoint. The chat utility auto‑detects it on load.
+
+### Why AdvancedGPT
+
+- RoPE: rotary positions improve inductive bias and longer‑context generalization; typically yields small but consistent validation‑loss/perplexity gains, especially when eval context approaches or exceeds train context.
+- RMSNorm + biasless linears: stabilizes optimization and reduces gradient noise; often enables slightly higher learning rates and modest val‑loss improvements versus LayerNorm + biased linears.
+- SwiGLU MLP: gated feed‑forward increases expressivity at similar FLOPs; commonly observed 1–3% relative perplexity improvements on small/mid models.
+
+### Choosing a Variant
+
+- Prefer `gpt` when: you want the smallest, most readable reference; are teaching/learning the basics; need maximum simplicity and compatibility with older checkpoints/scripts; or are running on very limited hardware and value minimalism over small quality gains.
+- Prefer `gpt_plus` when: you care about lower validation loss at similar model sizes; want better behavior at longer contexts; or expect slightly more stable training. It uses the same CLI and data pipeline, but you should train new checkpoints for this architecture.
+- Warm starting across variants: technically possible with `--no_strict_init` as long as dims/vocab match, but quality depends on overlap and is not guaranteed. For best results, train from scratch for the chosen variant.
+
 ## Quickstart
 
 1) Prepare data (char-level):
@@ -81,6 +104,12 @@ python -m scripts.prepare_char_data --text_path data/philosophy.txt --out_dir da
 
 ```
 python -m yoctoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char --n_layer 4 --n_head 4 --n_embd 256 --block_size 256 --batch_size 64 --max_iters 2000
+```
+
+Use the accuracy‑focused variant:
+
+```
+python -m yoctoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char_plus --model_type gpt_plus --n_layer 4 --n_head 4 --n_embd 256 --block_size 256 --batch_size 64 --max_iters 2000
 ```
 
 3) Sample (char-level):
@@ -123,6 +152,12 @@ python -m scripts.prepare_tokenizer --all_txt_in_dir --text_dir data --out_dir d
 python -m yoctoGPT.train --mode token --data_dir data/token --tokenizer_path data/token/tokenizer.json --ckpt_dir checkpoints/token --n_layer 6 --n_head 6 --n_embd 384 --block_size 256 --batch_size 64 --max_iters 5000
 ```
 
+Accuracy‑focused variant (token mode):
+
+```
+python -m yoctoGPT.train --mode token --data_dir data/token --tokenizer_path data/token/tokenizer.json --ckpt_dir checkpoints/token_plus --model_type gpt_plus --n_layer 6 --n_head 6 --n_embd 384 --block_size 256 --batch_size 64 --max_iters 5000
+```
+
 3) Sample:
 
 ```
@@ -134,6 +169,9 @@ python -m yoctoGPT.sampler --mode token --ckpt checkpoints/token/latest.pt --tok
 ```
 python -m yoctoGPT.chat --mode token --ckpt checkpoints/token/latest.pt --tokenizer_path data/token/tokenizer.json --system_prompt "You are yoctoGPT, a helpful assistant."
 ```
+
+Notes:
+- Chat auto‑detects the architecture from the checkpoint (`arch` field). No extra flags are required whether the checkpoint is `gpt` or `gpt_plus`.
 
 Resume or warm-start full training:
 
@@ -150,11 +188,20 @@ python -m yoctoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints
 python -m yoctoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char --init_from checkpoints/char/best.pt --no_strict_init
 ```
 
+Architecture compatibility:
+
+```
+# When resuming, the checkpoint's architecture must match the requested one.
+# For AdvancedGPT checkpoints, add --model_type gpt_plus when training.
+python -m yoctoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char_plus --resume checkpoints/char_plus/latest.pt --model_type gpt_plus --max_iters 1000
+```
+
 ## Notes
 
 - The implementation prioritizes readability and minimalism over speed.
 - Default tokenization uses a BPE tokenizer (via `tokenizers`); a simple word-level fallback is available.
 - Checkpoints store model state and enough metadata to reload the encoder.
+- Checkpoints also store the architecture under `arch` ("gpt" or "gpt_plus").
 - Prompts in smoke tests are normalized to characters present in the corpus to
   avoid unknown-character errors in char-level mode.
 

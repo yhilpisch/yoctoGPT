@@ -29,6 +29,7 @@ import torch
 
 from yoctoGPT.data import CharVocab
 from yoctoGPT.model import GPT, GPTConfig
+from yoctoGPT.advanced_model import AdvancedGPT, AdvancedGPTConfig
 
 
 def parse_args():
@@ -43,6 +44,7 @@ def parse_args():
     p.add_argument("--temperature", type=float, default=1.0)
     p.add_argument("--top_k", type=int, default=0)
     p.add_argument("--top_p", type=float, default=0.0)
+    p.add_argument("--model_type", choices=["gpt", "gpt_plus"], default="gpt")
     return p.parse_args()
 
 
@@ -59,15 +61,26 @@ def main() -> None:
     vocab_size = vocab.vocab_size
 
     # 2) Tiny GPT config; keep small for quick CPU run
-    cfg = GPTConfig(
-        vocab_size=vocab_size,
-        block_size=args.block_size,
-        n_layer=args.n_layer,
-        n_head=args.n_head,
-        n_embd=args.n_embd,
-        dropout=0.0,
-    )
-    model = GPT(cfg)
+    if args.model_type == "gpt_plus":
+        cfg = AdvancedGPTConfig(
+            vocab_size=vocab_size,
+            block_size=args.block_size,
+            n_layer=args.n_layer,
+            n_head=args.n_head,
+            n_embd=args.n_embd,
+            dropout=0.0,
+        )
+        model = AdvancedGPT(cfg)
+    else:
+        cfg = GPTConfig(
+            vocab_size=vocab_size,
+            block_size=args.block_size,
+            n_layer=args.n_layer,
+            n_head=args.n_head,
+            n_embd=args.n_embd,
+            dropout=0.0,
+        )
+        model = GPT(cfg)
     model.eval()  # sampling mode
 
     # 3) Encode prompt (sanitize to known chars) and generate on CPU

@@ -16,6 +16,7 @@ import torch
 
 from .data import CharVocab
 from .model import GPT, GPTConfig
+from .advanced_model import AdvancedGPT, AdvancedGPTConfig
 from .tokenizer import load_tokenizer
 
 
@@ -37,7 +38,11 @@ def parse_args():
 def main() -> None:
     args = parse_args()
     ckpt = torch.load(args.ckpt, map_location="cpu")
-    model = GPT(GPTConfig(**ckpt["model_config"]))
+    arch = ckpt.get("arch", "gpt")
+    if arch == "gpt_plus":
+        model = AdvancedGPT(AdvancedGPTConfig(**ckpt["model_config"]))
+    else:
+        model = GPT(GPTConfig(**ckpt["model_config"]))
     model.load_state_dict(ckpt["model_state"])
     model.eval()
 
