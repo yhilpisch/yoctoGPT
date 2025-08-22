@@ -11,6 +11,7 @@ import argparse
 import json
 import math
 import os
+import copy
 import csv
 import time
 from pathlib import Path
@@ -82,6 +83,12 @@ def parse_args() -> TrainConfig:
     p.add_argument("--tie_weights", action="store_true", help="Tie token embedding and LM head weights")
     p.add_argument("--auto_tie_weights", action="store_true", help="Enable weight tying automatically for small datasets")
     p.add_argument("--model_type", choices=["gpt", "gpt_plus"], default="gpt", help="Choose baseline GPT or advanced accuracy-focused variant")
+    # EMA options
+    p.add_argument("--ema", action="store_true", help="Track an exponential moving average of weights")
+    p.add_argument("--ema_decay", type=float, default=0.999, help="EMA decay (closer to 1.0 = slower updates)")
+    p.add_argument("--ema_eval", action="store_true", help="Use EMA weights for evaluation and best checkpoint")
+    p.add_argument("--no_ema_eval", dest="ema_eval", action="store_false")
+    p.set_defaults(ema_eval=True)
 
     args = p.parse_args()
     tc = TrainConfig(
@@ -110,6 +117,9 @@ def parse_args() -> TrainConfig:
         tie_weights=args.tie_weights,
         auto_tie_weights=args.auto_tie_weights,
         model_type=args.model_type,
+        ema=args.ema,
+        ema_decay=args.ema_decay,
+        ema_eval=args.ema_eval,
         resume=args.resume,
         init_from=args.init_from,
         strict_init=args.strict_init,
@@ -229,7 +239,36 @@ def main() -> None:
         model = GPT(desired_config).to(device)
 
     # Optionally load weights (warm start) or full state (resume)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
+    # Build parameter-wise weight decay groups: no decay for biases/norms/embeddings
+    def build_param_groups(m: nn.Module, weight_decay: float):
+        decay, no_decay = [], []
+        for n, p in m.named_parameters():
+            if not p.requires_grad:
+                continue
+            nd = (
+                n.endswith(".bias")
+                or ".ln" in n
+                or "ln1" in n
+                or "ln2" in n
+                or "ln_f" in n
+                or "norm" in n
+                or "tok_emb" in n
+                or "pos_emb" in n
+            )
+            (no_decay if nd else decay).append(p)
+        return [
+            {"params": decay, "weight_decay": weight_decay},
+            {"params": no_decay, "weight_decay": 0.0},
+        ]
+
+    optimizer = torch.optim.AdamW(build_param_groups(model, cfg.weight_decay), lr=cfg.lr)
+
+    # EMA model (optional)
+    ema_model = None
+    if cfg.ema:
+        ema_model = copy.deepcopy(model).to(device)
+        for p in ema_model.parameters():
+            p.requires_grad_(False)
     if resume_path:
         ckpt = torch.load(resume_path, map_location="cpu")
         ckpt_cfg = ckpt.get("model_config")
@@ -242,6 +281,8 @@ def main() -> None:
         model.load_state_dict(ckpt["model_state"], strict=True)
         if "opt_state" in ckpt:
             optimizer.load_state_dict(ckpt["opt_state"])
+        if ema_model is not None and "ema_state" in ckpt:
+            ema_model.load_state_dict(ckpt["ema_state"], strict=False)
         start_iter = int(ckpt.get("iters_completed", 0))
         print(f"Resumed from {resume_path} at iter {start_iter}")
     elif init_from_path:
@@ -258,6 +299,11 @@ def main() -> None:
             missing, unexpected = model.load_state_dict(ckpt["model_state"], strict=True)
         else:
             missing, unexpected = model.load_state_dict(ckpt["model_state"], strict=False)
+        if ema_model is not None:
+            if "ema_state" in ckpt:
+                ema_model.load_state_dict(ckpt["ema_state"], strict=False)
+            else:
+                ema_model.load_state_dict(model.state_dict(), strict=False)
         print(
             f"Warm-started from {init_from_path}; strict={cfg.strict_init} "
             f"missing={len(missing)} unexpected={len(unexpected)}"
@@ -345,6 +391,12 @@ def main() -> None:
         loss.backward()
         grad_total_norm = float(nn.utils.clip_grad_norm_(model.parameters(), cfg.grad_clip))
         optimizer.step()
+        # EMA update
+        if ema_model is not None:
+            with torch.no_grad():
+                d = float(cfg.ema_decay)
+                for p_ema, p in zip(ema_model.parameters(), model.parameters()):
+                    p_ema.data.mul_(d).add_(p.data, alpha=1.0 - d)
         # Update learning rate
         new_lr = get_lr(it + 1)
         for g in optimizer.param_groups:
@@ -358,7 +410,8 @@ def main() -> None:
             pbar.set_postfix(postfix)
 
         if (it + 1) % cfg.eval_interval == 0 or it == start_iter:
-            val_loss = evaluate(model, val_ids, cfg, device)
+            eval_model = ema_model if (cfg.ema and cfg.ema_eval and ema_model is not None) else model
+            val_loss = evaluate(eval_model, val_ids, cfg, device)
             last_val_loss = val_loss
             pbar.set_postfix({"train_loss": loss.item(), "val_loss": val_loss})
             # Save a checkpoint if improved
@@ -375,6 +428,8 @@ def main() -> None:
                     "iters_completed": it + 1,
                     "train_config": cfg.to_dict(),
                 }
+                if ema_model is not None:
+                    ckpt["ema_state"] = ema_model.state_dict()
                 torch.save(ckpt, ckpt_dir / "best.pt")
         # Optional occasional save of the latest state
         if (it + 1) % max(1, cfg.eval_interval // 2) == 0:
@@ -389,6 +444,8 @@ def main() -> None:
                 "iters_completed": it + 1,
                 "train_config": cfg.to_dict(),
             }
+            if ema_model is not None:
+                ckpt["ema_state"] = ema_model.state_dict()
             torch.save(ckpt, ckpt_dir / "latest.pt")
 
         # Append metrics row
@@ -411,7 +468,8 @@ def main() -> None:
             )
 
     # Ensure a final evaluation at the end regardless of eval_interval
-    final_val = evaluate(model, val_ids, cfg, device)
+    final_eval_model = ema_model if (cfg.ema and cfg.ema_eval and ema_model is not None) else model
+    final_val = evaluate(final_eval_model, val_ids, cfg, device)
     print({"final_val_loss": final_val})
     # Append a final metrics row capturing final validation
     try:

@@ -68,6 +68,10 @@ class TrainConfig:
     tie_weights: bool = False
     auto_tie_weights: bool = False
     model_type: str = "gpt"  # "gpt" or "gpt_plus"
+    # EMA options
+    ema: bool = False
+    ema_decay: float = 0.999
+    ema_eval: bool = True
 
     # Misc
     ckpt_dir: str = "checkpoints/run"
