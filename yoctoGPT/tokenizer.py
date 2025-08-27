@@ -156,17 +156,14 @@ class BPETokenizer:
         from tokenizers import Tokenizer as HFTokenizer
         from tokenizers.models import BPE
         from tokenizers.trainers import BpeTrainer
-        from tokenizers.pre_tokenizers import Whitespace
-        try:
-            from tokenizers.normalizers import Lowercase
-            normalizer = Lowercase()
-        except Exception:
-            normalizer = None
+        from tokenizers.pre_tokenizers import ByteLevel
+        from tokenizers.decoders import ByteLevel as ByteLevelDecoder
 
+        # Use ByteLevel pre-tokenization/decoder to ensure proper reconstruction
         tok = HFTokenizer(BPE(unk_token=TOKEN_UNK))
-        if normalizer is not None:
-            tok.normalizer = normalizer
-        tok.pre_tokenizer = Whitespace()
+        # Preserve original casing; do not lowercase to avoid losing capitalization
+        tok.pre_tokenizer = ByteLevel(add_prefix_space=True)
+        tok.decoder = ByteLevelDecoder()
         trainer = BpeTrainer(
             vocab_size=vocab_size,
             special_tokens=[TOKEN_UNK, TOKEN_BOS, TOKEN_EOS],

@@ -5,7 +5,7 @@ Minimal GPT from scratch in PyTorch. Supports:
 - Character-level training and sampling
 - Token-level training with a BPE tokenizer (falls back to simple word-level if unavailable)
 - A tiny REPL-style chat interface on top of the sampler
-- Two model variants: baseline GPT and an accuracy-focused AdvancedGPT
+- Three model variants: baseline GPT, an accuracy-focused AdvancedGPT, and a speed-focused GPT Fast
 
 The default example corpus is `data/philosophy.txt`. Replace it with your own
 text to experiment.
@@ -52,6 +52,7 @@ python - <<'PY'
 import yoctoGPT
 from yoctoGPT.model import GPT, GPTConfig
 from yoctoGPT.advanced_model import AdvancedGPT, AdvancedGPTConfig  # optional
+from yoctoGPT.performance_model import PerformanceGPT, PerformanceGPTConfig  # optional
 print('yoctoGPT version:', getattr(yoctoGPT, '__version__', 'unknown'))
 cfg = GPTConfig(vocab_size=100)
 model = GPT(cfg)
@@ -73,12 +74,13 @@ The aim of yoctoGPT is to provide a compact, readable, end-to-end GPT implementa
 
 ### Model Variants
 
-yoctoGPT now offers two selectable architectures:
+yoctoGPT offers three selectable architectures:
 
 - `gpt` (default): the original minimal GPT with learned positional embeddings and GELU MLP.
 - `gpt_plus`: an accuracy‑focused variant with Rotary Positional Embeddings (RoPE), RMSNorm, biasless Linear layers, SwiGLU MLP, and stabilized initialization/residual scaling. Intended to improve validation loss on small/mid‑size setups while remaining compact and readable.
+- `gpt_fast`: a performance‑focused variant that uses PyTorch scaled dot‑product attention (Flash/SDPA where available) and biasless Linear layers to improve training and inference throughput with minimal accuracy changes.
 
-Select the variant at train time via `--model_type` and it will be recorded in the checkpoint. The chat utility auto‑detects it on load.
+Select the variant at train time via `--model_type` and it will be recorded in the checkpoint. The chat and sampler utilities auto‑detect it on load.
 
 ### Why AdvancedGPT
 
@@ -90,6 +92,7 @@ Select the variant at train time via `--model_type` and it will be recorded in t
 
 - Prefer `gpt` when: you want the smallest, most readable reference; are teaching/learning the basics; need maximum simplicity and compatibility with older checkpoints/scripts; or are running on very limited hardware and value minimalism over small quality gains.
 - Prefer `gpt_plus` when: you care about lower validation loss at similar model sizes; want better behavior at longer contexts; or expect slightly more stable training. It uses the same CLI and data pipeline, but you should train new checkpoints for this architecture.
+- Prefer `gpt_fast` when: you want faster training/inference on supported PyTorch backends (Flash/SDPA), with minimal changes to model behavior. Useful for quick experiments and throughput‑sensitive runs.
 - Warm starting across variants: technically possible with `--no_strict_init` as long as dims/vocab match, but quality depends on overlap and is not guaranteed. For best results, train from scratch for the chosen variant.
 
 ## Quickstart
@@ -158,6 +161,12 @@ Accuracy‑focused variant (token mode):
 python -m yoctoGPT.train --mode token --data_dir data/token --tokenizer_path data/token/tokenizer.json --ckpt_dir checkpoints/token_plus --model_type gpt_plus --n_layer 6 --n_head 6 --n_embd 384 --block_size 256 --batch_size 64 --max_iters 5000
 ```
 
+Speed‑focused variant (token mode):
+
+```
+python -m yoctoGPT.train --mode token --data_dir data/token --tokenizer_path data/token/tokenizer.json --ckpt_dir checkpoints/token_fast --model_type gpt_fast --n_layer 6 --n_head 6 --n_embd 384 --block_size 256 --batch_size 64 --max_iters 5000
+```
+
 3) Sample:
 
 ```
@@ -171,7 +180,7 @@ python -m yoctoGPT.chat --mode token --ckpt checkpoints/token/latest.pt --tokeni
 ```
 
 Notes:
-- Chat auto‑detects the architecture from the checkpoint (`arch` field). No extra flags are required whether the checkpoint is `gpt` or `gpt_plus`.
+- Chat auto‑detects the architecture from the checkpoint (`arch` field). No extra flags are required whether the checkpoint is `gpt`, `gpt_plus`, or `gpt_fast`.
 
 Resume or warm-start full training:
 
@@ -201,7 +210,7 @@ python -m yoctoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints
 - The implementation prioritizes readability and minimalism over speed.
 - Default tokenization uses a BPE tokenizer (via `tokenizers`); a simple word-level fallback is available.
 - Checkpoints store model state and enough metadata to reload the encoder.
-- Checkpoints also store the architecture under `arch` ("gpt" or "gpt_plus").
+- Checkpoints also store the architecture under `arch` ("gpt", "gpt_plus", or "gpt_fast").
 - Prompts in smoke tests are normalized to characters present in the corpus to
   avoid unknown-character errors in char-level mode.
 
@@ -293,6 +302,16 @@ python scripts/train_smoke_test.py --init_from checkpoints/smoke/latest.pt --ite
   - `iter, train_loss, val_loss, lr, time_sec, tokens_seen, throughput_tps, grad_norm`.
   - A `run_meta.json` is written once with training/model configs, device, parameter count, and tokens per step.
 - The training smoke test also writes `metrics.csv` (without validation columns) in the same folder as its `--ckpt` path.
+
+## Performance Tips
+
+- Use `gpt_fast`: Train with `--model_type gpt_fast` to enable PyTorch scaled dot‑product attention (Flash/SDPA backends where available) and biasless linears for higher throughput.
+- Keep PyTorch current: SDPA/Flash backends improve across releases. Prefer a recent PyTorch (>= 2.1) for best kernels on CUDA and MPS.
+- Enable TF32 on Ampere/Hopper (CUDA): Add this once at program start to speed up matmuls with negligible quality impact:
+  - `torch.set_float32_matmul_precision("high")`
+- Mixed precision (advanced): Training with AMP (`torch.autocast`) in `bfloat16` (preferred where supported) or `float16` can accelerate compute and reduce memory. Not wired into the trainer by default; advanced users can wrap the forward/backward pass.
+- Tune sequence/batch trade‑off: Throughput is reported in `metrics.csv`. For a fixed tokens/step (`batch_size × block_size`), try moderate sequence lengths to find the fastest setting on your hardware.
+- Device choice: On Apple Silicon, MPS is preferred by default; on NVIDIA, CUDA is preferred. You can override via `--device`.
 
 ## Apple Silicon (MPS)
 

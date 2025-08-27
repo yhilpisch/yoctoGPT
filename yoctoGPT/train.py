@@ -27,6 +27,7 @@ from .config import TrainConfig
 from .data import CharVocab, load_bin, make_windows
 from .model import GPT, GPTConfig
 from .advanced_model import AdvancedGPT, AdvancedGPTConfig
+from .performance_model import PerformanceGPT, PerformanceGPTConfig
 from .tokenizer import load_tokenizer
 
 
@@ -82,7 +83,7 @@ def parse_args() -> TrainConfig:
     p.add_argument("--dropout", type=float, default=0.1)
     p.add_argument("--tie_weights", action="store_true", help="Tie token embedding and LM head weights")
     p.add_argument("--auto_tie_weights", action="store_true", help="Enable weight tying automatically for small datasets")
-    p.add_argument("--model_type", choices=["gpt", "gpt_plus"], default="gpt", help="Choose baseline GPT or advanced accuracy-focused variant")
+    p.add_argument("--model_type", choices=["gpt", "gpt_plus", "gpt_fast"], default="gpt", help="Choose baseline, advanced (accuracy), or fast (SDPA) variant")
     # EMA options
     p.add_argument("--ema", action="store_true", help="Track an exponential moving average of weights")
     p.add_argument("--ema_decay", type=float, default=0.999, help="EMA decay (closer to 1.0 = slower updates)")
@@ -226,6 +227,17 @@ def main() -> None:
             tie_weights=(cfg.tie_weights or auto_tie),
         )
         model = AdvancedGPT(desired_config).to(device)
+    elif arch == "gpt_fast":
+        desired_config = PerformanceGPTConfig(
+            vocab_size=vocab_size,
+            block_size=cfg.block_size,
+            n_layer=cfg.n_layer,
+            n_head=cfg.n_head,
+            n_embd=cfg.n_embd,
+            dropout=cfg.dropout,
+            tie_weights=(cfg.tie_weights or auto_tie),
+        )
+        model = PerformanceGPT(desired_config).to(device)
     else:
         desired_config = GPTConfig(
             vocab_size=vocab_size,
@@ -318,6 +330,7 @@ def main() -> None:
         "iter",
         "train_loss",
         "val_loss",
+        "best_val_loss",
         "lr",
         "time_sec",
         "tokens_seen",
@@ -452,18 +465,23 @@ def main() -> None:
         elapsed = time.time() - start_wall
         tokens_seen = (it + 1 - start_iter) * tokens_per_step
         tps = tokens_seen / max(elapsed, 1e-9)
+        # Round times/throughput to integers for readability
+        time_sec_out = int(round(elapsed))
+        tps_out = int(round(tps))
+        best_val_out = "" if best_val == float("inf") else round(float(best_val), 5)
         with metrics_path.open("a", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=metrics_fields)
             writer.writerow(
                 {
                     "iter": it + 1,
-                    "train_loss": float(loss.item()),
-                    "val_loss": float(last_val_loss) if last_val_loss is not None else "",
-                    "lr": float(new_lr),
-                    "time_sec": float(elapsed),
+                    "train_loss": round(float(loss.item()), 5),
+                    "val_loss": round(float(last_val_loss), 5) if last_val_loss is not None else "",
+                    "best_val_loss": best_val_out,
+                    "lr": round(float(new_lr), 5),
+                    "time_sec": time_sec_out,
                     "tokens_seen": int(tokens_seen),
-                    "throughput_tps": float(tps),
-                    "grad_norm": float(grad_total_norm),
+                    "throughput_tps": tps_out,
+                    "grad_norm": round(float(grad_total_norm), 5),
                 }
             )
 
@@ -476,17 +494,21 @@ def main() -> None:
         elapsed = time.time() - start_wall
         tokens_seen = (end_iter - start_iter) * tokens_per_step
         tps = tokens_seen / max(elapsed, 1e-9)
+        time_sec_out = int(round(elapsed))
+        tps_out = int(round(tps))
+        best_val_out = "" if best_val == float("inf") else round(float(best_val), 5)
         with metrics_path.open("a", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=metrics_fields)
             writer.writerow(
                 {
                     "iter": end_iter,
                     "train_loss": "",
-                    "val_loss": float(final_val),
-                    "lr": float(get_lr(end_iter)),
-                    "time_sec": float(elapsed),
+                    "val_loss": round(float(final_val), 5),
+                    "best_val_loss": best_val_out,
+                    "lr": round(float(get_lr(end_iter)), 5),
+                    "time_sec": time_sec_out,
                     "tokens_seen": int(tokens_seen),
-                    "throughput_tps": float(tps),
+                    "throughput_tps": tps_out,
                     "grad_norm": "",
                 }
             )

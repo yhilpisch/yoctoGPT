@@ -12,3 +12,5 @@ data/token/tokenizer.json
 *.txt
 *.csv
 .ipynb_checkpoints/
+*.json
+*.bin

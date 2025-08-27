@@ -14,6 +14,7 @@ import torch
 from .data import CharVocab
 from .model import GPT, GPTConfig
 from .advanced_model import AdvancedGPT, AdvancedGPTConfig
+from .performance_model import PerformanceGPT, PerformanceGPTConfig
 from .tokenizer import load_tokenizer
 
 
@@ -40,6 +41,8 @@ def main() -> None:
     arch = ckpt.get("arch", "gpt")
     if arch == "gpt_plus":
         model = AdvancedGPT(AdvancedGPTConfig(**ckpt["model_config"]))
+    elif arch == "gpt_fast":
+        model = PerformanceGPT(PerformanceGPTConfig(**ckpt["model_config"]))
     else:
         model = GPT(GPTConfig(**ckpt["model_config"]))
     model.load_state_dict(ckpt["model_state"])

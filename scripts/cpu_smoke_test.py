@@ -30,6 +30,7 @@ import torch
 from yoctoGPT.data import CharVocab
 from yoctoGPT.model import GPT, GPTConfig
 from yoctoGPT.advanced_model import AdvancedGPT, AdvancedGPTConfig
+from yoctoGPT.performance_model import PerformanceGPT, PerformanceGPTConfig
 
 
 def parse_args():
@@ -44,7 +45,7 @@ def parse_args():
     p.add_argument("--temperature", type=float, default=1.0)
     p.add_argument("--top_k", type=int, default=0)
     p.add_argument("--top_p", type=float, default=0.0)
-    p.add_argument("--model_type", choices=["gpt", "gpt_plus"], default="gpt")
+    p.add_argument("--model_type", choices=["gpt", "gpt_plus", "gpt_fast"], default="gpt")
     return p.parse_args()
 
 
@@ -71,6 +72,16 @@ def main() -> None:
             dropout=0.0,
         )
         model = AdvancedGPT(cfg)
+    elif args.model_type == "gpt_fast":
+        cfg = PerformanceGPTConfig(
+            vocab_size=vocab_size,
+            block_size=args.block_size,
+            n_layer=args.n_layer,
+            n_head=args.n_head,
+            n_embd=args.n_embd,
+            dropout=0.0,
+        )
+        model = PerformanceGPT(cfg)
     else:
         cfg = GPTConfig(
             vocab_size=vocab_size,

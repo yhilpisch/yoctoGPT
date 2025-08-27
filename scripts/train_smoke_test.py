@@ -27,6 +27,7 @@ if ROOT not in sys.path:
 from yoctoGPT.data import CharVocab
 from yoctoGPT.model import GPT, GPTConfig
 from yoctoGPT.advanced_model import AdvancedGPT, AdvancedGPTConfig
+from yoctoGPT.performance_model import PerformanceGPT, PerformanceGPTConfig
 
 
 def detect_device(explicit: str | None = None) -> str:
@@ -57,7 +58,7 @@ def parse_args():
     p.add_argument("--strict_init", dest="strict_init", action="store_true")
     p.add_argument("--no_strict_init", dest="strict_init", action="store_false")
     p.set_defaults(strict_init=True)
-    p.add_argument("--model_type", choices=["gpt", "gpt_plus"], default="gpt", help="Select baseline or advanced variant")
+    p.add_argument("--model_type", choices=["gpt", "gpt_plus", "gpt_fast"], default="gpt", help="Select baseline, advanced, or fast variant")
     return p.parse_args()
 
 
@@ -86,6 +87,9 @@ def main() -> None:
         if arch == "gpt_plus":
             cfg = AdvancedGPTConfig(**ckpt["model_config"])
             model = AdvancedGPT(cfg).to(device)
+        elif arch == "gpt_fast":
+            cfg = PerformanceGPTConfig(**ckpt["model_config"])
+            model = PerformanceGPT(cfg).to(device)
         else:
             cfg = GPTConfig(**ckpt["model_config"])
             model = GPT(cfg).to(device)
@@ -101,6 +105,9 @@ def main() -> None:
         if arch == "gpt_plus":
             cfg = AdvancedGPTConfig(**ckpt["model_config"])
             model = AdvancedGPT(cfg).to(device)
+        elif arch == "gpt_fast":
+            cfg = PerformanceGPTConfig(**ckpt["model_config"])
+            model = PerformanceGPT(cfg).to(device)
         else:
             cfg = GPTConfig(**ckpt["model_config"])
             model = GPT(cfg).to(device)
@@ -121,6 +128,16 @@ def main() -> None:
                 dropout=0.0,
             )
             model = AdvancedGPT(cfg).to(device)
+        elif args.model_type == "gpt_fast":
+            cfg = PerformanceGPTConfig(
+                vocab_size=vocab.vocab_size,
+                block_size=args.block_size,
+                n_layer=args.n_layer,
+                n_head=args.n_head,
+                n_embd=args.n_embd,
+                dropout=0.0,
+            )
+            model = PerformanceGPT(cfg).to(device)
         else:
             cfg = GPTConfig(
                 vocab_size=vocab.vocab_size,
@@ -158,16 +175,18 @@ def main() -> None:
         elapsed = time.time() - start_wall
         tokens_seen = (it - start_iter) * tokens_per_step
         tps = tokens_seen / max(elapsed, 1e-9)
+        time_sec_out = int(round(elapsed))
+        tps_out = int(round(tps))
         with metrics_path.open("a", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=fields)
             writer.writerow(
                 {
                     "iter": it,
-                    "train_loss": float(loss.item()),
-                    "lr": float(args.lr),
-                    "time_sec": float(elapsed),
+                    "train_loss": round(float(loss.item()), 5),
+                    "lr": round(float(args.lr), 5),
+                    "time_sec": time_sec_out,
                     "tokens_seen": int(tokens_seen),
-                    "throughput_tps": float(tps),
+                    "throughput_tps": tps_out,
                 }
             )
 
