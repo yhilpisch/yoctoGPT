@@ -330,7 +330,11 @@ def main() -> None:
         "iter",
         "train_loss",
         "val_loss",
+        "val_loss_raw",
+        "val_loss_ema",
         "best_val_loss",
+        "best_val_loss_raw",
+        "best_val_loss_ema",
         "lr",
         "time_sec",
         "tokens_seen",
@@ -370,7 +374,11 @@ def main() -> None:
         desc="training",
     )
     best_val = float("inf")
-    last_val_loss = None  # remember last validation loss for display between evals
+    best_val_raw = float("inf")
+    best_val_ema = float("inf")
+    last_val_loss = None  # metric used for display (raw or ema)
+    last_val_loss_raw = None
+    last_val_loss_ema = None
 
     # LR scheduling helpers
     base_lr = cfg.lr
@@ -423,13 +431,24 @@ def main() -> None:
             pbar.set_postfix(postfix)
 
         if (it + 1) % cfg.eval_interval == 0 or it == start_iter:
-            eval_model = ema_model if (cfg.ema and cfg.ema_eval and ema_model is not None) else model
-            val_loss = evaluate(eval_model, val_ids, cfg, device)
-            last_val_loss = val_loss
+            # Compute both raw and EMA validation losses when possible
+            val_raw = evaluate(model, val_ids, cfg, device)
+            val_ema = evaluate(ema_model, val_ids, cfg, device) if ema_model is not None else None
+            use_ema = bool(cfg.ema and cfg.ema_eval and (val_ema is not None))
+            val_loss = val_ema if use_ema else val_raw
+            # Track last values
+            last_val_loss_raw = float(val_raw)
+            last_val_loss_ema = float(val_ema) if val_ema is not None else None
+            last_val_loss = float(val_loss)
             pbar.set_postfix({"train_loss": loss.item(), "val_loss": val_loss})
-            # Save a checkpoint if improved
+            # Update best trackers
+            if val_raw < best_val_raw:
+                best_val_raw = float(val_raw)
+            if val_ema is not None and val_ema < best_val_ema:
+                best_val_ema = float(val_ema)
+            # Save a checkpoint if primary val improved
             if val_loss < best_val:
-                best_val = val_loss
+                best_val = float(val_loss)
                 ckpt = {
                     "model_state": model.state_dict(),
                     "model_config": desired_config.__dict__,
@@ -476,7 +495,11 @@ def main() -> None:
                     "iter": it + 1,
                     "train_loss": round(float(loss.item()), 5),
                     "val_loss": round(float(last_val_loss), 5) if last_val_loss is not None else "",
+                    "val_loss_raw": round(float(last_val_loss_raw), 5) if last_val_loss_raw is not None else "",
+                    "val_loss_ema": round(float(last_val_loss_ema), 5) if last_val_loss_ema is not None else "",
                     "best_val_loss": best_val_out,
+                    "best_val_loss_raw": (round(float(best_val_raw), 5) if best_val_raw != float("inf") else ""),
+                    "best_val_loss_ema": (round(float(best_val_ema), 5) if best_val_ema != float("inf") else ""),
                     "lr": round(float(new_lr), 5),
                     "time_sec": time_sec_out,
                     "tokens_seen": int(tokens_seen),
@@ -486,8 +509,11 @@ def main() -> None:
             )
 
     # Ensure a final evaluation at the end regardless of eval_interval
-    final_eval_model = ema_model if (cfg.ema and cfg.ema_eval and ema_model is not None) else model
-    final_val = evaluate(final_eval_model, val_ids, cfg, device)
+    # Final evaluation on raw and EMA
+    final_val_raw = evaluate(model, val_ids, cfg, device)
+    final_val_ema = evaluate(ema_model, val_ids, cfg, device) if ema_model is not None else None
+    use_ema_final = bool(cfg.ema and cfg.ema_eval and (final_val_ema is not None))
+    final_val = final_val_ema if use_ema_final else final_val_raw
     print({"final_val_loss": final_val})
     # Append a final metrics row capturing final validation
     try:
@@ -504,7 +530,11 @@ def main() -> None:
                     "iter": end_iter,
                     "train_loss": "",
                     "val_loss": round(float(final_val), 5),
+                    "val_loss_raw": round(float(final_val_raw), 5) if final_val_raw is not None else "",
+                    "val_loss_ema": round(float(final_val_ema), 5) if final_val_ema is not None else "",
                     "best_val_loss": best_val_out,
+                    "best_val_loss_raw": (round(float(best_val_raw), 5) if best_val_raw != float("inf") else ""),
+                    "best_val_loss_ema": (round(float(best_val_ema), 5) if best_val_ema != float("inf") else ""),
                     "lr": round(float(get_lr(end_iter)), 5),
                     "time_sec": time_sec_out,
                     "tokens_seen": int(tokens_seen),

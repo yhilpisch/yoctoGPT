@@ -299,7 +299,8 @@ python scripts/train_smoke_test.py --init_from checkpoints/smoke/latest.pt --ite
 ## Metrics Logging
 
 - Training (`yoctoGPT.train`) writes a CSV log to the checkpoint directory as `metrics.csv` with columns:
-  - `iter, train_loss, val_loss, lr, time_sec, tokens_seen, throughput_tps, grad_norm`.
+  - `iter, train_loss, val_loss, val_loss_raw, val_loss_ema, best_val_loss, best_val_loss_raw, best_val_loss_ema, lr, time_sec, tokens_seen, throughput_tps, grad_norm`.
+  - `val_loss` reflects the metric used for checkpoint selection (`val_loss_ema` when EMA evaluation is enabled, otherwise `val_loss_raw`).
   - A `run_meta.json` is written once with training/model configs, device, parameter count, and tokens per step.
 - The training smoke test also writes `metrics.csv` (without validation columns) in the same folder as its `--ckpt` path.
 
