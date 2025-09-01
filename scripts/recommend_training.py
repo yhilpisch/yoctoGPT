@@ -23,6 +23,7 @@ import time
 
 from yoctoGPT.data import load_bin, CharVocab
 from yoctoGPT.tokenizer import load_tokenizer
+import torch
 
 
 def human(n: int) -> str:
@@ -33,7 +34,45 @@ def human(n: int) -> str:
     return f"{n}T"
 
 
-def recommend_from_counts(train_tokens: int, val_tokens: int, vocab_size: int, mode: str) -> dict:
+def detect_device(explicit: str | None = None) -> str:
+    if explicit and explicit != "auto":
+        return explicit
+    if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
+        return "mps"
+    if torch.cuda.is_available():
+        return "cuda"
+    return "cpu"
+
+
+def total_mem_gb(device: str) -> float:
+    if device == "cuda" and torch.cuda.is_available():
+        try:
+            props = torch.cuda.get_device_properties(0)
+            return float(props.total_memory) / (1024 ** 3)
+        except Exception:
+            return 12.0
+    if device == "mps":
+        return 8.0
+    return 8.0
+
+
+def target_tokens_per_step(device: str, mem_gb: float) -> int:
+    if device == "cuda":
+        if mem_gb <= 6:
+            return 8192
+        if mem_gb <= 10:
+            return 12288
+        if mem_gb <= 16:
+            return 16384
+        if mem_gb <= 24:
+            return 24576
+        return 32768
+    if device == "mps":
+        return 12288 if mem_gb <= 8 else 16384
+    return 4096
+
+
+def recommend_from_counts(train_tokens: int, val_tokens: int, vocab_size: int, mode: str, priority: str = "speed", device: str = "cpu", mem_gb: float = 8.0) -> dict:
     total = train_tokens + val_tokens
     small = train_tokens < 1_000_000
     mid = 1_000_000 <= train_tokens < 5_000_000
@@ -52,10 +91,19 @@ def recommend_from_counts(train_tokens: int, val_tokens: int, vocab_size: int, m
         dropout = 0.1
         weight_decay = 0.05
 
-    # Context vs batch: aim for ~16k tokens/step; longer context if data allows
-    target_tps = 16_384
-    block_size = 512 if train_tokens >= 500_000 else 256
-    batch_size = max(8, target_tps // block_size)
+    # Context vs batch: aim for device-aware tokens/step; prefer longer context
+    tgt_tps = target_tokens_per_step(device, mem_gb)
+    bs_candidates = [512, 256, 128]
+    if train_tokens < 300_000:
+        bs_candidates = [256, 128]
+    block_size = bs_candidates[0]
+    batch_size = max(1, tgt_tps // block_size)
+    min_batch = 8 if device in ("cuda", "mps") else 2
+    for bs in bs_candidates:
+        b = max(1, tgt_tps // bs)
+        if b >= min_batch:
+            block_size, batch_size = bs, b
+            break
 
     # Learning rate schedule
     base_lr = 2e-4 if (small or mid) else 3e-4
@@ -70,8 +118,14 @@ def recommend_from_counts(train_tokens: int, val_tokens: int, vocab_size: int, m
     tokens_per_step = batch_size * block_size
     max_iters = max(1000, int(math.ceil((coverage * train_tokens) / max(1, tokens_per_step))))
 
-    # Choose model type: default to gpt_fast for speed; user can change later
-    model_type = "gpt_fast"
+    # Choose model type based on priority
+    model_type = "gpt_fast" if priority == "speed" else "gpt_plus"
+
+    # Adjust model size up if plenty of memory and data
+    if device == "cuda" and mem_gb >= 20 and not small:
+        n_layer = max(n_layer, 8)
+        n_head = max(n_head, 8)
+        n_embd = max(n_embd, 512)
 
     return dict(
         mode=mode,
@@ -103,6 +157,9 @@ def parse_args():
     p.add_argument("--data_dir", type=str, required=True, help="Directory with train.bin and val.bin")
     p.add_argument("--tokenizer_path", type=str, default=None, help="tokenizer.json path (token mode)")
     p.add_argument("--ckpt_dir", type=str, default="/Users/yves/Temp/checkpoints/reco", help="Output checkpoint directory suggestion")
+    p.add_argument("--priority", choices=["speed", "quality"], default="speed", help="Optimize recommendation for speed (gpt_fast) or quality (gpt_plus)")
+    p.add_argument("--device", choices=["auto", "cpu", "mps", "cuda"], default="auto", help="Target device; auto-detect if not set")
+    p.add_argument("--device_mem_gb", type=float, default=None, help="Override detected device memory in GB (useful for MPS)")
     return p.parse_args()
 
 
@@ -127,7 +184,9 @@ def main() -> None:
         vocab = CharVocab.load(vocab_path)
         vocab_size = int(vocab.vocab_size)
 
-    rec = recommend_from_counts(train_tokens, val_tokens, vocab_size, args.mode)
+    device = detect_device(args.device)
+    mem = float(args.device_mem_gb) if args.device_mem_gb is not None else total_mem_gb(device)
+    rec = recommend_from_counts(train_tokens, val_tokens, vocab_size, args.mode, priority=args.priority, device=device, mem_gb=mem)
 
     ckpt_dir = args.ckpt_dir
 
@@ -144,6 +203,7 @@ def main() -> None:
         [
             f"--ckpt_dir {ckpt_dir}",
             f"--model_type {rec['model_type']}",
+            f"--device {device}",
             f"--n_layer {rec['n_layer']}",
             f"--n_head {rec['n_head']}",
             f"--n_embd {rec['n_embd']}",
@@ -170,6 +230,10 @@ def main() -> None:
     print(f"- vocab_size: {vocab_size}")
     print(f"- train tokens: {train_tokens} ({human(train_tokens)})")
     print(f"- val tokens:   {val_tokens} ({human(val_tokens)})")
+    print()
+    print("Recommendation priority:", args.priority)
+    print("Model type:", rec["model_type"]) 
+    print("Device:", device, f"(~{mem:.1f} GB)")
     print()
     print("Recommended training command:")
     train_cmd = " ".join(cmd)

@@ -167,6 +167,26 @@ Speed‑focused variant (token mode):
 python -m yoctoGPT.train --mode token --data_dir data/token --tokenizer_path data/token/tokenizer.json --ckpt_dir checkpoints/token_fast --model_type gpt_fast --n_layer 6 --n_head 6 --n_embd 384 --block_size 256 --batch_size 64 --max_iters 5000
 ```
 
+5) Recommend a training configuration from a prepared corpus:
+
+```
+# Token mode (uses tokenizer.json in the data dir). Defaults: priority=speed (gpt_fast),
+# checkpoints in /Users/yves/Temp/checkpoints/reco. Also prints a matching resume command.
+python -m scripts.recommend_training --mode token --data_dir data/token --tokenizer_path data/token/tokenizer.json
+
+# Quality‑oriented recommendation (uses gpt_plus instead of gpt_fast):
+python -m scripts.recommend_training --mode token --data_dir data/token --tokenizer_path data/token/tokenizer.json --priority quality
+
+# Char mode:
+python -m scripts.recommend_training --mode char --data_dir data/char
+
+# Device-aware tailoring (auto-detects mps/cuda/cpu and adjusts batch/context to memory):
+python -m scripts.recommend_training --mode token --data_dir data/token --tokenizer_path data/token/tokenizer.json --device auto
+
+# Override device and memory manually (e.g., MPS with 16 GB shared memory):
+python -m scripts.recommend_training --mode token --data_dir data/token --tokenizer_path data/token/tokenizer.json --device mps --device_mem_gb 16
+```
+
 3) Sample:
 
 ```

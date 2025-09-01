@@ -60,7 +60,7 @@ python -m scripts.prepare_tokenizer \
 - Multiple files (non-recursive) with randomized split (local-style paths):
 ```
 python -m scripts.prepare_tokenizer \
-  --all_txt_in_dir --text_dir /root/yoctoGPT/data/texts \
+  --all_txt_in_dir --text_dir /root/yoctoGPT/data/ \
   --out_dir   /root/yoctoGPT/data/token \
   --vocab_size 32000 \
   --random_split --split_seed 1337
