@@ -1,0 +1,16 @@
+time python -m yoctoGPT.train --mode token --data_dir data/token --tokenizer_path data/token/tokenizer.json --ckpt_dir /Users/yves/Temp/checkpoints/token --n_layer 4 --n_head 4 --n_embd 256 --block_size 128 --batch_size 32 --dropout 0.1 --weight_decay 0.05 --ema --ema_decay 0.999 --cosine_lr --warmup_iters 500 --min_lr 1e-5 --eval_interval 500 --eval_iters 250 --max_iters 25000
+
+python -m yoctoGPT.sampler --mode token --ckpt /Users/yves/Temp/checkpoints/token/best.pt --tokenizer_path data/token/tokenizer.json --prompt "Q: Humans are good at?\nA:" --max_new_tokens 200
+
+
+
+
+python -m scripts.prepare_tokenizer --text_path data/philosophy.txt --out_dir data/token1k --random_split --seed 1234--vocab_size 400
+
+--temperature 0.8 --top_k 50 --top_p 0.95
+
+
+time python -m yoctoGPT.train --mode token --data_dir data/token1k --tokenizer_path data/token1k/tokenizer.json --ckpt_dir /Users/yves/Temp/checkpoints/token1k --n_layer 3 --n_head 4 --n_embd 128 --block_size 64 --batch_size 32 --eval_interval 500 --eval_iters 100 --dropout 0.1 --weight_decay 0.05 --ema --ema_decay 0.999 --cosine_lr --warmup_iters 500 --min_lr 1e-5 --max_iters 2500
+
+
+time python -m yoctoGPT.sampler --mode token --ckpt /Users/yves/Temp/checkpoints/token1k/best.pt --tokenizer_path data/token1k/tokenizer.json --prompt "Q: What is the meaning of life?\nA:" --max_new_tokens 50
