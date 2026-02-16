@@ -35,6 +35,9 @@ def parse_args():
     p.add_argument("--backend", type=str, default="bpe", choices=["bpe", "word"], help="Tokenizer backend")
     p.add_argument("--random_split", action="store_true", help="Randomize train/val split (file-based if multiple files; chunk-based otherwise)")
     p.add_argument("--split_seed", type=int, default=1337)
+    p.add_argument("--add_bos_eos", dest="add_bos_eos", action="store_true", help="Wrap encoded examples with BOS/EOS tokens when tokenizer supports them (default)")
+    p.add_argument("--no_add_bos_eos", dest="add_bos_eos", action="store_false", help="Disable BOS/EOS wrapping")
+    p.set_defaults(add_bos_eos=True)
     return p.parse_args()
 
 
@@ -65,7 +68,10 @@ def main() -> None:
         train_ids_list = []
         val_ids_list = []
         for i, txt in enumerate(texts):
-            enc = np.array(tok.encode(txt), dtype=np.int32)
+            enc = np.array(
+                tok.encode(txt, add_bos=args.add_bos_eos, add_eos=args.add_bos_eos),
+                dtype=np.int32,
+            )
             if i in val_set:
                 val_ids_list.append(enc)
             else:
@@ -74,7 +80,10 @@ def main() -> None:
         val_ids = np.concatenate(val_ids_list) if val_ids_list else np.empty((0,), dtype=np.int32)
     else:
         # Single file or non-random split path; optionally use chunk-level shuffle
-        ids = np.array(tok.encode(text), dtype=np.int32)
+        ids = np.array(
+            tok.encode(text, add_bos=args.add_bos_eos, add_eos=args.add_bos_eos),
+            dtype=np.int32,
+        )
         if args.random_split:
             # Chunk into ~2048-token pieces and shuffle chunks before splitting
             chunk = 2048
@@ -102,6 +111,15 @@ def main() -> None:
 
     print(f"Wrote {len(train_ids)} train and {len(val_ids)} val tokens.")
     print(f"Vocab size: {tok.vocab_size}")
+    try:
+        print(
+            "BOS/EOS:",
+            f"enabled={args.add_bos_eos}",
+            f"bos_id={getattr(tok, 'bos_id', None)}",
+            f"eos_id={getattr(tok, 'eos_id', None)}",
+        )
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":

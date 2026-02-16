@@ -70,8 +70,11 @@ def main() -> None:
         tok_path = args.tokenizer_path or ckpt.get("tokenizer_path")
         assert tok_path, "Provide --tokenizer_path or ensure checkpoint stores tokenizer_path"
         tokenizer = load_tokenizer(tok_path)
-        encode = lambda s: tokenizer.encode(s)
+        eos_token = getattr(tokenizer, "eos_id", None)
+        encode = lambda s: tokenizer.encode(s, add_bos=True)
         decode = lambda ids: tokenizer.decode(ids)
+    if args.mode == "char":
+        eos_token = None
 
     # Initial context
     turns: List[str] = []
@@ -104,6 +107,7 @@ def main() -> None:
             temperature=args.temperature,
             top_k=args.top_k if args.top_k > 0 else None,
             top_p=args.top_p if args.top_p > 0 else None,
+            eos_token=eos_token,
         )[0].tolist()
 
         # Extract only the newly generated portion after the prompt

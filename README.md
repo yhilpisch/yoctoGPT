@@ -167,6 +167,11 @@ If `tokenizers` (Hugging Face) is not installed, the script falls back to a simp
 python -m scripts.prepare_tokenizer --text_path data/philosophy.txt --out_dir data/token --vocab_size 8000 --backend word
 ```
 
+BOS/EOS behavior in token mode:
+- By default, `prepare_tokenizer` encodes examples with BOS/EOS boundaries (`--add_bos_eos`).
+- Disable if needed with `--no_add_bos_eos`.
+- `yoctoGPT.sampler` and `yoctoGPT.chat` automatically use BOS priming and EOS stop when available in the tokenizer.
+
 Use multiple texts by including all `.txt` files from a directory (non-recursive):
 
 ```

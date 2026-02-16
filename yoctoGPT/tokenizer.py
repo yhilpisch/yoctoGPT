@@ -9,6 +9,7 @@ Both implementations expose the same minimal interface:
 - encode(str) -> List[int]
 - decode(List[int]) -> str
 - vocab_size: int property
+- bos_id/eos_id properties (if present in vocab)
 - save(path) / load(path)
 
 The auto-loader inspects the file and returns an appropriate tokenizer.
@@ -58,17 +59,41 @@ class WordLevelTokenizer:
     def vocab_size(self) -> int:
         return len(self.itos)
 
-    def encode(self, text: str, unknown_token: str = TOKEN_UNK) -> List[int]:
+    @property
+    def bos_id(self) -> Optional[int]:
+        return self.stoi.get(TOKEN_BOS)
+
+    @property
+    def eos_id(self) -> Optional[int]:
+        return self.stoi.get(TOKEN_EOS)
+
+    def encode(
+        self,
+        text: str,
+        unknown_token: str = TOKEN_UNK,
+        add_bos: bool = False,
+        add_eos: bool = False,
+    ) -> List[int]:
         ids: List[int] = []
         unk_id = self.stoi.get(unknown_token)
         assert unk_id is not None, "Tokenizer missing <unk> token"
+        if add_bos and self.bos_id is not None:
+            ids.append(self.bos_id)
         for tok in simple_word_tokenize(text):
             ids.append(self.stoi.get(tok, unk_id))
+        if add_eos and self.eos_id is not None:
+            ids.append(self.eos_id)
         return ids
 
     def decode(self, ids: List[int]) -> str:
         # Re-join with spaces, then clean up spacing around punctuation
-        toks = [self.itos[i] if 0 <= i < len(self.itos) else TOKEN_UNK for i in ids]
+        skip = {TOKEN_BOS, TOKEN_EOS}
+        toks = []
+        for i in ids:
+            tok = self.itos[i] if 0 <= i < len(self.itos) else TOKEN_UNK
+            if tok in skip:
+                continue
+            toks.append(tok)
         text = " ".join(toks)
         # Simple fixups: remove space before punctuation
         text = re.sub(r"\s+([,.!?;:])", r"\1", text)
@@ -133,11 +158,30 @@ class BPETokenizer:
     def vocab_size(self) -> int:
         return self._tok.get_vocab_size()
 
-    def encode(self, text: str) -> List[int]:
-        return self._tok.encode(text).ids
+    @property
+    def bos_id(self) -> Optional[int]:
+        return self._tok.token_to_id(TOKEN_BOS)
+
+    @property
+    def eos_id(self) -> Optional[int]:
+        return self._tok.token_to_id(TOKEN_EOS)
+
+    def encode(self, text: str, add_bos: bool = False, add_eos: bool = False) -> List[int]:
+        ids = list(self._tok.encode(text).ids)
+        if add_bos and self.bos_id is not None:
+            ids = [int(self.bos_id)] + ids
+        if add_eos and self.eos_id is not None:
+            ids = ids + [int(self.eos_id)]
+        return ids
 
     def decode(self, ids: List[int]) -> str:
-        return self._tok.decode(ids)
+        skip_ids = set()
+        if self.bos_id is not None:
+            skip_ids.add(int(self.bos_id))
+        if self.eos_id is not None:
+            skip_ids.add(int(self.eos_id))
+        clean = [int(i) for i in ids if int(i) not in skip_ids]
+        return self._tok.decode(clean)
 
     def save(self, path: str | Path) -> None:
         path = Path(path)
