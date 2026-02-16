@@ -193,10 +193,22 @@ python -m scripts.recommend_training --mode token --data_dir data/token --tokeni
 python -m yoctoGPT.sampler --mode token --ckpt checkpoints/token/latest.pt --tokenizer_path data/token/tokenizer.json --prompt "Q: What is knowledge?\nA:" --max_new_tokens 200
 ```
 
+Optional inference compile:
+
+```
+python -m yoctoGPT.sampler --mode token --ckpt checkpoints/token/latest.pt --tokenizer_path data/token/tokenizer.json --prompt "Q: What is knowledge?\nA:" --max_new_tokens 200 --compile
+```
+
 4) Chat:
 
 ```
 python -m yoctoGPT.chat --mode token --ckpt checkpoints/token/latest.pt --tokenizer_path data/token/tokenizer.json --system_prompt "You are yoctoGPT, a helpful assistant."
+```
+
+Optional chat compile:
+
+```
+python -m yoctoGPT.chat --mode token --ckpt checkpoints/token/latest.pt --tokenizer_path data/token/tokenizer.json --system_prompt "You are yoctoGPT, a helpful assistant." --compile
 ```
 
 Notes:
@@ -330,7 +342,9 @@ python scripts/train_smoke_test.py --init_from checkpoints/smoke/latest.pt --ite
 - Keep PyTorch current: SDPA/Flash backends improve across releases. Prefer a recent PyTorch (>= 2.1) for best kernels on CUDA and MPS.
 - Enable TF32 on Ampere/Hopper (CUDA): Add this once at program start to speed up matmuls with negligible quality impact:
   - `torch.set_float32_matmul_precision("high")`
-- Mixed precision (advanced): Training with AMP (`torch.autocast`) in `bfloat16` (preferred where supported) or `float16` can accelerate compute and reduce memory. Not wired into the trainer by default; advanced users can wrap the forward/backward pass.
+- Mixed precision: use `--amp --amp_dtype bf16` (or `fp16`) in `yoctoGPT.train` to reduce memory and improve throughput on CUDA.
+- Compile: use `--compile` in `yoctoGPT.train`, `yoctoGPT.sampler`, or `yoctoGPT.chat` to compile `model.forward` with `torch.compile` when supported.
+- KV cache: generation now uses layer-wise KV caching internally, which significantly improves long-form sampling/chat throughput.
 - Tune sequence/batch trade‑off: Throughput is reported in `metrics.csv`. For a fixed tokens/step (`batch_size × block_size`), try moderate sequence lengths to find the fastest setting on your hardware.
 - Device choice: On Apple Silicon, MPS is preferred by default; on NVIDIA, CUDA is preferred. You can override via `--device`.
 

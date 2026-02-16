@@ -80,6 +80,9 @@ class TrainConfig:
     strict_init: bool = True  # if False, allow partial warm starts (strict=False)
     seed: int = 1337
     device: Optional[str] = None  # auto-detect if None
+    amp: bool = False
+    amp_dtype: str = "bf16"  # "bf16" or "fp16" when amp is enabled
+    compile: bool = False
 
     def model_config(self, vocab_size: int) -> ModelConfig:
         """Produce a ModelConfig coupled to the provided `vocab_size`."""

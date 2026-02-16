@@ -14,6 +14,7 @@ import os
 import copy
 import csv
 import time
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Tuple
 
@@ -74,6 +75,9 @@ def parse_args() -> TrainConfig:
     p.add_argument("--warmup_iters", type=int, default=100)
     p.add_argument("--seed", type=int, default=1337)
     p.add_argument("--device", type=str, default=None)
+    p.add_argument("--amp", action="store_true", help="Enable automatic mixed precision on CUDA")
+    p.add_argument("--amp_dtype", choices=["bf16", "fp16"], default="bf16", help="Autocast dtype when --amp is enabled")
+    p.add_argument("--compile", action="store_true", help="Compile model.forward with torch.compile when available")
 
     # Model hyperparameters
     p.add_argument("--block_size", type=int, default=256)
@@ -124,6 +128,9 @@ def parse_args() -> TrainConfig:
         resume=args.resume,
         init_from=args.init_from,
         strict_init=args.strict_init,
+        amp=args.amp,
+        amp_dtype=args.amp_dtype,
+        compile=args.compile,
     )
     return tc
 
@@ -141,18 +148,31 @@ def get_batch(
     return x.to(device), y.to(device)
 
 
-def evaluate(model: GPT, ids: torch.LongTensor, cfg: TrainConfig, device: str) -> float:
+def evaluate(
+    model: GPT,
+    ids: torch.LongTensor,
+    cfg: TrainConfig,
+    device: str,
+    amp_enabled: bool = False,
+    amp_dtype: torch.dtype = torch.bfloat16,
+) -> float:
     model.eval()
     losses = []
     with torch.no_grad():
         for _ in range(cfg.eval_iters):
             xb, yb = get_batch(ids, cfg.block_size, cfg.batch_size, device)
-            logits = model(xb)
-            loss = F.cross_entropy(
-                logits.view(-1, logits.size(-1)),
-                yb.view(-1),
-                label_smoothing=cfg.label_smoothing if cfg.label_smoothing > 0 else 0.0,
+            amp_ctx = (
+                torch.autocast(device_type="cuda", dtype=amp_dtype)
+                if amp_enabled
+                else nullcontext()
             )
+            with amp_ctx:
+                logits = model(xb)
+                loss = F.cross_entropy(
+                    logits.view(-1, logits.size(-1)),
+                    yb.view(-1),
+                    label_smoothing=cfg.label_smoothing if cfg.label_smoothing > 0 else 0.0,
+                )
             losses.append(loss.item())
     model.train()
     return float(np.mean(losses))
@@ -321,6 +341,25 @@ def main() -> None:
             f"missing={len(missing)} unexpected={len(unexpected)}"
         )
 
+    # Optional compile (PyTorch 2.x): compile forward only to keep checkpoint keys stable.
+    model_train = model
+    if cfg.compile:
+        if hasattr(torch, "compile"):
+            try:
+                model_train.forward = torch.compile(model_train.forward)  # type: ignore[method-assign]
+                print("Compiled model.forward with torch.compile")
+            except Exception as e:
+                print(f"torch.compile unavailable for this run; continuing uncompiled ({e})")
+        else:
+            print("torch.compile not available in this PyTorch build; continuing uncompiled")
+
+    # AMP setup (CUDA only)
+    amp_enabled = bool(cfg.amp and device == "cuda")
+    if cfg.amp and not amp_enabled:
+        print("AMP requested but only CUDA AMP is enabled in this script; continuing in full precision")
+    amp_dtype = torch.bfloat16 if cfg.amp_dtype == "bf16" else torch.float16
+    scaler = torch.cuda.amp.GradScaler(enabled=(amp_enabled and cfg.amp_dtype == "fp16"))
+
     # Training loop
     ckpt_dir = Path(cfg.ckpt_dir)
     ckpt_dir.mkdir(parents=True, exist_ok=True)
@@ -401,17 +440,30 @@ def main() -> None:
     tokens_per_step = cfg.batch_size * cfg.block_size
     for it in pbar:
         xb, yb = get_batch(train_ids, cfg.block_size, cfg.batch_size, device)
-        logits = model(xb)
-        loss = F.cross_entropy(
-            logits.view(-1, logits.size(-1)),
-            yb.view(-1),
-            label_smoothing=cfg.label_smoothing if cfg.label_smoothing > 0 else 0.0,
+        amp_ctx = (
+            torch.autocast(device_type="cuda", dtype=amp_dtype)
+            if amp_enabled
+            else nullcontext()
         )
+        with amp_ctx:
+            logits = model_train(xb)
+            loss = F.cross_entropy(
+                logits.view(-1, logits.size(-1)),
+                yb.view(-1),
+                label_smoothing=cfg.label_smoothing if cfg.label_smoothing > 0 else 0.0,
+            )
 
         optimizer.zero_grad(set_to_none=True)
-        loss.backward()
-        grad_total_norm = float(nn.utils.clip_grad_norm_(model.parameters(), cfg.grad_clip))
-        optimizer.step()
+        if scaler.is_enabled():
+            scaler.scale(loss).backward()
+            scaler.unscale_(optimizer)
+            grad_total_norm = float(nn.utils.clip_grad_norm_(model.parameters(), cfg.grad_clip))
+            scaler.step(optimizer)
+            scaler.update()
+        else:
+            loss.backward()
+            grad_total_norm = float(nn.utils.clip_grad_norm_(model.parameters(), cfg.grad_clip))
+            optimizer.step()
         # EMA update
         if ema_model is not None:
             with torch.no_grad():
@@ -432,8 +484,12 @@ def main() -> None:
 
         if (it + 1) % cfg.eval_interval == 0 or it == start_iter:
             # Compute both raw and EMA validation losses when possible
-            val_raw = evaluate(model, val_ids, cfg, device)
-            val_ema = evaluate(ema_model, val_ids, cfg, device) if ema_model is not None else None
+            val_raw = evaluate(model_train, val_ids, cfg, device, amp_enabled=amp_enabled, amp_dtype=amp_dtype)
+            val_ema = (
+                evaluate(ema_model, val_ids, cfg, device, amp_enabled=amp_enabled, amp_dtype=amp_dtype)
+                if ema_model is not None
+                else None
+            )
             use_ema = bool(cfg.ema and cfg.ema_eval and (val_ema is not None))
             val_loss = val_ema if use_ema else val_raw
             # Track last values
@@ -510,8 +566,12 @@ def main() -> None:
 
     # Ensure a final evaluation at the end regardless of eval_interval
     # Final evaluation on raw and EMA
-    final_val_raw = evaluate(model, val_ids, cfg, device)
-    final_val_ema = evaluate(ema_model, val_ids, cfg, device) if ema_model is not None else None
+    final_val_raw = evaluate(model_train, val_ids, cfg, device, amp_enabled=amp_enabled, amp_dtype=amp_dtype)
+    final_val_ema = (
+        evaluate(ema_model, val_ids, cfg, device, amp_enabled=amp_enabled, amp_dtype=amp_dtype)
+        if ema_model is not None
+        else None
+    )
     use_ema_final = bool(cfg.ema and cfg.ema_eval and (final_val_ema is not None))
     final_val = final_val_ema if use_ema_final else final_val_raw
     print({"final_val_loss": final_val})

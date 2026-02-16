@@ -33,6 +33,7 @@ def parse_args():
     p.add_argument("--temperature", type=float, default=0.9)
     p.add_argument("--top_k", type=int, default=40)
     p.add_argument("--top_p", type=float, default=0.95)
+    p.add_argument("--compile", action="store_true", help="Compile model.forward with torch.compile if available")
     return p.parse_args()
 
 
@@ -48,6 +49,15 @@ def main() -> None:
         model = GPT(GPTConfig(**ckpt["model_config"]))
     model.load_state_dict(ckpt["model_state"])
     model.eval()
+    if args.compile:
+        if hasattr(torch, "compile"):
+            try:
+                model.forward = torch.compile(model.forward)  # type: ignore[method-assign]
+                print("Compiled model.forward with torch.compile")
+            except Exception as e:
+                print(f"torch.compile unavailable for this run; continuing uncompiled ({e})")
+        else:
+            print("torch.compile not available in this PyTorch build; continuing uncompiled")
 
     # Resolve encoding
     if args.mode == "char":
