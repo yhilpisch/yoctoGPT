@@ -375,6 +375,8 @@ python scripts/train_smoke_test.py --init_from checkpoints/smoke/latest.pt --ite
 - Mixed precision: use `--amp --amp_dtype bf16` (or `fp16`) in `yoctoGPT.train` to reduce memory and improve throughput on CUDA.
 - Single-GPU memory scaling (Colab): use `--grad_accum_steps N` to increase effective batch size with a smaller micro-batch, plus `--activation_checkpointing` to lower activation memory.
 - OOM fallback on CUDA: add `--auto_microbatch` to automatically reduce micro-batch size if a step runs out of memory.
+- Checkpoint policy: use `--save_strategy both|best|latest|none` to control checkpoint writes.
+- Early stop: use `--early_stopping_patience N` and optional `--early_stopping_min_delta` to stop when validation no longer improves.
 - Compile: use `--compile` in `yoctoGPT.train`, `yoctoGPT.sampler`, or `yoctoGPT.chat` to compile `model.forward` with `torch.compile` when supported.
 - KV cache: generation now uses layer-wise KV caching internally, which significantly improves long-form sampling/chat throughput.
 - Tune sequence/batch trade‑off: Throughput is reported in `metrics.csv`. For a fixed tokens/step (`batch_size × block_size`), try moderate sequence lengths to find the fastest setting on your hardware.

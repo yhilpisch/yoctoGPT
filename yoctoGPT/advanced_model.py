@@ -60,8 +60,8 @@ def apply_rope(
     q: torch.Tensor,
     k: torch.Tensor,
     position_ids: torch.Tensor,
-    head_dim: int,
-    base: float,
+    cos_cached: torch.Tensor,
+    sin_cached: torch.Tensor,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """Apply rotary position embeddings to q and k (pairwise interleaved dims).
 
@@ -71,14 +71,9 @@ def apply_rope(
       x2' = x1 * sin θ_t + x2 * cos θ_t
     """
     B, H, T, D = q.shape
-    device = q.device
-    dtype = q.dtype
-    half = head_dim // 2
-    inv_freq = 1.0 / (base ** (torch.arange(0, head_dim, 2, device=device, dtype=dtype) / head_dim))
-    pos = position_ids.to(device=device, dtype=dtype)
-    freqs = torch.einsum("t,d->td", pos, inv_freq)  # (T, half)
-    cos = torch.cos(freqs).view(1, 1, T, half)
-    sin = torch.sin(freqs).view(1, 1, T, half)
+    half = D // 2
+    cos = cos_cached.index_select(0, position_ids).to(dtype=q.dtype).view(1, 1, T, half)
+    sin = sin_cached.index_select(0, position_ids).to(dtype=q.dtype).view(1, 1, T, half)
 
     def _apply(x: torch.Tensor) -> torch.Tensor:
         x = x.view(B, H, T, half, 2)
@@ -110,6 +105,18 @@ class CausalSelfAttention(nn.Module):
 
         mask = torch.tril(torch.ones(config.block_size, config.block_size)).view(1, 1, config.block_size, config.block_size)
         self.register_buffer("mask", mask.bool())
+        if self.use_rope:
+            half = self.head_dim // 2
+            inv_freq = 1.0 / (
+                self.rope_theta
+                ** (torch.arange(0, self.head_dim, 2, dtype=torch.float32) / self.head_dim)
+            )
+            pos = torch.arange(config.block_size, dtype=torch.float32)
+            freqs = torch.einsum("t,d->td", pos, inv_freq)  # (T, half)
+            self.register_buffer("rope_cos_cached", torch.cos(freqs), persistent=False)
+            self.register_buffer("rope_sin_cached", torch.sin(freqs), persistent=False)
+            assert self.rope_cos_cached.shape == (config.block_size, half)
+            assert self.rope_sin_cached.shape == (config.block_size, half)
 
     def forward(
         self,
@@ -126,7 +133,7 @@ class CausalSelfAttention(nn.Module):
 
         if self.use_rope:
             pos_ids = torch.arange(pos_offset, pos_offset + T, device=x.device)
-            q, k = apply_rope(q, k, pos_ids, self.head_dim, self.rope_theta)
+            q, k = apply_rope(q, k, pos_ids, self.rope_cos_cached, self.rope_sin_cached)
 
         past_len = 0
         if past_kv is not None:

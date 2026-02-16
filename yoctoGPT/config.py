@@ -86,6 +86,9 @@ class TrainConfig:
     grad_accum_steps: int = 1
     activation_checkpointing: bool = False
     auto_microbatch: bool = False
+    save_strategy: str = "both"  # "both", "best", "latest", "none"
+    early_stopping_patience: int = 0  # 0 disables early stopping
+    early_stopping_min_delta: float = 0.0
 
     def model_config(self, vocab_size: int) -> ModelConfig:
         """Produce a ModelConfig coupled to the provided `vocab_size`."""

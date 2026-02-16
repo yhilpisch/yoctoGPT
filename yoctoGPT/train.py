@@ -30,6 +30,7 @@ from .model import GPT, GPTConfig
 from .advanced_model import AdvancedGPT, AdvancedGPTConfig
 from .performance_model import PerformanceGPT, PerformanceGPTConfig
 from .tokenizer import load_tokenizer
+from .optim import build_weight_decay_param_groups
 
 
 def detect_device(explicit: str | None = None) -> str:
@@ -81,6 +82,9 @@ def parse_args() -> TrainConfig:
     p.add_argument("--grad_accum_steps", type=int, default=1, help="Number of micro-steps to accumulate before optimizer step")
     p.add_argument("--activation_checkpointing", action="store_true", help="Enable activation checkpointing through transformer blocks")
     p.add_argument("--auto_microbatch", action="store_true", help="Auto-reduce micro-batch size on CUDA OOM")
+    p.add_argument("--save_strategy", choices=["both", "best", "latest", "none"], default="both", help="Checkpoint save policy")
+    p.add_argument("--early_stopping_patience", type=int, default=0, help="Stop after N evals without improvement (0 disables)")
+    p.add_argument("--early_stopping_min_delta", type=float, default=0.0, help="Minimum val-loss improvement to reset early stopping")
 
     # Model hyperparameters
     p.add_argument("--block_size", type=int, default=256)
@@ -137,6 +141,9 @@ def parse_args() -> TrainConfig:
         grad_accum_steps=max(1, int(args.grad_accum_steps)),
         activation_checkpointing=args.activation_checkpointing,
         auto_microbatch=args.auto_microbatch,
+        save_strategy=args.save_strategy,
+        early_stopping_patience=max(0, int(args.early_stopping_patience)),
+        early_stopping_min_delta=max(0.0, float(args.early_stopping_min_delta)),
     )
     return tc
 
@@ -279,29 +286,10 @@ def main() -> None:
         model = GPT(desired_config).to(device)
 
     # Optionally load weights (warm start) or full state (resume)
-    # Build parameter-wise weight decay groups: no decay for biases/norms/embeddings
-    def build_param_groups(m: nn.Module, weight_decay: float):
-        decay, no_decay = [], []
-        for n, p in m.named_parameters():
-            if not p.requires_grad:
-                continue
-            nd = (
-                n.endswith(".bias")
-                or ".ln" in n
-                or "ln1" in n
-                or "ln2" in n
-                or "ln_f" in n
-                or "norm" in n
-                or "tok_emb" in n
-                or "pos_emb" in n
-            )
-            (no_decay if nd else decay).append(p)
-        return [
-            {"params": decay, "weight_decay": weight_decay},
-            {"params": no_decay, "weight_decay": 0.0},
-        ]
-
-    optimizer = torch.optim.AdamW(build_param_groups(model, cfg.weight_decay), lr=cfg.lr)
+    optimizer = torch.optim.AdamW(
+        build_weight_decay_param_groups(model, cfg.weight_decay),
+        lr=cfg.lr,
+    )
 
     # EMA model (optional)
     ema_model = None
@@ -392,11 +380,17 @@ def main() -> None:
         "iter",
         "train_loss",
         "val_loss",
+        "val_ppl",
         "val_loss_raw",
+        "val_ppl_raw",
         "val_loss_ema",
+        "val_ppl_ema",
         "best_val_loss",
+        "best_val_ppl",
         "best_val_loss_raw",
+        "best_val_ppl_raw",
         "best_val_loss_ema",
+        "best_val_ppl_ema",
         "lr",
         "time_sec",
         "tokens_seen",
@@ -440,9 +434,32 @@ def main() -> None:
     best_val = float("inf")
     best_val_raw = float("inf")
     best_val_ema = float("inf")
+    no_improve_evals = 0
     last_val_loss = None  # metric used for display (raw or ema)
     last_val_loss_raw = None
     last_val_loss_ema = None
+    last_iter = start_iter
+
+    def to_ppl(loss_value: float | None) -> float | None:
+        if loss_value is None:
+            return None
+        return float(math.exp(min(float(loss_value), 20.0)))
+
+    def make_checkpoint(iters_completed: int) -> dict:
+        ckpt = {
+            "model_state": model.state_dict(),
+            "model_config": desired_config.__dict__,
+            "arch": arch,
+            "mode": cfg.mode,
+            "tokenizer_path": cfg.tokenizer_path,
+            "char_vocab_path": str(data_dir / "vocab.json") if cfg.mode == "char" else None,
+            "opt_state": optimizer.state_dict(),
+            "iters_completed": iters_completed,
+            "train_config": cfg.to_dict(),
+        }
+        if ema_model is not None:
+            ckpt["ema_state"] = ema_model.state_dict()
+        return ckpt
 
     # LR scheduling helpers
     base_lr = cfg.lr
@@ -464,6 +481,7 @@ def main() -> None:
     start_wall = time.time()
     tokens_per_step = current_batch_size * cfg.block_size * grad_accum_steps
     for it in pbar:
+        last_iter = it + 1
         while True:
             optimizer.zero_grad(set_to_none=True)
             micro_losses = []
@@ -565,38 +583,25 @@ def main() -> None:
             if val_ema is not None and val_ema < best_val_ema:
                 best_val_ema = float(val_ema)
             # Save a checkpoint if primary val improved
-            if val_loss < best_val:
+            improved = bool(val_loss < (best_val - float(cfg.early_stopping_min_delta)))
+            if improved:
                 best_val = float(val_loss)
-                ckpt = {
-                    "model_state": model.state_dict(),
-                    "model_config": desired_config.__dict__,
-                    "arch": arch,
-                    "mode": cfg.mode,
-                    "tokenizer_path": cfg.tokenizer_path,
-                    "char_vocab_path": str(data_dir / "vocab.json") if cfg.mode == "char" else None,
-                    "opt_state": optimizer.state_dict(),
-                    "iters_completed": it + 1,
-                    "train_config": cfg.to_dict(),
-                }
-                if ema_model is not None:
-                    ckpt["ema_state"] = ema_model.state_dict()
-                torch.save(ckpt, ckpt_dir / "best.pt")
+                no_improve_evals = 0
+                if cfg.save_strategy in ("both", "best"):
+                    torch.save(make_checkpoint(it + 1), ckpt_dir / "best.pt")
+            else:
+                no_improve_evals += 1
+            if cfg.early_stopping_patience > 0 and no_improve_evals >= cfg.early_stopping_patience:
+                print(
+                    f"Early stopping triggered at iter {it + 1}: "
+                    f"no improvement for {no_improve_evals} evals"
+                )
+                if cfg.save_strategy in ("both", "latest"):
+                    torch.save(make_checkpoint(it + 1), ckpt_dir / "latest.pt")
+                break
         # Optional occasional save of the latest state
-        if (it + 1) % max(1, cfg.eval_interval // 2) == 0:
-            ckpt = {
-                "model_state": model.state_dict(),
-                "model_config": desired_config.__dict__,
-                "arch": arch,
-                "mode": cfg.mode,
-                "tokenizer_path": cfg.tokenizer_path,
-                "char_vocab_path": str(data_dir / "vocab.json") if cfg.mode == "char" else None,
-                "opt_state": optimizer.state_dict(),
-                "iters_completed": it + 1,
-                "train_config": cfg.to_dict(),
-            }
-            if ema_model is not None:
-                ckpt["ema_state"] = ema_model.state_dict()
-            torch.save(ckpt, ckpt_dir / "latest.pt")
+        if cfg.save_strategy in ("both", "latest") and ((it + 1) % max(1, cfg.eval_interval // 2) == 0):
+            torch.save(make_checkpoint(it + 1), ckpt_dir / "latest.pt")
 
         # Append metrics row
         elapsed = time.time() - start_wall
@@ -606,6 +611,12 @@ def main() -> None:
         time_sec_out = int(round(elapsed))
         tps_out = int(round(tps))
         best_val_out = "" if best_val == float("inf") else round(float(best_val), 5)
+        best_val_ppl_out = "" if best_val == float("inf") else round(float(to_ppl(best_val)), 5)
+        val_ppl = to_ppl(last_val_loss)
+        val_ppl_raw = to_ppl(last_val_loss_raw)
+        val_ppl_ema = to_ppl(last_val_loss_ema)
+        best_val_ppl_raw = "" if best_val_raw == float("inf") else round(float(to_ppl(best_val_raw)), 5)
+        best_val_ppl_ema = "" if best_val_ema == float("inf") else round(float(to_ppl(best_val_ema)), 5)
         with metrics_path.open("a", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=metrics_fields)
             writer.writerow(
@@ -613,11 +624,17 @@ def main() -> None:
                     "iter": it + 1,
                     "train_loss": round(train_loss_out, 5),
                     "val_loss": round(float(last_val_loss), 5) if last_val_loss is not None else "",
+                    "val_ppl": round(float(val_ppl), 5) if val_ppl is not None else "",
                     "val_loss_raw": round(float(last_val_loss_raw), 5) if last_val_loss_raw is not None else "",
+                    "val_ppl_raw": round(float(val_ppl_raw), 5) if val_ppl_raw is not None else "",
                     "val_loss_ema": round(float(last_val_loss_ema), 5) if last_val_loss_ema is not None else "",
+                    "val_ppl_ema": round(float(val_ppl_ema), 5) if val_ppl_ema is not None else "",
                     "best_val_loss": best_val_out,
+                    "best_val_ppl": best_val_ppl_out,
                     "best_val_loss_raw": (round(float(best_val_raw), 5) if best_val_raw != float("inf") else ""),
+                    "best_val_ppl_raw": best_val_ppl_raw,
                     "best_val_loss_ema": (round(float(best_val_ema), 5) if best_val_ema != float("inf") else ""),
+                    "best_val_ppl_ema": best_val_ppl_ema,
                     "lr": round(float(new_lr), 5),
                     "time_sec": time_sec_out,
                     "tokens_seen": int(tokens_seen),
@@ -627,6 +644,8 @@ def main() -> None:
                     "grad_accum_steps": int(grad_accum_steps),
                 }
             )
+        if cfg.early_stopping_patience > 0 and no_improve_evals >= cfg.early_stopping_patience:
+            break
 
     # Ensure a final evaluation at the end regardless of eval_interval
     # Final evaluation on raw and EMA
@@ -658,24 +677,36 @@ def main() -> None:
     # Append a final metrics row capturing final validation
     try:
         elapsed = time.time() - start_wall
-        tokens_seen = (end_iter - start_iter) * tokens_per_step
+        tokens_seen = (last_iter - start_iter) * tokens_per_step
         tps = tokens_seen / max(elapsed, 1e-9)
         time_sec_out = int(round(elapsed))
         tps_out = int(round(tps))
         best_val_out = "" if best_val == float("inf") else round(float(best_val), 5)
+        best_val_ppl_out = "" if best_val == float("inf") else round(float(to_ppl(best_val)), 5)
+        best_val_ppl_raw = "" if best_val_raw == float("inf") else round(float(to_ppl(best_val_raw)), 5)
+        best_val_ppl_ema = "" if best_val_ema == float("inf") else round(float(to_ppl(best_val_ema)), 5)
+        final_val_ppl = to_ppl(final_val)
+        final_val_ppl_raw = to_ppl(final_val_raw)
+        final_val_ppl_ema = to_ppl(final_val_ema)
         with metrics_path.open("a", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=metrics_fields)
             writer.writerow(
                 {
-                    "iter": end_iter,
+                    "iter": last_iter,
                     "train_loss": "",
                     "val_loss": round(float(final_val), 5),
+                    "val_ppl": round(float(final_val_ppl), 5) if final_val_ppl is not None else "",
                     "val_loss_raw": round(float(final_val_raw), 5) if final_val_raw is not None else "",
+                    "val_ppl_raw": round(float(final_val_ppl_raw), 5) if final_val_ppl_raw is not None else "",
                     "val_loss_ema": round(float(final_val_ema), 5) if final_val_ema is not None else "",
+                    "val_ppl_ema": round(float(final_val_ppl_ema), 5) if final_val_ppl_ema is not None else "",
                     "best_val_loss": best_val_out,
+                    "best_val_ppl": best_val_ppl_out,
                     "best_val_loss_raw": (round(float(best_val_raw), 5) if best_val_raw != float("inf") else ""),
+                    "best_val_ppl_raw": best_val_ppl_raw,
                     "best_val_loss_ema": (round(float(best_val_ema), 5) if best_val_ema != float("inf") else ""),
-                    "lr": round(float(get_lr(end_iter)), 5),
+                    "best_val_ppl_ema": best_val_ppl_ema,
+                    "lr": round(float(get_lr(last_iter)), 5),
                     "time_sec": time_sec_out,
                     "tokens_seen": int(tokens_seen),
                     "throughput_tps": tps_out,
