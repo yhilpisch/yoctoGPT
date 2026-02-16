@@ -1,16 +1,109 @@
-__pycache__/
-*.pyc
+# -----------------------------
+# OS / Editor
+# -----------------------------
 .DS_Store
+Thumbs.db
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
+
+# -----------------------------
+# Python
+# -----------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.python-version
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# -----------------------------
+# Jupyter
+# -----------------------------
+.ipynb_checkpoints/
+
+# -----------------------------
+# Build / Packaging
+# -----------------------------
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# -----------------------------
+# Runtime logs / temp
+# -----------------------------
+*.log
+*.tmp
+tmp/
+
+# -----------------------------
+# Project-generated ML artifacts
+# -----------------------------
 checkpoints/
+*.pt
+*.pth
+*.ckpt
+
+# Prepared data artifacts
+*.bin
 data/char/*.bin
 data/token/*.bin
+data/char*/
+data/token*/
 data/char/vocab.json
 data/token/tokenizer.json
-*.pt
-*.txt
-*.csv
-.ipynb_checkpoints/
-*.json
-*.bin
+
+# Metrics / exports
+metrics.csv
+run_meta.json
+scripts/execution.txt
+
+# -----------------------------
+# LaTeX generated files
+# -----------------------------
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lol
+*.lot
+*.nav
+*.out
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+*.xdv
+*.dvi
+*.ps
+*.pdfsync
+*.pdf
+
+# -----------------------------
+# Archived / legacy local docs
+# -----------------------------
+_old/

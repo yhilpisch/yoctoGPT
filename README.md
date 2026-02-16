@@ -60,6 +60,36 @@ print('model params:', sum(p.numel() for p in model.parameters()))
 PY
 ```
 
+## GPU Server Quickstart (Ubuntu + NVIDIA)
+
+For single-node GPU runs (e.g., H100/A100/T4), use the helper script:
+
+```
+bash scripts/setup_gpu_ubuntu.sh
+source .venv/bin/activate
+```
+
+Quick CUDA check:
+
+```
+python - <<'PY'
+import torch
+print('torch', torch.__version__)
+print('cuda available:', torch.cuda.is_available())
+print('device:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'N/A')
+PY
+```
+
+Operational tips:
+- Keep data/checkpoints on fast disk and point `--data_dir` and `--ckpt_dir` there.
+- Monitor GPU: `watch -n 1 nvidia-smi`.
+- For long runs, resume with `--resume <ckpt>/latest.pt` (and `--max_iters` as additional steps).
+- On CUDA, prefer `--amp --amp_dtype bf16` plus `--grad_accum_steps`, `--activation_checkpointing`, and `--auto_microbatch` when memory is tight.
+
+Documentation policy:
+- `README.md` is the single source of truth.
+- Legacy docs are kept under `_old/`.
+
 ## Purpose and Approach
 
 The aim of yoctoGPT is to provide a compact, readable, end-to-end GPT implementation for learning and lightweight experiments.
