@@ -83,6 +83,9 @@ class TrainConfig:
     amp: bool = False
     amp_dtype: str = "bf16"  # "bf16" or "fp16" when amp is enabled
     compile: bool = False
+    grad_accum_steps: int = 1
+    activation_checkpointing: bool = False
+    auto_microbatch: bool = False
 
     def model_config(self, vocab_size: int) -> ModelConfig:
         """Produce a ModelConfig coupled to the provided `vocab_size`."""

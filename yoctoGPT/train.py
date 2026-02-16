@@ -78,6 +78,9 @@ def parse_args() -> TrainConfig:
     p.add_argument("--amp", action="store_true", help="Enable automatic mixed precision on CUDA")
     p.add_argument("--amp_dtype", choices=["bf16", "fp16"], default="bf16", help="Autocast dtype when --amp is enabled")
     p.add_argument("--compile", action="store_true", help="Compile model.forward with torch.compile when available")
+    p.add_argument("--grad_accum_steps", type=int, default=1, help="Number of micro-steps to accumulate before optimizer step")
+    p.add_argument("--activation_checkpointing", action="store_true", help="Enable activation checkpointing through transformer blocks")
+    p.add_argument("--auto_microbatch", action="store_true", help="Auto-reduce micro-batch size on CUDA OOM")
 
     # Model hyperparameters
     p.add_argument("--block_size", type=int, default=256)
@@ -131,6 +134,9 @@ def parse_args() -> TrainConfig:
         amp=args.amp,
         amp_dtype=args.amp_dtype,
         compile=args.compile,
+        grad_accum_steps=max(1, int(args.grad_accum_steps)),
+        activation_checkpointing=args.activation_checkpointing,
+        auto_microbatch=args.auto_microbatch,
     )
     return tc
 
@@ -155,12 +161,14 @@ def evaluate(
     device: str,
     amp_enabled: bool = False,
     amp_dtype: torch.dtype = torch.bfloat16,
+    batch_size_override: int | None = None,
 ) -> float:
     model.eval()
     losses = []
     with torch.no_grad():
         for _ in range(cfg.eval_iters):
-            xb, yb = get_batch(ids, cfg.block_size, cfg.batch_size, device)
+            bs = batch_size_override if batch_size_override is not None else cfg.batch_size
+            xb, yb = get_batch(ids, cfg.block_size, bs, device)
             amp_ctx = (
                 torch.autocast(device_type="cuda", dtype=amp_dtype)
                 if amp_enabled
@@ -358,7 +366,22 @@ def main() -> None:
     if cfg.amp and not amp_enabled:
         print("AMP requested but only CUDA AMP is enabled in this script; continuing in full precision")
     amp_dtype = torch.bfloat16 if cfg.amp_dtype == "bf16" else torch.float16
-    scaler = torch.cuda.amp.GradScaler(enabled=(amp_enabled and cfg.amp_dtype == "fp16"))
+    scaler_enabled = bool(amp_enabled and cfg.amp_dtype == "fp16")
+    if hasattr(torch, "amp") and hasattr(torch.amp, "GradScaler"):
+        scaler = torch.amp.GradScaler("cuda", enabled=scaler_enabled)
+    else:
+        scaler = torch.cuda.amp.GradScaler(enabled=scaler_enabled)
+    # Colab-focused memory knobs
+    setattr(model_train, "activation_checkpointing", bool(cfg.activation_checkpointing))
+    grad_accum_steps = max(1, int(cfg.grad_accum_steps))
+    current_batch_size = int(cfg.batch_size)
+    if cfg.auto_microbatch and device != "cuda":
+        print("auto_microbatch is currently CUDA-only; continuing with fixed batch_size")
+    auto_microbatch = bool(cfg.auto_microbatch and device == "cuda")
+    if grad_accum_steps > 1:
+        print(f"Using gradient accumulation: {grad_accum_steps} micro-steps per optimizer step")
+    if bool(cfg.activation_checkpointing):
+        print("Activation checkpointing enabled")
 
     # Training loop
     ckpt_dir = Path(cfg.ckpt_dir)
@@ -379,6 +402,8 @@ def main() -> None:
         "tokens_seen",
         "throughput_tps",
         "grad_norm",
+        "micro_batch_size",
+        "grad_accum_steps",
     ]
     if not metrics_path.exists():
         with metrics_path.open("w", newline="") as f:
@@ -397,7 +422,7 @@ def main() -> None:
             "train_config": cfg.to_dict(),
             "model_config": desired_config.__dict__,
             "params": param_count,
-            "tokens_per_step": cfg.batch_size * cfg.block_size,
+            "tokens_per_step": current_batch_size * cfg.block_size * grad_accum_steps,
             "created_at": time.time(),
         }
         with meta_path.open("w") as f:
@@ -437,33 +462,53 @@ def main() -> None:
         return min_lr + 0.5 * (base_lr - min_lr) * (1 + _math.cos(_math.pi * progress))
 
     start_wall = time.time()
-    tokens_per_step = cfg.batch_size * cfg.block_size
+    tokens_per_step = current_batch_size * cfg.block_size * grad_accum_steps
     for it in pbar:
-        xb, yb = get_batch(train_ids, cfg.block_size, cfg.batch_size, device)
-        amp_ctx = (
-            torch.autocast(device_type="cuda", dtype=amp_dtype)
-            if amp_enabled
-            else nullcontext()
-        )
-        with amp_ctx:
-            logits = model_train(xb)
-            loss = F.cross_entropy(
-                logits.view(-1, logits.size(-1)),
-                yb.view(-1),
-                label_smoothing=cfg.label_smoothing if cfg.label_smoothing > 0 else 0.0,
-            )
+        while True:
+            optimizer.zero_grad(set_to_none=True)
+            micro_losses = []
+            try:
+                for _ in range(grad_accum_steps):
+                    xb, yb = get_batch(train_ids, cfg.block_size, current_batch_size, device)
+                    amp_ctx = (
+                        torch.autocast(device_type="cuda", dtype=amp_dtype)
+                        if amp_enabled
+                        else nullcontext()
+                    )
+                    with amp_ctx:
+                        logits = model_train(xb)
+                        micro_loss = F.cross_entropy(
+                            logits.view(-1, logits.size(-1)),
+                            yb.view(-1),
+                            label_smoothing=cfg.label_smoothing if cfg.label_smoothing > 0 else 0.0,
+                        )
+                        loss = micro_loss / grad_accum_steps
+                    if scaler.is_enabled():
+                        scaler.scale(loss).backward()
+                    else:
+                        loss.backward()
+                    micro_losses.append(float(micro_loss.item()))
+                break
+            except RuntimeError as e:
+                oom = "out of memory" in str(e).lower()
+                if not (auto_microbatch and oom and current_batch_size > 1):
+                    raise
+                current_batch_size = max(1, current_batch_size // 2)
+                tokens_per_step = current_batch_size * cfg.block_size * grad_accum_steps
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                print(f"OOM detected; reducing micro-batch size to {current_batch_size}")
+                continue
 
-        optimizer.zero_grad(set_to_none=True)
         if scaler.is_enabled():
-            scaler.scale(loss).backward()
             scaler.unscale_(optimizer)
             grad_total_norm = float(nn.utils.clip_grad_norm_(model.parameters(), cfg.grad_clip))
             scaler.step(optimizer)
             scaler.update()
         else:
-            loss.backward()
             grad_total_norm = float(nn.utils.clip_grad_norm_(model.parameters(), cfg.grad_clip))
             optimizer.step()
+        train_loss_out = float(sum(micro_losses) / max(1, len(micro_losses)))
         # EMA update
         if ema_model is not None:
             with torch.no_grad():
@@ -477,16 +522,33 @@ def main() -> None:
 
         # Lightweight progress update: refresh train loss every 10 steps to keep tqdm current
         if (it + 1) % 10 == 0 or it == start_iter:
-            postfix = {"train_loss": loss.item()}
+            postfix = {"train_loss": train_loss_out}
             if last_val_loss is not None:
                 postfix["val_loss"] = last_val_loss
+            postfix["mbs"] = current_batch_size
             pbar.set_postfix(postfix)
 
         if (it + 1) % cfg.eval_interval == 0 or it == start_iter:
             # Compute both raw and EMA validation losses when possible
-            val_raw = evaluate(model_train, val_ids, cfg, device, amp_enabled=amp_enabled, amp_dtype=amp_dtype)
+            val_raw = evaluate(
+                model_train,
+                val_ids,
+                cfg,
+                device,
+                amp_enabled=amp_enabled,
+                amp_dtype=amp_dtype,
+                batch_size_override=current_batch_size,
+            )
             val_ema = (
-                evaluate(ema_model, val_ids, cfg, device, amp_enabled=amp_enabled, amp_dtype=amp_dtype)
+                evaluate(
+                    ema_model,
+                    val_ids,
+                    cfg,
+                    device,
+                    amp_enabled=amp_enabled,
+                    amp_dtype=amp_dtype,
+                    batch_size_override=current_batch_size,
+                )
                 if ema_model is not None
                 else None
             )
@@ -496,7 +558,7 @@ def main() -> None:
             last_val_loss_raw = float(val_raw)
             last_val_loss_ema = float(val_ema) if val_ema is not None else None
             last_val_loss = float(val_loss)
-            pbar.set_postfix({"train_loss": loss.item(), "val_loss": val_loss})
+            pbar.set_postfix({"train_loss": train_loss_out, "val_loss": val_loss, "mbs": current_batch_size})
             # Update best trackers
             if val_raw < best_val_raw:
                 best_val_raw = float(val_raw)
@@ -549,7 +611,7 @@ def main() -> None:
             writer.writerow(
                 {
                     "iter": it + 1,
-                    "train_loss": round(float(loss.item()), 5),
+                    "train_loss": round(train_loss_out, 5),
                     "val_loss": round(float(last_val_loss), 5) if last_val_loss is not None else "",
                     "val_loss_raw": round(float(last_val_loss_raw), 5) if last_val_loss_raw is not None else "",
                     "val_loss_ema": round(float(last_val_loss_ema), 5) if last_val_loss_ema is not None else "",
@@ -561,14 +623,32 @@ def main() -> None:
                     "tokens_seen": int(tokens_seen),
                     "throughput_tps": tps_out,
                     "grad_norm": round(float(grad_total_norm), 5),
+                    "micro_batch_size": int(current_batch_size),
+                    "grad_accum_steps": int(grad_accum_steps),
                 }
             )
 
     # Ensure a final evaluation at the end regardless of eval_interval
     # Final evaluation on raw and EMA
-    final_val_raw = evaluate(model_train, val_ids, cfg, device, amp_enabled=amp_enabled, amp_dtype=amp_dtype)
+    final_val_raw = evaluate(
+        model_train,
+        val_ids,
+        cfg,
+        device,
+        amp_enabled=amp_enabled,
+        amp_dtype=amp_dtype,
+        batch_size_override=current_batch_size,
+    )
     final_val_ema = (
-        evaluate(ema_model, val_ids, cfg, device, amp_enabled=amp_enabled, amp_dtype=amp_dtype)
+        evaluate(
+            ema_model,
+            val_ids,
+            cfg,
+            device,
+            amp_enabled=amp_enabled,
+            amp_dtype=amp_dtype,
+            batch_size_override=current_batch_size,
+        )
         if ema_model is not None
         else None
     )
@@ -600,6 +680,8 @@ def main() -> None:
                     "tokens_seen": int(tokens_seen),
                     "throughput_tps": tps_out,
                     "grad_norm": "",
+                    "micro_batch_size": int(current_batch_size),
+                    "grad_accum_steps": int(grad_accum_steps),
                 }
             )
     except Exception:

@@ -343,6 +343,8 @@ python scripts/train_smoke_test.py --init_from checkpoints/smoke/latest.pt --ite
 - Enable TF32 on Ampere/Hopper (CUDA): Add this once at program start to speed up matmuls with negligible quality impact:
   - `torch.set_float32_matmul_precision("high")`
 - Mixed precision: use `--amp --amp_dtype bf16` (or `fp16`) in `yoctoGPT.train` to reduce memory and improve throughput on CUDA.
+- Single-GPU memory scaling (Colab): use `--grad_accum_steps N` to increase effective batch size with a smaller micro-batch, plus `--activation_checkpointing` to lower activation memory.
+- OOM fallback on CUDA: add `--auto_microbatch` to automatically reduce micro-batch size if a step runs out of memory.
 - Compile: use `--compile` in `yoctoGPT.train`, `yoctoGPT.sampler`, or `yoctoGPT.chat` to compile `model.forward` with `torch.compile` when supported.
 - KV cache: generation now uses layer-wise KV caching internally, which significantly improves long-form sampling/chat throughput.
 - Tune sequence/batch trade‑off: Throughput is reported in `metrics.csv`. For a fixed tokens/step (`batch_size × block_size`), try moderate sequence lengths to find the fastest setting on your hardware.

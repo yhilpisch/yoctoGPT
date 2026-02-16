@@ -15,6 +15,7 @@ from typing import Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.utils.checkpoint as tckpt
 
 from .model import _top_k_top_p_mask
 
@@ -177,8 +178,17 @@ class PerformanceGPT(nn.Module):
         pos = self.pos_emb(torch.arange(pos_start, pos_start + T, device=idx.device))
         x = self.drop(tok + pos)
         presents: list[tuple[torch.Tensor, torch.Tensor]] = []
+        use_act_ckpt = bool(
+            getattr(self, "activation_checkpointing", False)
+            and self.training
+            and torch.is_grad_enabled()
+            and not use_cache
+        )
         for i, block in enumerate(self.blocks):
             layer_past = past_kv[i] if past_kv is not None else None
+            if use_act_ckpt:
+                x = tckpt.checkpoint(block, x, use_reentrant=False)
+                continue
             out = block(x, past_kv=layer_past, use_cache=use_cache)
             if use_cache:
                 assert isinstance(out, tuple)
