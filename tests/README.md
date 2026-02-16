@@ -7,8 +7,13 @@ tests.
 
 1. CPU baseline (always run)
 - `test_models_cpu.py`: model forward/backward/generate sanity for all variants
+- `test_kv_cache_cpu.py`: cache-vs-full-forward equivalence for all variants
 - `test_tokenizer.py`: BOS/EOS encode/decode behavior (word + BPE if available)
+- `test_data_cpu.py`: char vocab + windowing utility behavior
+- `test_train_cli_cpu.py`: parser coverage for training defaults and new flags
 - `test_optim.py`: weight-decay parameter-group assignment
+- `test_train_integration_cpu.py`: short `train.py` integration coverage for
+  save strategy, early stopping, resume/warm start, and metrics schema
 
 2. Apple Silicon (MPS) optional
 - `test_mps_smoke.py`: tiny forward/backward on MPS, skipped if unavailable
