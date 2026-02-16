@@ -17,11 +17,11 @@ tests.
 
 2. Apple Silicon (MPS) optional
 - `test_mps_smoke.py`: tiny forward/backward on MPS, skipped if unavailable
+- `test_mps_gated.py`: tiny generation + short `train.py` CLI smoke on MPS
 
 3. CUDA optional
-- `test_cuda_smoke.py`: tiny forward/backward + AMP path, skipped if unavailable
-- `test_train_cuda_flags.py`: short train smoke with CUDA-only flags (`--amp`,
-  `--auto_microbatch`)
+- `test_cuda_gated.py`: tiny forward/backward, AMP autocast, and short
+  `train.py` CLI smoke on CUDA
 
 ## Running
 
