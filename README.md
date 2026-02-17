@@ -158,6 +158,57 @@ Use the accuracy‑focused variant:
 python -m yoctoGPT.train --mode char --data_dir data/char --ckpt_dir checkpoints/char_plus --model_type gpt_plus --n_layer 4 --n_head 4 --n_embd 256 --block_size 256 --batch_size 64 --max_iters 2000
 ```
 
+Reference L4 profile (from `notebooks/01_yoctoGPT_small_char_corpus.ipynb`):
+
+```
+python -m yoctoGPT.train \
+  --mode char \
+  --data_dir data/char_start \
+  --ckpt_dir checkpoints/char_deeper_l4_tuned \
+  --model_type gpt_fast \
+  --n_layer 8 \
+  --n_head 8 \
+  --n_embd 512 \
+  --block_size 384 \
+  --batch_size 128 \
+  --max_iters 1500 \
+  --lr 1.2e-4 \
+  --amp \
+  --amp_dtype bf16 \
+  --eval_interval 250 \
+  --eval_iters 30 \
+  --auto_microbatch \
+  --cosine_lr \
+  --warmup_iters 100
+```
+
+Optional continuation from best checkpoint:
+
+```
+python -m yoctoGPT.train \
+  --mode char \
+  --data_dir data/char_start \
+  --ckpt_dir checkpoints/char_deeper_l4_tuned \
+  --resume checkpoints/char_deeper_l4_tuned/best.pt \
+  --model_type gpt_fast \
+  --n_layer 8 \
+  --n_head 8 \
+  --n_embd 512 \
+  --block_size 384 \
+  --batch_size 128 \
+  --max_iters 750 \
+  --lr 2e-5 \
+  --amp \
+  --amp_dtype bf16 \
+  --eval_interval 250 \
+  --eval_iters 60 \
+  --auto_microbatch \
+  --cosine_lr \
+  --warmup_iters 50 \
+  --early_stopping_patience 3 \
+  --early_stopping_min_delta 0.01
+```
+
 3) Sample (char-level):
 
 ```
