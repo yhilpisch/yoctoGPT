@@ -14,7 +14,6 @@ training and generation scripts.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Optional, Tuple
 
 import math
@@ -24,19 +23,11 @@ import torch.nn.functional as F
 import torch.utils.checkpoint as tckpt
 
 from .model import _top_k_top_p_mask
+from .config import AdvancedModelConfig
 
 
-@dataclass
-class AdvancedGPTConfig:
-    vocab_size: int
-    block_size: int = 256
-    n_layer: int = 6
-    n_head: int = 6
-    n_embd: int = 384
-    dropout: float = 0.0
-    tie_weights: bool = False
-    use_rope: bool = True
-    rope_theta: float = 10000.0
+class AdvancedGPTConfig(AdvancedModelConfig):
+    pass
 
 
 class RMSNorm(nn.Module):

@@ -3,14 +3,16 @@
 This file tracks open technical points after a fresh code review.
 
 ### 1. Training Scalability
-- **Distributed training (DDP/FSDP) is still missing**: `yoctoGPT/train.py` currently runs single-process only. Add basic `torch.distributed` initialization, rank-aware logging/checkpointing, and distributed samplers.
-- **Streaming token dataset is still missing**: `yoctoGPT/data.py` loads full `.bin` into RAM via `np.fromfile`. Add a memory-mapped dataset (`np.memmap`) path for large corpora.
+- **Status**: Addressed for current scope.
+- Adaptive token loading is now implemented: small `.bin` datasets load in-memory, larger ones use memmap (configurable via `--memmap_threshold_mb` and `--always_memmap`).
+- Minimal DDP support is available in `train.py` (torchrun-based, rank-aware logging/checkpointing, reduced eval metrics).
 
 ### 2. API Consistency
-- **Config class divergence remains**: `GPTConfig`, `AdvancedGPTConfig`, and `PerformanceGPTConfig` are separate and drift-prone. Consolidate shared fields via a common base/config adapter used by CLI entry points.
+- **Status**: Addressed.
+- `GPTConfig`, `AdvancedGPTConfig`, and `PerformanceGPTConfig` now share `ModelConfigBase` via `yoctoGPT/config.py`.
 
 ### 3. Additional Review Findings
 - (No additional open findings at this time.)
 
 ### 4. Verification Snapshot
-- Local tests pass in the provided environment: `13 passed, 6 skipped, 9 subtests passed` (pytest).
+- Local tests pass in the provided environment: `15 passed, 6 skipped, 9 subtests passed` (pytest).

@@ -2,9 +2,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import numpy as np
 import torch
 
-from yoctoGPT.data import CharVocab, make_windows
+from yoctoGPT.data import CharVocab, load_ids_adaptive, make_windows, save_ids_bin
 
 
 class TestDataCPU(unittest.TestCase):
@@ -31,6 +32,23 @@ class TestDataCPU(unittest.TestCase):
         self.assertEqual(tuple(y.shape), (3, 4))
         # Targets should be inputs shifted by one in the original sequence.
         self.assertTrue(torch.equal(y[:, :-1], x[:, 1:]))
+
+    def test_adaptive_load_threshold(self) -> None:
+        ids = np.arange(2000, dtype=np.int32)
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "ids.bin"
+            save_ids_bin(ids, p)
+
+            in_memory = load_ids_adaptive(p, memmap_threshold_mb=1024, prefer_memmap=False)
+            self.assertIsInstance(in_memory, torch.Tensor)
+
+            mmap_data = load_ids_adaptive(p, memmap_threshold_mb=0, prefer_memmap=False)
+            self.assertIsInstance(mmap_data, np.memmap)
+
+            ixs = torch.tensor([0, 10, 100], dtype=torch.long)
+            x, y = make_windows(mmap_data, block_size=8, ixs=ixs)
+            self.assertEqual(tuple(x.shape), (3, 8))
+            self.assertEqual(tuple(y.shape), (3, 8))
 
 
 if __name__ == "__main__":

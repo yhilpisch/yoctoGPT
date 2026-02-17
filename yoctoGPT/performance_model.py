@@ -9,7 +9,6 @@ Key changes for training speed (quality-neutral):
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Optional
 
 import torch
@@ -18,18 +17,11 @@ import torch.nn.functional as F
 import torch.utils.checkpoint as tckpt
 
 from .model import _top_k_top_p_mask
+from .config import PerformanceModelConfig
 
 
-@dataclass
-class PerformanceGPTConfig:
-    vocab_size: int
-    block_size: int = 256
-    n_layer: int = 6
-    n_head: int = 6
-    n_embd: int = 384
-    dropout: float = 0.0
-    tie_weights: bool = False
-    bias: bool = False  # prefer biasless linears for fusion
+class PerformanceGPTConfig(PerformanceModelConfig):
+    pass
 
 
 class CausalSelfAttention(nn.Module):

@@ -13,6 +13,9 @@ class TestTrainCliCPU(unittest.TestCase):
         self.assertEqual(cfg.save_strategy, "both")
         self.assertEqual(cfg.early_stopping_patience, 0)
         self.assertEqual(cfg.grad_accum_steps, 1)
+        self.assertEqual(cfg.memmap_threshold_mb, 128)
+        self.assertFalse(cfg.always_memmap)
+        self.assertFalse(cfg.ddp)
 
     def test_new_flags_parse(self) -> None:
         argv = [
@@ -32,6 +35,9 @@ class TestTrainCliCPU(unittest.TestCase):
             "--amp",
             "--amp_dtype",
             "fp16",
+            "--memmap_threshold_mb",
+            "42",
+            "--always_memmap",
         ]
         with patch.object(sys, "argv", argv):
             cfg = parse_args()
@@ -44,6 +50,8 @@ class TestTrainCliCPU(unittest.TestCase):
         self.assertTrue(cfg.auto_microbatch)
         self.assertTrue(cfg.amp)
         self.assertEqual(cfg.amp_dtype, "fp16")
+        self.assertEqual(cfg.memmap_threshold_mb, 42)
+        self.assertTrue(cfg.always_memmap)
 
 
 if __name__ == "__main__":

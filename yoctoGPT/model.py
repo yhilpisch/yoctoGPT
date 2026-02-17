@@ -8,7 +8,6 @@ ideas easy to follow and modify.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Optional
 
 import torch
@@ -16,18 +15,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as tckpt
 
+from .config import ModelConfigBase
 
-@dataclass
-class GPTConfig:
+class GPTConfig(ModelConfigBase):
     """Model hyperparameters defining the network architecture."""
-
-    vocab_size: int
-    block_size: int = 256
-    n_layer: int = 6
-    n_head: int = 6
-    n_embd: int = 384
-    dropout: float = 0.0
-    tie_weights: bool = False
 
 
 class CausalSelfAttention(nn.Module):

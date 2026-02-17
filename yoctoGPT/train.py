@@ -21,11 +21,13 @@ from typing import Tuple
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.distributed as dist
 from torch.nn import functional as F
+from torch.nn.parallel import DistributedDataParallel as DDP
 from tqdm import tqdm
 
 from .config import TrainConfig
-from .data import CharVocab, load_bin, make_windows
+from .data import CharVocab, TokenIdArray, load_ids_adaptive, make_windows
 from .model import GPT, GPTConfig
 from .advanced_model import AdvancedGPT, AdvancedGPTConfig
 from .performance_model import PerformanceGPT, PerformanceGPTConfig
@@ -55,6 +57,8 @@ def parse_args() -> TrainConfig:
     p.add_argument("--mode", choices=["char", "token"], default="char")
     p.add_argument("--data_dir", type=str, default="data/char")
     p.add_argument("--tokenizer_path", type=str, default=None)
+    p.add_argument("--memmap_threshold_mb", type=int, default=128, help="Use memmap loading above this dataset size (MB)")
+    p.add_argument("--always_memmap", action="store_true", help="Always load train/val .bin via numpy memmap")
     p.add_argument("--ckpt_dir", type=str, default="checkpoints/run")
     p.add_argument("--resume", type=str, default=None, help="Path to checkpoint to fully resume (model+optimizer)")
     p.add_argument("--init_from", type=str, default=None, help="Path to checkpoint to warm start (model weights only)")
@@ -85,6 +89,8 @@ def parse_args() -> TrainConfig:
     p.add_argument("--save_strategy", choices=["both", "best", "latest", "none"], default="both", help="Checkpoint save policy")
     p.add_argument("--early_stopping_patience", type=int, default=0, help="Stop after N evals without improvement (0 disables)")
     p.add_argument("--early_stopping_min_delta", type=float, default=0.0, help="Minimum val-loss improvement to reset early stopping")
+    p.add_argument("--ddp", action="store_true", help="Enable DDP (single-node multi-process via torchrun)")
+    p.add_argument("--ddp_backend", choices=["nccl", "gloo"], default=None, help="DDP backend (auto if omitted)")
 
     # Model hyperparameters
     p.add_argument("--block_size", type=int, default=256)
@@ -107,6 +113,8 @@ def parse_args() -> TrainConfig:
         mode=args.mode,
         data_dir=args.data_dir,
         tokenizer_path=args.tokenizer_path,
+        memmap_threshold_mb=max(0, int(args.memmap_threshold_mb)),
+        always_memmap=args.always_memmap,
         ckpt_dir=args.ckpt_dir,
         batch_size=args.batch_size,
         max_iters=args.max_iters,
@@ -144,6 +152,8 @@ def parse_args() -> TrainConfig:
         save_strategy=args.save_strategy,
         early_stopping_patience=max(0, int(args.early_stopping_patience)),
         early_stopping_min_delta=max(0.0, float(args.early_stopping_min_delta)),
+        ddp=args.ddp,
+        ddp_backend=args.ddp_backend,
     )
     return tc
 
@@ -154,16 +164,16 @@ def set_seed(seed: int) -> None:
 
 
 def get_batch(
-    data_ids: torch.LongTensor, block_size: int, batch_size: int, device: str
+    data_ids: TokenIdArray, block_size: int, batch_size: int, device: str
 ) -> Tuple[torch.Tensor, torch.Tensor]:
-    ixs = torch.randint(0, len(data_ids) - block_size - 1, (batch_size,))
+    ixs = torch.randint(0, int(len(data_ids)) - block_size - 1, (batch_size,))
     x, y = make_windows(data_ids, block_size, ixs)
     return x.to(device), y.to(device)
 
 
 def evaluate(
     model: GPT,
-    ids: torch.LongTensor,
+    ids: TokenIdArray,
     cfg: TrainConfig,
     device: str,
     amp_enabled: bool = False,
@@ -204,10 +214,41 @@ def _diff_model_configs(a: dict, b: GPTConfig) -> dict:
     return diffs
 
 
+def _reduce_mean_scalar(value: float, device: str, enabled: bool, world_size: int) -> float:
+    if not enabled or world_size <= 1:
+        return float(value)
+    reduce_device = device if str(device).startswith("cuda") else "cpu"
+    t = torch.tensor([float(value)], device=reduce_device, dtype=torch.float64)
+    dist.all_reduce(t, op=dist.ReduceOp.SUM)
+    t /= float(world_size)
+    return float(t.item())
+
+
 def main() -> None:
     cfg = parse_args()
-    set_seed(cfg.seed)
-    device = detect_device(cfg.device)
+    world_size = int(os.environ.get("WORLD_SIZE", "1"))
+    use_ddp = bool(cfg.ddp or world_size > 1)
+    if cfg.ddp and world_size <= 1:
+        raise RuntimeError("DDP requested but WORLD_SIZE<=1. Launch with torchrun (e.g. --nproc_per_node=2).")
+    rank = int(os.environ.get("RANK", "0"))
+    local_rank = int(os.environ.get("LOCAL_RANK", str(rank)))
+    ddp_inited = False
+    if use_ddp:
+        if not dist.is_available():
+            raise RuntimeError("DDP requested but torch.distributed is unavailable")
+        backend = cfg.ddp_backend
+        if backend is None:
+            backend = "nccl" if torch.cuda.is_available() else "gloo"
+        dist.init_process_group(backend=backend)
+        ddp_inited = True
+        if torch.cuda.is_available():
+            torch.cuda.set_device(local_rank)
+    is_master = (rank == 0)
+    set_seed(cfg.seed + rank)
+    if use_ddp and torch.cuda.is_available():
+        device = cfg.device or f"cuda:{local_rank}"
+    else:
+        device = detect_device(cfg.device)
 
     data_dir = Path(cfg.data_dir)
     train_path = data_dir / "train.bin"
@@ -217,8 +258,21 @@ def main() -> None:
     )
 
     # Load encoded datasets
-    train_ids = load_bin(train_path)
-    val_ids = load_bin(val_path)
+    train_ids = load_ids_adaptive(
+        train_path,
+        memmap_threshold_mb=cfg.memmap_threshold_mb,
+        prefer_memmap=cfg.always_memmap,
+    )
+    val_ids = load_ids_adaptive(
+        val_path,
+        memmap_threshold_mb=cfg.memmap_threshold_mb,
+        prefer_memmap=cfg.always_memmap,
+    )
+    if is_master:
+        train_backend = "memmap" if isinstance(train_ids, np.memmap) else "in-memory"
+        val_backend = "memmap" if isinstance(val_ids, np.memmap) else "in-memory"
+        print(f"Loaded train.bin with {train_backend} backend ({len(train_ids)} tokens)")
+        print(f"Loaded val.bin with {val_backend} backend ({len(val_ids)} tokens)")
 
     # Resolve vocab/tokenizer and determine vocab size
     vocab_size = None
@@ -312,7 +366,8 @@ def main() -> None:
         if ema_model is not None and "ema_state" in ckpt:
             ema_model.load_state_dict(ckpt["ema_state"], strict=False)
         start_iter = int(ckpt.get("iters_completed", 0))
-        print(f"Resumed from {resume_path} at iter {start_iter}")
+        if is_master:
+            print(f"Resumed from {resume_path} at iter {start_iter}")
     elif init_from_path:
         ckpt = torch.load(init_from_path, map_location="cpu")
         ckpt_cfg = ckpt.get("model_config")
@@ -332,27 +387,40 @@ def main() -> None:
                 ema_model.load_state_dict(ckpt["ema_state"], strict=False)
             else:
                 ema_model.load_state_dict(model.state_dict(), strict=False)
-        print(
-            f"Warm-started from {init_from_path}; strict={cfg.strict_init} "
-            f"missing={len(missing)} unexpected={len(unexpected)}"
-        )
+        if is_master:
+            print(
+                f"Warm-started from {init_from_path}; strict={cfg.strict_init} "
+                f"missing={len(missing)} unexpected={len(unexpected)}"
+            )
+
+    # Optional DDP wrap (single-node multi-process; launch with torchrun).
+    model_train: nn.Module = model
+    if use_ddp:
+        ddp_device_ids = [local_rank] if str(device).startswith("cuda") else None
+        model_train = DDP(model, device_ids=ddp_device_ids)
 
     # Optional compile (PyTorch 2.x): compile forward only to keep checkpoint keys stable.
-    model_train = model
     if cfg.compile:
-        if hasattr(torch, "compile"):
+        if use_ddp:
+            if is_master:
+                print("Skipping torch.compile in DDP mode for stability")
+        elif hasattr(torch, "compile"):
             try:
                 model_train.forward = torch.compile(model_train.forward)  # type: ignore[method-assign]
-                print("Compiled model.forward with torch.compile")
+                if is_master:
+                    print("Compiled model.forward with torch.compile")
             except Exception as e:
-                print(f"torch.compile unavailable for this run; continuing uncompiled ({e})")
+                if is_master:
+                    print(f"torch.compile unavailable for this run; continuing uncompiled ({e})")
         else:
-            print("torch.compile not available in this PyTorch build; continuing uncompiled")
+            if is_master:
+                print("torch.compile not available in this PyTorch build; continuing uncompiled")
 
     # AMP setup (CUDA only)
-    amp_enabled = bool(cfg.amp and device == "cuda")
+    amp_enabled = bool(cfg.amp and str(device).startswith("cuda"))
     if cfg.amp and not amp_enabled:
-        print("AMP requested but only CUDA AMP is enabled in this script; continuing in full precision")
+        if is_master:
+            print("AMP requested but only CUDA AMP is enabled in this script; continuing in full precision")
     amp_dtype = torch.bfloat16 if cfg.amp_dtype == "bf16" else torch.float16
     scaler_enabled = bool(amp_enabled and cfg.amp_dtype == "fp16")
     if hasattr(torch, "amp") and hasattr(torch.amp, "GradScaler"):
@@ -363,13 +431,16 @@ def main() -> None:
     setattr(model_train, "activation_checkpointing", bool(cfg.activation_checkpointing))
     grad_accum_steps = max(1, int(cfg.grad_accum_steps))
     current_batch_size = int(cfg.batch_size)
-    if cfg.auto_microbatch and device != "cuda":
-        print("auto_microbatch is currently CUDA-only; continuing with fixed batch_size")
-    auto_microbatch = bool(cfg.auto_microbatch and device == "cuda")
+    if cfg.auto_microbatch and not str(device).startswith("cuda"):
+        if is_master:
+            print("auto_microbatch is currently CUDA-only; continuing with fixed batch_size")
+    auto_microbatch = bool(cfg.auto_microbatch and str(device).startswith("cuda"))
     if grad_accum_steps > 1:
-        print(f"Using gradient accumulation: {grad_accum_steps} micro-steps per optimizer step")
+        if is_master:
+            print(f"Using gradient accumulation: {grad_accum_steps} micro-steps per optimizer step")
     if bool(cfg.activation_checkpointing):
-        print("Activation checkpointing enabled")
+        if is_master:
+            print("Activation checkpointing enabled")
 
     # Training loop
     ckpt_dir = Path(cfg.ckpt_dir)
@@ -399,13 +470,13 @@ def main() -> None:
         "micro_batch_size",
         "grad_accum_steps",
     ]
-    if not metrics_path.exists():
+    if is_master and not metrics_path.exists():
         with metrics_path.open("w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=metrics_fields)
             writer.writeheader()
     # Persist a one-time run metadata JSON for later analysis
     meta_path = ckpt_dir / "run_meta.json"
-    if not meta_path.exists():
+    if is_master and not meta_path.exists():
         try:
             param_count = int(sum(p.numel() for p in model.parameters()))
         except Exception:
@@ -430,6 +501,7 @@ def main() -> None:
         initial=start_iter,
         total=end_iter,
         desc="training",
+        disable=not is_master,
     )
     best_val = float("inf")
     best_val_raw = float("inf")
@@ -515,7 +587,8 @@ def main() -> None:
                 tokens_per_step = current_batch_size * cfg.block_size * grad_accum_steps
                 if torch.cuda.is_available():
                     torch.cuda.empty_cache()
-                print(f"OOM detected; reducing micro-batch size to {current_batch_size}")
+                if is_master:
+                    print(f"OOM detected; reducing micro-batch size to {current_batch_size}")
                 continue
 
         if scaler.is_enabled():
@@ -527,6 +600,7 @@ def main() -> None:
             grad_total_norm = float(nn.utils.clip_grad_norm_(model.parameters(), cfg.grad_clip))
             optimizer.step()
         train_loss_out = float(sum(micro_losses) / max(1, len(micro_losses)))
+        train_loss_out = _reduce_mean_scalar(train_loss_out, device, use_ddp, world_size)
         # EMA update
         if ema_model is not None:
             with torch.no_grad():
@@ -544,7 +618,8 @@ def main() -> None:
             if last_val_loss is not None:
                 postfix["val_loss"] = last_val_loss
             postfix["mbs"] = current_batch_size
-            pbar.set_postfix(postfix)
+            if is_master:
+                pbar.set_postfix(postfix)
 
         if (it + 1) % cfg.eval_interval == 0 or it == start_iter:
             # Compute both raw and EMA validation losses when possible
@@ -570,13 +645,17 @@ def main() -> None:
                 if ema_model is not None
                 else None
             )
+            val_raw = _reduce_mean_scalar(val_raw, device, use_ddp, world_size)
+            if val_ema is not None:
+                val_ema = _reduce_mean_scalar(val_ema, device, use_ddp, world_size)
             use_ema = bool(cfg.ema and cfg.ema_eval and (val_ema is not None))
             val_loss = val_ema if use_ema else val_raw
             # Track last values
             last_val_loss_raw = float(val_raw)
             last_val_loss_ema = float(val_ema) if val_ema is not None else None
             last_val_loss = float(val_loss)
-            pbar.set_postfix({"train_loss": train_loss_out, "val_loss": val_loss, "mbs": current_batch_size})
+            if is_master:
+                pbar.set_postfix({"train_loss": train_loss_out, "val_loss": val_loss, "mbs": current_batch_size})
             # Update best trackers
             if val_raw < best_val_raw:
                 best_val_raw = float(val_raw)
@@ -587,20 +666,21 @@ def main() -> None:
             if improved:
                 best_val = float(val_loss)
                 no_improve_evals = 0
-                if cfg.save_strategy in ("both", "best"):
+                if is_master and cfg.save_strategy in ("both", "best"):
                     torch.save(make_checkpoint(it + 1), ckpt_dir / "best.pt")
             else:
                 no_improve_evals += 1
             if cfg.early_stopping_patience > 0 and no_improve_evals >= cfg.early_stopping_patience:
-                print(
-                    f"Early stopping triggered at iter {it + 1}: "
-                    f"no improvement for {no_improve_evals} evals"
-                )
-                if cfg.save_strategy in ("both", "latest"):
+                if is_master:
+                    print(
+                        f"Early stopping triggered at iter {it + 1}: "
+                        f"no improvement for {no_improve_evals} evals"
+                    )
+                if is_master and cfg.save_strategy in ("both", "latest"):
                     torch.save(make_checkpoint(it + 1), ckpt_dir / "latest.pt")
                 break
         # Optional occasional save of the latest state
-        if cfg.save_strategy in ("both", "latest") and ((it + 1) % max(1, cfg.eval_interval // 2) == 0):
+        if is_master and cfg.save_strategy in ("both", "latest") and ((it + 1) % max(1, cfg.eval_interval // 2) == 0):
             torch.save(make_checkpoint(it + 1), ckpt_dir / "latest.pt")
 
         # Append metrics row
@@ -617,33 +697,34 @@ def main() -> None:
         val_ppl_ema = to_ppl(last_val_loss_ema)
         best_val_ppl_raw = "" if best_val_raw == float("inf") else round(float(to_ppl(best_val_raw)), 5)
         best_val_ppl_ema = "" if best_val_ema == float("inf") else round(float(to_ppl(best_val_ema)), 5)
-        with metrics_path.open("a", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=metrics_fields)
-            writer.writerow(
-                {
-                    "iter": it + 1,
-                    "train_loss": round(train_loss_out, 5),
-                    "val_loss": round(float(last_val_loss), 5) if last_val_loss is not None else "",
-                    "val_ppl": round(float(val_ppl), 5) if val_ppl is not None else "",
-                    "val_loss_raw": round(float(last_val_loss_raw), 5) if last_val_loss_raw is not None else "",
-                    "val_ppl_raw": round(float(val_ppl_raw), 5) if val_ppl_raw is not None else "",
-                    "val_loss_ema": round(float(last_val_loss_ema), 5) if last_val_loss_ema is not None else "",
-                    "val_ppl_ema": round(float(val_ppl_ema), 5) if val_ppl_ema is not None else "",
-                    "best_val_loss": best_val_out,
-                    "best_val_ppl": best_val_ppl_out,
-                    "best_val_loss_raw": (round(float(best_val_raw), 5) if best_val_raw != float("inf") else ""),
-                    "best_val_ppl_raw": best_val_ppl_raw,
-                    "best_val_loss_ema": (round(float(best_val_ema), 5) if best_val_ema != float("inf") else ""),
-                    "best_val_ppl_ema": best_val_ppl_ema,
-                    "lr": round(float(new_lr), 5),
-                    "time_sec": time_sec_out,
-                    "tokens_seen": int(tokens_seen),
-                    "throughput_tps": tps_out,
-                    "grad_norm": round(float(grad_total_norm), 5),
-                    "micro_batch_size": int(current_batch_size),
-                    "grad_accum_steps": int(grad_accum_steps),
-                }
-            )
+        if is_master:
+            with metrics_path.open("a", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=metrics_fields)
+                writer.writerow(
+                    {
+                        "iter": it + 1,
+                        "train_loss": round(train_loss_out, 5),
+                        "val_loss": round(float(last_val_loss), 5) if last_val_loss is not None else "",
+                        "val_ppl": round(float(val_ppl), 5) if val_ppl is not None else "",
+                        "val_loss_raw": round(float(last_val_loss_raw), 5) if last_val_loss_raw is not None else "",
+                        "val_ppl_raw": round(float(val_ppl_raw), 5) if val_ppl_raw is not None else "",
+                        "val_loss_ema": round(float(last_val_loss_ema), 5) if last_val_loss_ema is not None else "",
+                        "val_ppl_ema": round(float(val_ppl_ema), 5) if val_ppl_ema is not None else "",
+                        "best_val_loss": best_val_out,
+                        "best_val_ppl": best_val_ppl_out,
+                        "best_val_loss_raw": (round(float(best_val_raw), 5) if best_val_raw != float("inf") else ""),
+                        "best_val_ppl_raw": best_val_ppl_raw,
+                        "best_val_loss_ema": (round(float(best_val_ema), 5) if best_val_ema != float("inf") else ""),
+                        "best_val_ppl_ema": best_val_ppl_ema,
+                        "lr": round(float(new_lr), 5),
+                        "time_sec": time_sec_out,
+                        "tokens_seen": int(tokens_seen),
+                        "throughput_tps": tps_out,
+                        "grad_norm": round(float(grad_total_norm), 5),
+                        "micro_batch_size": int(current_batch_size),
+                        "grad_accum_steps": int(grad_accum_steps),
+                    }
+                )
         if cfg.early_stopping_patience > 0 and no_improve_evals >= cfg.early_stopping_patience:
             break
 
@@ -671,9 +752,13 @@ def main() -> None:
         if ema_model is not None
         else None
     )
+    final_val_raw = _reduce_mean_scalar(final_val_raw, device, use_ddp, world_size)
+    if final_val_ema is not None:
+        final_val_ema = _reduce_mean_scalar(final_val_ema, device, use_ddp, world_size)
     use_ema_final = bool(cfg.ema and cfg.ema_eval and (final_val_ema is not None))
     final_val = final_val_ema if use_ema_final else final_val_raw
-    print({"final_val_loss": final_val})
+    if is_master:
+        print({"final_val_loss": final_val})
     # Append a final metrics row capturing final validation
     try:
         elapsed = time.time() - start_wall
@@ -688,35 +773,39 @@ def main() -> None:
         final_val_ppl = to_ppl(final_val)
         final_val_ppl_raw = to_ppl(final_val_raw)
         final_val_ppl_ema = to_ppl(final_val_ema)
-        with metrics_path.open("a", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=metrics_fields)
-            writer.writerow(
-                {
-                    "iter": last_iter,
-                    "train_loss": "",
-                    "val_loss": round(float(final_val), 5),
-                    "val_ppl": round(float(final_val_ppl), 5) if final_val_ppl is not None else "",
-                    "val_loss_raw": round(float(final_val_raw), 5) if final_val_raw is not None else "",
-                    "val_ppl_raw": round(float(final_val_ppl_raw), 5) if final_val_ppl_raw is not None else "",
-                    "val_loss_ema": round(float(final_val_ema), 5) if final_val_ema is not None else "",
-                    "val_ppl_ema": round(float(final_val_ppl_ema), 5) if final_val_ppl_ema is not None else "",
-                    "best_val_loss": best_val_out,
-                    "best_val_ppl": best_val_ppl_out,
-                    "best_val_loss_raw": (round(float(best_val_raw), 5) if best_val_raw != float("inf") else ""),
-                    "best_val_ppl_raw": best_val_ppl_raw,
-                    "best_val_loss_ema": (round(float(best_val_ema), 5) if best_val_ema != float("inf") else ""),
-                    "best_val_ppl_ema": best_val_ppl_ema,
-                    "lr": round(float(get_lr(last_iter)), 5),
-                    "time_sec": time_sec_out,
-                    "tokens_seen": int(tokens_seen),
-                    "throughput_tps": tps_out,
-                    "grad_norm": "",
-                    "micro_batch_size": int(current_batch_size),
-                    "grad_accum_steps": int(grad_accum_steps),
-                }
-            )
+        if is_master:
+            with metrics_path.open("a", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=metrics_fields)
+                writer.writerow(
+                    {
+                        "iter": last_iter,
+                        "train_loss": "",
+                        "val_loss": round(float(final_val), 5),
+                        "val_ppl": round(float(final_val_ppl), 5) if final_val_ppl is not None else "",
+                        "val_loss_raw": round(float(final_val_raw), 5) if final_val_raw is not None else "",
+                        "val_ppl_raw": round(float(final_val_ppl_raw), 5) if final_val_ppl_raw is not None else "",
+                        "val_loss_ema": round(float(final_val_ema), 5) if final_val_ema is not None else "",
+                        "val_ppl_ema": round(float(final_val_ppl_ema), 5) if final_val_ppl_ema is not None else "",
+                        "best_val_loss": best_val_out,
+                        "best_val_ppl": best_val_ppl_out,
+                        "best_val_loss_raw": (round(float(best_val_raw), 5) if best_val_raw != float("inf") else ""),
+                        "best_val_ppl_raw": best_val_ppl_raw,
+                        "best_val_loss_ema": (round(float(best_val_ema), 5) if best_val_ema != float("inf") else ""),
+                        "best_val_ppl_ema": best_val_ppl_ema,
+                        "lr": round(float(get_lr(last_iter)), 5),
+                        "time_sec": time_sec_out,
+                        "tokens_seen": int(tokens_seen),
+                        "throughput_tps": tps_out,
+                        "grad_norm": "",
+                        "micro_batch_size": int(current_batch_size),
+                        "grad_accum_steps": int(grad_accum_steps),
+                    }
+                )
     except Exception:
         pass
+
+    if ddp_inited:
+        dist.destroy_process_group()
 
 
 if __name__ == "__main__":

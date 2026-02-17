@@ -13,8 +13,8 @@ from typing import Optional
 
 
 @dataclass
-class ModelConfig:
-    """Configuration for the GPT model architecture.
+class ModelConfigBase:
+    """Shared configuration fields for GPT-family model architectures.
 
     - vocab_size: Number of discrete input/output tokens.
     - block_size: Maximum context length (sequence length) the model can see.
@@ -30,6 +30,27 @@ class ModelConfig:
     n_head: int = 6
     n_embd: int = 384
     dropout: float = 0.0
+    tie_weights: bool = False
+
+
+@dataclass
+class ModelConfig(ModelConfigBase):
+    """Baseline GPT config (backward-compatible alias)."""
+
+
+@dataclass
+class AdvancedModelConfig(ModelConfigBase):
+    """Advanced GPT variant config (RoPE + RMSNorm + SwiGLU)."""
+
+    use_rope: bool = True
+    rope_theta: float = 10000.0
+
+
+@dataclass
+class PerformanceModelConfig(ModelConfigBase):
+    """Performance GPT variant config (SDPA-focused)."""
+
+    bias: bool = False
 
 
 @dataclass
@@ -45,6 +66,8 @@ class TrainConfig:
     data_dir: str = "data/char"
     tokenizer_path: Optional[str] = None  # required for token mode
     vocab_json: Optional[str] = None  # path to char vocab.json (auto-detected)
+    memmap_threshold_mb: int = 128  # use memmap above this dataset size
+    always_memmap: bool = False
 
     # Training
     batch_size: int = 64
@@ -89,6 +112,8 @@ class TrainConfig:
     save_strategy: str = "both"  # "both", "best", "latest", "none"
     early_stopping_patience: int = 0  # 0 disables early stopping
     early_stopping_min_delta: float = 0.0
+    ddp: bool = False
+    ddp_backend: Optional[str] = None  # auto if None; otherwise "nccl" or "gloo"
 
     def model_config(self, vocab_size: int) -> ModelConfig:
         """Produce a ModelConfig coupled to the provided `vocab_size`."""
@@ -100,6 +125,7 @@ class TrainConfig:
             n_head=self.n_head,
             n_embd=self.n_embd,
             dropout=self.dropout,
+            tie_weights=self.tie_weights,
         )
 
     def to_dict(self):  # convenience for checkpoint serialization

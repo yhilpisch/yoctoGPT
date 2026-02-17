@@ -4,11 +4,17 @@ import types
 import torch
 
 from yoctoGPT.advanced_model import AdvancedGPT, AdvancedGPTConfig
+from yoctoGPT.config import ModelConfigBase
 from yoctoGPT.model import GPT, GPTConfig
 from yoctoGPT.performance_model import PerformanceGPT, PerformanceGPTConfig
 
 
 class TestModelsCPU(unittest.TestCase):
+    def test_model_configs_share_base(self) -> None:
+        self.assertTrue(issubclass(GPTConfig, ModelConfigBase))
+        self.assertTrue(issubclass(AdvancedGPTConfig, ModelConfigBase))
+        self.assertTrue(issubclass(PerformanceGPTConfig, ModelConfigBase))
+
     def test_forward_backward_and_generate_cpu(self) -> None:
         torch.manual_seed(7)
         batch = 2
