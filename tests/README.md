@@ -36,3 +36,12 @@ Run only CPU baseline:
 ```bash
 python3 -m unittest tests.test_models_cpu tests.test_tokenizer tests.test_optim -v
 ```
+
+Convenience Make targets (repo root):
+
+```bash
+make test-cpu-fast
+make test-mps
+make test-cuda
+make test-all
+```

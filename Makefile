@@ -1,4 +1,4 @@
-PYTHON ?= python3
+PYTHON ?= python
 
 .PHONY: test-all test-cpu-fast test-mps test-cuda
 
