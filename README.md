@@ -139,6 +139,13 @@ Optional sanitization for cleaner illustration datasets (reduces unusual charact
 python -m scripts.prepare_char_data --text_path data/philosophy.txt --out_dir data/char_clean --sanitize_chars basic --collapse_whitespace --lowercase
 ```
 
+Remove punctuation entirely (or keep only `.` as sentence boundary marker):
+
+```
+python -m scripts.prepare_char_data --text_path data/philosophy.txt --out_dir data/char_nopunct --sanitize_chars ascii --no_punctuation --collapse_whitespace --lowercase
+python -m scripts.prepare_char_data --text_path data/philosophy.txt --out_dir data/char_period --sanitize_chars ascii --no_punctuation --keep_period --collapse_whitespace --lowercase
+```
+
 2) Train (char-level):
 
 ```

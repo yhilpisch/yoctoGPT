@@ -63,6 +63,28 @@ class TestDataCPU(unittest.TestCase):
         self.assertNotIn("#", basic)
         self.assertNotIn("\t", basic)
 
+    def test_char_corpus_remove_punctuation_flags(self) -> None:
+        src = "Hello, world! Is this working? Yes: maybe."
+        no_punct = sanitize_text_for_char_corpus(
+            src,
+            mode="ascii",
+            lowercase=True,
+            collapse_whitespace=True,
+            remove_punctuation=True,
+            keep_period=False,
+        )
+        self.assertEqual(no_punct, "hello world is this working yes maybe")
+
+        keep_period = sanitize_text_for_char_corpus(
+            src,
+            mode="ascii",
+            lowercase=True,
+            collapse_whitespace=True,
+            remove_punctuation=True,
+            keep_period=True,
+        )
+        self.assertEqual(keep_period, "hello world . is this working . yes maybe .")
+
 
 if __name__ == "__main__":
     unittest.main()

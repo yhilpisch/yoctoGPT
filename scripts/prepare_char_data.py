@@ -39,6 +39,12 @@ def parse_args():
         action="store_true",
         help="Collapse repeated spaces/tabs and large blank-line runs",
     )
+    p.add_argument("--no_punctuation", action="store_true", help="Remove punctuation from corpus text")
+    p.add_argument(
+        "--keep_period",
+        action="store_true",
+        help="When --no_punctuation is set, keep sentence boundaries via '.'",
+    )
     return p.parse_args()
 
 
@@ -51,6 +57,8 @@ def main() -> None:
         mode=args.sanitize_chars,
         lowercase=args.lowercase,
         collapse_whitespace=args.collapse_whitespace,
+        remove_punctuation=args.no_punctuation,
+        keep_period=args.keep_period,
     )
     if not text:
         raise ValueError("Prepared corpus is empty after sanitization; relax --sanitize_chars settings")
@@ -80,6 +88,8 @@ def main() -> None:
             f"mode={args.sanitize_chars}",
             f"lowercase={args.lowercase}",
             f"collapse_whitespace={args.collapse_whitespace}",
+            f"no_punctuation={args.no_punctuation}",
+            f"keep_period={args.keep_period}",
             f"vocab_before={original_vocab_size}",
             f"vocab_after={vocab.vocab_size}",
         )

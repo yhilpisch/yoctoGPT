@@ -28,6 +28,8 @@ def sanitize_text_for_char_corpus(
     mode: str = "none",
     lowercase: bool = False,
     collapse_whitespace: bool = False,
+    remove_punctuation: bool = False,
+    keep_period: bool = False,
 ) -> str:
     """Optionally sanitize text before char-level vocab construction.
 
@@ -48,6 +50,16 @@ def sanitize_text_for_char_corpus(
     if mode == "basic":
         allowed = set(string.ascii_letters + string.digits + " \t\n.,;:!?\"'()-[]")
         cleaned = "".join(ch if ch in allowed else " " for ch in cleaned)
+
+    if remove_punctuation:
+        if keep_period:
+            # Preserve sentence boundaries with a single period token.
+            cleaned = re.sub(r"[.!?]+", " . ", cleaned)
+            punct_to_remove = "".join(ch for ch in string.punctuation if ch != ".")
+        else:
+            punct_to_remove = string.punctuation
+        trans = str.maketrans({ch: " " for ch in punct_to_remove})
+        cleaned = cleaned.translate(trans)
 
     cleaned = cleaned.replace("\r\n", "\n").replace("\r", "\n")
     if collapse_whitespace:
