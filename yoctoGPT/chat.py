@@ -33,12 +33,24 @@ def parse_args():
     p.add_argument("--temperature", type=float, default=0.9)
     p.add_argument("--top_k", type=int, default=40)
     p.add_argument("--top_p", type=float, default=0.95)
+    p.add_argument("--device", type=str, default=None, help="Device for inference: cpu, cuda, or mps (auto if omitted)")
     p.add_argument("--compile", action="store_true", help="Compile model.forward with torch.compile if available")
     return p.parse_args()
 
 
+def detect_device(explicit: str | None = None) -> str:
+    if explicit:
+        return explicit
+    if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
+        return "mps"
+    if torch.cuda.is_available():
+        return "cuda"
+    return "cpu"
+
+
 def main() -> None:
     args = parse_args()
+    device = detect_device(args.device)
     ckpt = torch.load(args.ckpt, map_location="cpu")
     arch = ckpt.get("arch", "gpt")
     if arch == "gpt_plus":
@@ -48,6 +60,7 @@ def main() -> None:
     else:
         model = GPT(GPTConfig(**ckpt["model_config"]))
     model.load_state_dict(ckpt["model_state"])
+    model.to(device)
     model.eval()
     if args.compile:
         if hasattr(torch, "compile"):
@@ -99,7 +112,7 @@ def main() -> None:
         ids = encode(prompt)
         # Keep only the last `max_ctx_tokens` ids to fit the model context
         ids = ids[-args.max_ctx_tokens :]
-        idx = torch.tensor([ids], dtype=torch.long)
+        idx = torch.tensor([ids], dtype=torch.long, device=device)
 
         out = model.generate(
             idx,
@@ -108,7 +121,7 @@ def main() -> None:
             top_k=args.top_k if args.top_k > 0 else None,
             top_p=args.top_p if args.top_p > 0 else None,
             eos_token=eos_token,
-        )[0].tolist()
+        )[0].detach().cpu().tolist()
 
         # Extract only the newly generated portion after the prompt
         gen_text = decode(out[len(ids) :])

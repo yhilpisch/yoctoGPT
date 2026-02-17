@@ -297,6 +297,9 @@ class AdvancedGPT(nn.Module):
         eos_token: Optional[int] = None,
     ) -> torch.Tensor:
         self.eval()
+        finished: Optional[torch.Tensor] = None
+        if eos_token is not None:
+            finished = torch.zeros(idx.size(0), dtype=torch.bool, device=idx.device)
         past_kv: Optional[list[tuple[torch.Tensor, torch.Tensor]]] = None
         pos_offset = 0
         for _ in range(max_new_tokens):
@@ -315,7 +318,11 @@ class AdvancedGPT(nn.Module):
             logits = logits[:, -1, :] / max(temperature, 1e-8)
             probs = F.softmax(_top_k_top_p_mask(logits, top_k=top_k, top_p=top_p), dim=-1)
             next_id = torch.multinomial(probs, num_samples=1)
+            if finished is not None and eos_token is not None:
+                eos_fill = torch.full_like(next_id, int(eos_token))
+                next_id = torch.where(finished.unsqueeze(1), eos_fill, next_id)
+                finished = finished | next_id.squeeze(1).eq(int(eos_token))
             idx = torch.cat([idx, next_id], dim=1)
-            if eos_token is not None and (next_id == eos_token).all():
+            if finished is not None and bool(finished.all()):
                 break
         return idx

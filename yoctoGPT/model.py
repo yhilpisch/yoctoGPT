@@ -192,9 +192,14 @@ class GPT(nn.Module):
     def forward(
         self,
         idx: torch.Tensor,
+        labels: Optional[torch.Tensor] = None,
         past_kv: Optional[list[tuple[torch.Tensor, torch.Tensor]]] = None,
         use_cache: bool = False,
-    ) -> torch.Tensor | tuple[torch.Tensor, list[tuple[torch.Tensor, torch.Tensor]]]:
+    ) -> (
+        torch.Tensor
+        | tuple[torch.Tensor, torch.Tensor]
+        | tuple[torch.Tensor, list[tuple[torch.Tensor, torch.Tensor]]]
+    ):
         """Forward pass: produce next-token logits for each position.
 
         idx: LongTensor with shape (B, T) containing token IDs.
@@ -243,7 +248,10 @@ class GPT(nn.Module):
         logits = self.head(x)
         if use_cache:
             return logits, presents
-        return logits
+        if labels is None:
+            return logits
+        loss = F.cross_entropy(logits.view(-1, logits.size(-1)), labels.view(-1))
+        return logits, loss
 
     @torch.no_grad()
     def generate(
@@ -263,6 +271,9 @@ class GPT(nn.Module):
         """
 
         self.eval()
+        finished: Optional[torch.Tensor] = None
+        if eos_token is not None:
+            finished = torch.zeros(idx.size(0), dtype=torch.bool, device=idx.device)
         past_kv: Optional[list[tuple[torch.Tensor, torch.Tensor]]] = None
         for _ in range(max_new_tokens):
             if past_kv is not None and len(past_kv) > 0 and past_kv[0][0].size(-2) >= self.config.block_size:
@@ -279,8 +290,12 @@ class GPT(nn.Module):
             logits = logits[:, -1, :] / max(temperature, 1e-8)
             probs = F.softmax(_top_k_top_p_mask(logits, top_k=top_k, top_p=top_p), dim=-1)
             next_id = torch.multinomial(probs, num_samples=1)  # (B, 1)
+            if finished is not None and eos_token is not None:
+                eos_fill = torch.full_like(next_id, int(eos_token))
+                next_id = torch.where(finished.unsqueeze(1), eos_fill, next_id)
+                finished = finished | next_id.squeeze(1).eq(int(eos_token))
             idx = torch.cat([idx, next_id], dim=1)
-            if eos_token is not None and (next_id == eos_token).all():
+            if finished is not None and bool(finished.all()):
                 break
         return idx
 
