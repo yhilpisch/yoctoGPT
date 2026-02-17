@@ -9,6 +9,9 @@ This module provides:
 from __future__ import annotations
 
 import json
+import re
+import string
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Union
@@ -18,6 +21,42 @@ import torch
 
 
 TokenIdArray = Union[torch.LongTensor, np.memmap]
+
+
+def sanitize_text_for_char_corpus(
+    text: str,
+    mode: str = "none",
+    lowercase: bool = False,
+    collapse_whitespace: bool = False,
+) -> str:
+    """Optionally sanitize text before char-level vocab construction.
+
+    Modes:
+    - none: keep text unchanged
+    - ascii: normalize and drop non-ASCII characters
+    - basic: ascii + keep only letters/digits/basic punctuation/whitespace
+    """
+
+    mode = mode.lower()
+    if mode not in {"none", "ascii", "basic"}:
+        raise ValueError(f"Unknown sanitize mode: {mode}")
+
+    cleaned = text
+    if mode in {"ascii", "basic"}:
+        cleaned = unicodedata.normalize("NFKD", cleaned).encode("ascii", "ignore").decode("ascii")
+
+    if mode == "basic":
+        allowed = set(string.ascii_letters + string.digits + " \t\n.,;:!?\"'()-[]")
+        cleaned = "".join(ch if ch in allowed else " " for ch in cleaned)
+
+    cleaned = cleaned.replace("\r\n", "\n").replace("\r", "\n")
+    if collapse_whitespace:
+        lines = [re.sub(r"[ \t]+", " ", ln).strip() for ln in cleaned.split("\n")]
+        cleaned = "\n".join(lines)
+        cleaned = re.sub(r"\n{3,}", "\n\n", cleaned).strip()
+    if lowercase:
+        cleaned = cleaned.lower()
+    return cleaned
 
 
 @dataclass

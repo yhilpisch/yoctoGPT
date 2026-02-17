@@ -133,6 +133,12 @@ Select the variant at train time via `--model_type` and it will be recorded in t
 python -m scripts.prepare_char_data --text_path data/philosophy.txt --out_dir data/char
 ```
 
+Optional sanitization for cleaner illustration datasets (reduces unusual characters):
+
+```
+python -m scripts.prepare_char_data --text_path data/philosophy.txt --out_dir data/char_clean --sanitize_chars basic --collapse_whitespace --lowercase
+```
+
 2) Train (char-level):
 
 ```

@@ -164,9 +164,24 @@ def set_seed(seed: int) -> None:
 
 
 def get_batch(
-    data_ids: TokenIdArray, block_size: int, batch_size: int, device: str
+    data_ids: TokenIdArray,
+    block_size: int,
+    batch_size: int,
+    device: str,
+    ddp_rank: int = 0,
+    ddp_world_size: int = 1,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
-    ixs = torch.randint(0, int(len(data_ids)) - block_size - 1, (batch_size,))
+    max_start = int(len(data_ids)) - block_size - 1
+    if max_start <= 0:
+        raise ValueError("Dataset too small for requested block_size")
+    if ddp_world_size > 1:
+        global_batch = int(batch_size) * int(ddp_world_size)
+        ixs_all = torch.randint(0, max_start, (global_batch,))
+        ixs = ixs_all[int(ddp_rank) :: int(ddp_world_size)]
+        if ixs.numel() > batch_size:
+            ixs = ixs[:batch_size]
+    else:
+        ixs = torch.randint(0, max_start, (batch_size,))
     x, y = make_windows(data_ids, block_size, ixs)
     return x.to(device), y.to(device)
 
@@ -179,13 +194,22 @@ def evaluate(
     amp_enabled: bool = False,
     amp_dtype: torch.dtype = torch.bfloat16,
     batch_size_override: int | None = None,
+    ddp_rank: int = 0,
+    ddp_world_size: int = 1,
 ) -> float:
     model.eval()
     losses = []
     with torch.no_grad():
         for _ in range(cfg.eval_iters):
             bs = batch_size_override if batch_size_override is not None else cfg.batch_size
-            xb, yb = get_batch(ids, cfg.block_size, bs, device)
+            xb, yb = get_batch(
+                ids,
+                cfg.block_size,
+                bs,
+                device,
+                ddp_rank=ddp_rank,
+                ddp_world_size=ddp_world_size,
+            )
             amp_ctx = (
                 torch.autocast(device_type="cuda", dtype=amp_dtype)
                 if amp_enabled
@@ -559,7 +583,14 @@ def main() -> None:
             micro_losses = []
             try:
                 for _ in range(grad_accum_steps):
-                    xb, yb = get_batch(train_ids, cfg.block_size, current_batch_size, device)
+                    xb, yb = get_batch(
+                        train_ids,
+                        cfg.block_size,
+                        current_batch_size,
+                        device,
+                        ddp_rank=rank if use_ddp else 0,
+                        ddp_world_size=world_size if use_ddp else 1,
+                    )
                     amp_ctx = (
                         torch.autocast(device_type="cuda", dtype=amp_dtype)
                         if amp_enabled
@@ -631,6 +662,8 @@ def main() -> None:
                 amp_enabled=amp_enabled,
                 amp_dtype=amp_dtype,
                 batch_size_override=current_batch_size,
+                ddp_rank=rank if use_ddp else 0,
+                ddp_world_size=world_size if use_ddp else 1,
             )
             val_ema = (
                 evaluate(
@@ -641,6 +674,8 @@ def main() -> None:
                     amp_enabled=amp_enabled,
                     amp_dtype=amp_dtype,
                     batch_size_override=current_batch_size,
+                    ddp_rank=rank if use_ddp else 0,
+                    ddp_world_size=world_size if use_ddp else 1,
                 )
                 if ema_model is not None
                 else None
@@ -738,6 +773,8 @@ def main() -> None:
         amp_enabled=amp_enabled,
         amp_dtype=amp_dtype,
         batch_size_override=current_batch_size,
+        ddp_rank=rank if use_ddp else 0,
+        ddp_world_size=world_size if use_ddp else 1,
     )
     final_val_ema = (
         evaluate(
@@ -748,6 +785,8 @@ def main() -> None:
             amp_enabled=amp_enabled,
             amp_dtype=amp_dtype,
             batch_size_override=current_batch_size,
+            ddp_rank=rank if use_ddp else 0,
+            ddp_world_size=world_size if use_ddp else 1,
         )
         if ema_model is not None
         else None

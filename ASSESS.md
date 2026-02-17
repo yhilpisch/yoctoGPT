@@ -5,7 +5,7 @@ This file tracks open technical points after a fresh code review.
 ### 1. Training Scalability
 - **Status**: Addressed for current scope.
 - Adaptive token loading is now implemented: small `.bin` datasets load in-memory, larger ones use memmap (configurable via `--memmap_threshold_mb` and `--always_memmap`).
-- Minimal DDP support is available in `train.py` (torchrun-based, rank-aware logging/checkpointing, reduced eval metrics).
+- Minimal DDP support is available in `train.py` (torchrun-based, rank-aware logging/checkpointing, reduced eval metrics, rank-sharded random window sampling).
 
 ### 2. API Consistency
 - **Status**: Addressed.
