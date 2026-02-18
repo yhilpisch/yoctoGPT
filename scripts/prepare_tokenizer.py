@@ -34,6 +34,13 @@ def parse_args():
     p.add_argument("--val_ratio", type=float, default=0.1)
     p.add_argument("--backend", type=str, default="bpe", choices=["bpe", "word"], help="Tokenizer backend")
     p.add_argument("--random_split", action="store_true", help="Randomize train/val split (file-based if multiple files; chunk-based otherwise)")
+    p.add_argument(
+        "--split_level",
+        type=str,
+        default="auto",
+        choices=["auto", "file", "chunk"],
+        help="Random split strategy: auto (recommended), file (whole-file), or chunk (token-chunk shuffle)",
+    )
     p.add_argument("--split_seed", type=int, default=1337)
     p.add_argument("--add_bos_eos", dest="add_bos_eos", action="store_true", help="Wrap encoded examples with BOS/EOS tokens when tokenizer supports them (default)")
     p.add_argument("--no_add_bos_eos", dest="add_bos_eos", action="store_false", help="Disable BOS/EOS wrapping")
@@ -60,24 +67,61 @@ def main() -> None:
     rng = np.random.default_rng(args.split_seed)
 
     if args.all_txt_in_dir and args.random_split and files:
-        # File-level random split: allocate whole files to train or val
-        idxs = np.arange(len(files))
-        rng.shuffle(idxs)
-        n_val_files = max(1, int(len(files) * args.val_ratio))
-        val_set = set(idxs[:n_val_files].tolist())
-        train_ids_list = []
-        val_ids_list = []
-        for i, txt in enumerate(texts):
-            enc = np.array(
-                tok.encode(txt, add_bos=args.add_bos_eos, add_eos=args.add_bos_eos),
+        def _chunk_random_split(full_ids: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+            chunk = 2048
+            num_chunks = max(1, (len(full_ids) + chunk - 1) // chunk)
+            chunks = [full_ids[i * chunk : (i + 1) * chunk] for i in range(num_chunks)]
+            rng.shuffle(chunks)
+            n_val_chunks = max(1, min(len(chunks) - 1, int(len(chunks) * args.val_ratio))) if len(chunks) > 1 else 1
+            val_chunks = chunks[:n_val_chunks]
+            train_chunks = chunks[n_val_chunks:]
+            train_arr = np.concatenate(train_chunks) if train_chunks else np.empty((0,), dtype=np.int32)
+            val_arr = np.concatenate(val_chunks) if val_chunks else np.empty((0,), dtype=np.int32)
+            return train_arr, val_arr
+
+        split_level = args.split_level
+        if split_level == "auto":
+            # For smaller/mixed corpora, chunk-level split avoids holding out entire
+            # files/domains and yields more stable train/val distribution.
+            split_level = "chunk" if len(files) <= 20 else "file"
+
+        if split_level == "chunk":
+            ids = np.array(
+                tok.encode(text, add_bos=args.add_bos_eos, add_eos=args.add_bos_eos),
                 dtype=np.int32,
             )
-            if i in val_set:
-                val_ids_list.append(enc)
+            print("Using chunk-level random split.")
+            train_ids, val_ids = _chunk_random_split(ids)
+        else:
+            if len(files) <= 1:
+                print("Single-file corpus detected; falling back to chunk-level random split.")
+                ids = np.array(
+                    tok.encode(text, add_bos=args.add_bos_eos, add_eos=args.add_bos_eos),
+                    dtype=np.int32,
+                )
+                train_ids, val_ids = _chunk_random_split(ids)
             else:
-                train_ids_list.append(enc)
-        train_ids = np.concatenate(train_ids_list) if train_ids_list else np.empty((0,), dtype=np.int32)
-        val_ids = np.concatenate(val_ids_list) if val_ids_list else np.empty((0,), dtype=np.int32)
+                print("Using file-level random split.")
+                # File-level random split: allocate whole files to train or val.
+                # Keep at least one file on each side.
+                idxs = np.arange(len(files))
+                rng.shuffle(idxs)
+                n_val_files = int(len(files) * args.val_ratio)
+                n_val_files = max(1, min(len(files) - 1, n_val_files))
+                val_set = set(idxs[:n_val_files].tolist())
+                train_ids_list = []
+                val_ids_list = []
+                for i, txt in enumerate(texts):
+                    enc = np.array(
+                        tok.encode(txt, add_bos=args.add_bos_eos, add_eos=args.add_bos_eos),
+                        dtype=np.int32,
+                    )
+                    if i in val_set:
+                        val_ids_list.append(enc)
+                    else:
+                        train_ids_list.append(enc)
+                train_ids = np.concatenate(train_ids_list) if train_ids_list else np.empty((0,), dtype=np.int32)
+                val_ids = np.concatenate(val_ids_list) if val_ids_list else np.empty((0,), dtype=np.int32)
     else:
         # Single file or non-random split path; optionally use chunk-level shuffle
         ids = np.array(
