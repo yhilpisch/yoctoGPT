@@ -1,0 +1,3256 @@
+Chapter 31
+
+THE THEORY                 OF VALUE            IN SECURITY              MARKETS
+
+DARRELL DUFFIE*
+Graduate School of Business, Stanford University
+
+
+
+Contents
+
+1.   Introduction                                                                             1617
+2.   Early milestones                                                                         1618
+     2,1.    Arrow's "Role of Securities" paper                                               1618
+     2.2.    Modigliani-Miller's irrelevance of corporate financial structure                 1620
+     2.3.    The capital asset pricing model                                                  1622
+3.   Basic asset pricing techniques                                                           1625
+     3.1.    Arbitrage pricing                                                                1625
+     3.2.    Representative-agent pricing                                                     1627
+     3.3.    Recursive representative-agent pricing                                           1629
+     3.4,    Extended recursive preference models and time consistency                        1631
+4.   Continuous-time equilibrium in security markets                                          1633
+     4.1.    General equilibrium in continuous-time                                           1633
+     4.2.    The dynamic spanning condition and Girsanov's Theorem                            1637
+     4.3.    The representative-agent asset pricing formula                                   1639
+     4.4.    The consumption-based CAPM                                                       1642
+5.   Continuous-time derivative asset pricing                                                 1646
+     5.1.    Prologue                                                                         1646
+     5.2.    The setup                                                                        1647
+     5,3.    Arbitrage and self-financing strategies                                          1648
+     5.4.    The arbitrage pricing functional                                                 1649
+     5.5.    Numeraire-invariance                                                             1650
+     5.6.    Equivalent martingale measure                                                    1650
+     5.7.    Alternate sufficient conditions for equivalent martingale measures               1653
+     5.8.    Equivalent martingale measure and the state price process                        1654
+     5.9.    Arbitrage pricing of redundant securities                                        1655
+
+
+   *Support from Batterymarch Financial Management from Deutsche Forschungsgemeinschaft,
+Gottfried-Wilfielm-Leibniz-F6rderpreis and typesetting by Shellee Wiedemeier are both grate-
+fully acknowledged. I have benefited from comments by Costis Skiadas, Steve Ross, Monique
+Jeanblanc-Picqu6, Steve Shreve, Lars Nielsen, Kristian Miltersen, Ayman Hindy, Ravi Myneni,
+Gerard Debreu and Rose-Anne Dana.
+
+Handbook of Mathematical Economics, Volume IV, Edited by W. Hildenbrand and H. Sonnenschein
+© Elsevier Science Publishers B.V., 1991
+    5.10. The Brownian case: spanning and Girsanov's Theorem          1656
+    5.11. The Markov case: the PDE for derivative asset prices        1659
+    5.12. Approximate solution of the arbitrage PDE                   1664
+    5.13. Extensions of the PDE method                                1665
+6. F u r t h e r r e a d i n g                                        1665
+    6.1. General references                                           1665
+    6.2. Finite-dimensional general equilibrium in security markets   1666
+    6.3. Spanning and the behavior of the firm                        1666
+    6.4. Mutual funds and factors in asset prices                     1667
+    6.5. Asymmetric information                                       1667
+    6.6. Equilibrium asset pricing models                             1668
+    6.7. Extended notions of spanning                                 1668
+    6.8. Asset pricing with "frictions"                               1668
+    6.9. Technical references on continuous-time models               1669
+    6.10. Derivative asset pricing                                    1669
+    6.11. Infinite horizon recursive models                           1670
+    6.12. Estimation                                                  1670
+Appendix:        Stochastic integration                               1670
+References                                                            1673
+Ch. 31: The Theory of Value in Security Marke~                                1617
+
+
+
+I. Introduction
+
+General equilibrium theory, as summarized for example in Debreu's (1959)
+Theory o f Value, can be applied wholesale to obtain a theory of value for
+security markets, as shown by Arrow (1953). The modern theory of value for
+security markets, however, elaborates or extends general equilibrium theory in
+at least the following major ways:
+   (1) It explicitly treats general multi-period trading opportunities under
+uncertainty and in incomplete markets.
+   (2) It investigates, in remarkable depth, implications of the law of one price,
+that is, of arbitrage-free prices.
+   (3) In order to represent security returns in convenient and testable ways, it
+places strong restrictions on preferences and exploits a great deal of probability
+theory, especially the theories of Markov processes and stochastic integration,
+separately and together.
+   By looking in these and other directions, finance theory has been a catalyst
+for further developments of the general equilibrium model, particularly for
+equilibrium existence theorems with incomplete markets, infinite-dimensional
+consumption spaces or asymmetric information. In the other direction, general
+equilibrium theory has offered financial economists a benchmark for market
+behavior that was missing before Arrow (1953) and Arrow and Debreu
+(1954).
+   As financial market theory grows, it laps over the boundaries of the general
+equilibrium paradigm in order to focus on the process of price formation. The
+"microstructure" of security markets has come under increasing scrutiny; the
+theory of specialist market makers, for example, is gradually being filled out.
+The need to address asymmetric information, in particular, has led to strategic
+models of investment behavior.
+   For conventional purposes such as asset pricing, however, general competi-
+tive equilibrium models are still the norm. Indeed, it may be argued that the
+Walrasian notion of price-taking suits large financial exchanges better than
+most other markets. Thus, despite the diverse aims of financial economic
+theory, in this chapter we summarize developments in finance that rest or
+build on general equilibrium theory, emphasizing the valuation of financial
+assets.
+   This chapter is organized into four sections: Early milestones, Basic asset
+pricing techniques, Continuous-time general equilibrium and Derivative asset
+pricing. The chapter concludes with further notes to the literature on these
+topics and references to related topics.
+1618                                                                           D. Duffle
+
+2. Early milestones
+
+We review in this section some of the major milestones along the path of early
+theoretical developments to models of security market equilibrium: (i) Arrow's
+"Role of Securities" paper, the central paradigm of financial market equilib-
+rium theory, (ii) the Modigliani-Miller theorem on the irrelevance of cor-
+porate financial policy, and (iii) the Capital Asset Pricing Model (CAPM) of
+Sharpe (1964), Lintner (1965) and Black (1972).
+
+
+2.1. Arrow's "Role of Securities" paper
+
+The first major milestone is Arrow's (1953) paper, "The Role of Securities in
+ the Optimal Allocation of Risk Bearing," still a standard reading requirement
+for doctoral finance students. Among others, Hicks (1939) had earlier worked
+toward general models incorporating markets for claims to future value, that is,
+securities. Arrow (1953), however, had the first general closed model of
+equilibrium for markets in which both spot commodities and securities are
+traded. This milestone preceded even the presentation by Arrow and Debreu
+ (1954) as well as McKenzie (1954) of techniques suitable for demonstrating the
+existence of equilibrium in such a model.
+   We follow here with a reprise of Arrow's model in a slightly extended form.
+   There are S possible states of the economy, one of which will be revealed as
+true. Before the true state is revealed, n securities are traded. Security number
+j is a vector d r E ~s, representing a claim to dsj units of account ("dividends")
+in state s, for each s E { 1 , . . . , S}. A portfolio 0 E ~" of securities thereby lays
+                    n
+claim to 0- ds = 2j=~ 0/d~j units of account in a given state s E {1 . . . . , S}. A
+portfolio 0 is budget-feasible given a vector q E ~n of security prices if
+ 0- q ~<0. After the true state is revealed, agents collect their dividends and
+trade on spot commodity markets. In each state s, each agent i ~ {1 . . . . , m} is
+endowed with a bundle e~ E ~t of 1 commodities, whose respective unit prices
+are given by some vector Ps ~ ~t.
+   A consumption plan is a vector c in ~ ' , written {c~ E 0~+ - 1 ~<s <~ S} for
+convenience, with c~ denoting the planned consumption vector in state s. (In
+looking at consumption sets defined only by non-negativity, we are letting
+generality slip through our fingers in orders to focus on a few main ideas, and
+will continue to do so.) Given security prices q ~ ~n and spot commodity prices
+p E ~ , a pair (0, c) is a budget-feasible plan for agent i if 0 is a budget-feasible
+portfolio and c is a consumption plan satisfying
+
+       ps.(Cs-e's)<~O.ds,      s@{1 . . . . , S } .
+Ch. 31: The Theory o f Value in Security Markets                                                                                                    1619
+
+
+   Each agent i has a utility function U~ :R~s-->E. Given prices (q, p ) E
+~"x~S,        a pair (0, c ) ~ R " x R 's is an optimal plan for agent i if it is
+budget-feasible and if there is no budget-feasible plan (0', c') such that
+Ui(c' ) > Ui(c ). A security-spot market equilibrium for the economy ((Ui, el),
+(di)), i @ { 1 , . . . , m } ,  jE{1,..,n},      is a collection (( q, p), (Oi, ci)), i E
+{1 . . . . . m}, satisfying:
+   (1) for each i E {1 . . . . , m},__(O' c i) is an optimal plan for a g e n t / g i v e n the
+security-spot price pair (q, p) ,__u~" × ~,s;
+   (2) markets clear: E i 0 i = 0 and Z i (c ~ - e i) = O.
+   For purposes of comparison, a complete contingent-commodity market
+equilibrium for the economy (Ui, ei), i E {1 . . . . . m}, a concept also appearing
+for the first time in Arrow's paper, is defined as a collection (/~, (ci)),
+i~{1,...,m},               where / 7 @ R ~ and, for each i E { 1 . . . . , m } , c i E
+arg maXceu~ Ui(c ) subject to ~ . c <~/7. e i, with E i c i - e i -- O. We t r e a t / 7 as the
+price, before the true state is revealed, of a contract promising delivery of one
+unit of commodity number c if state s is revealed to be true, and nothing
+otherwise.
+   It is widely felt that Arrow showed a security-spot market equilibrium to be
+Pareto optimal provided that securities span, in the sense described below, a
+first welfare theorem for security markets. This is essentially the stated goal of
+his paper. In fact, however, Arrow proved a second welfare theorem for
+security markets: if an allocation {c ~@ E~s: 1 ~< i ~< m} is Pareto optimal, then
+it comprises the consumption plans of some security-spot market equilibrium,
+under the conditions:
+   (1) spanning: span({dj : 1 ~<j <~ n}) = Rs;
+   (2) convexity: for each i E {1 . . . . , m}, U i is quasi-concave;
+   (3) strict monotonicity: for each i E {1 . . . . , m } , c > c' => Ui(c ) > Ui(c' ).
+(Arrow's specific assumptions were slightly different.) The proof is in two
+steps. First, given the Pareto optimality of (ci), the usual second welfare
+theorem [Arrow (1951), Debreu (1951)] implies the existence of contingent
+commodity prices/7 C R~ supporting the allocation ( c ) in a complete contin-
+gent-commodity market compensated ~ equilibrium (/7, (ci)). The second step is
+to implement the contingent-commodity compensated equilibrium (/7, (ci)) as
+a security-spot market compensated equilibrium. This implementation is easily
+                                                                        s
+done, after choosing an arbitrary "state-price" vector 7r C E++,             as follows:
+   (1) let qj = EsS=a 7rsdj~, j E {1 . . . . , n};
+   (2) letp~=/TsTrs, s E { 1 . . . . ,S};
+   (3) for i E (1 . . . . , m - 1}, let 0 i solve the system of linear equations
+
+      I T h e c o l l e c t i o n (,6, ( c i ) ) is a c o m p e n s a t e d e q u i l i b r i u m if t h e r e is a v e c t o r w ~ E " ( o f w e a l t h
+t r a n s f e r s ) s u c h t h a t Y.~ c ~ - e i = 0 a n d , f o r all i, c ~ ~ a r g m a x c U~(c) s u b j e c t t o p . c ~ ~< w~ + p • e ~.
+1620                                                                        D. Duffle
+
+
+       Ps • (c~ - e~) = j~= l O j'd # ,   l<-s<-S;                               (1)
+
+   (4) let 0 " = --Ei=lm-I oi.
+   The reader can quickly verify as an exercise that (q, p, (0 i, ci)) is a bona fide
+security-spot market equilibrium provided the wealth transfers making (/7, (c~))
+a compensated contingent-commodity equilibrium are again applied, before
+security trading. The spanning condition on securities provides for the exist-
+ence of solutions to the system of equations (1) defining 0/.
+   Of course, there is also a First Welfare Theorem: Any security-spot market
+equilibrium for an economy with strictly monotone utilities and spanning
+securities involves a Pareto optimal allocation of contingent commodities.
+Arrow's (1951) simple "adding-up" argument suffices for proof; convexity is
+not required. Moreover, with the additional assumptions of continuous quasi-
+concave utility functions and interior total endowments, security-spot market
+equilibria exist. The existence proof proceeds by demonstrating the existence
+of a complete contingent-commodity market equilibrium, and then implement-
+ing the allocation in a security-spot market equilibrium by the above four-step
+procedure.
+   The theory of existence and optimality of equilibria is quite different,
+however, without spanning, as explained in Chapter 30. Briefly, if individual
+endowments are interior, in addition to the other assumptions, then equilibria
+always exist, but are generically inefficient without spanning. If security
+dividends are defined instead, in terms of commodity bundles, then equilibria
+may exist only generically, that is, except for a closed set of measure zero of
+endowments and securities, under regularity conditions on utility functions.
+
+
+2.2. Modigliani-Miller's irrelevance of corporate financial structure
+
+Modigliani and Miller (1958) demonstrated the irrelevance of corporate finan-
+cial structure in the absence of such market "imperfections" as taxes, transac-
+tion costs, bankruptcy costs, asymmetric information, and so on. It is instruc-
+tive to view a version of their results in the setting of Arrow's model of security
+and spot markets.
+   First, we extend Arrow's model with the addition of a firm, characterized by
+a production set Y C ~ts and a vector 3' @ ~ of initial shareholdings of the
+                                                     m
+firm among agents, normalized so that E;=~ 3'i = 1.
+   We take the firm's production choice y E Y as given. The firm is also free to
+choose a portfolio 0 ° E ~" of securities. Given a spot commodity price vector
+p E R~, the firm's total dividend is the vector 6(y, p, 0 °) E ~s defined by
+Ch. 31: The Theory of Value in Security Markets                                         1621
+
+     6(y,p,O°).~=ps.ys+O°.ds,               sE{1,...,S}.
+
+The firm finances its portfolio 0 ° by issuing the dividend - 0 °. q in the first
+period. The firm's shares are traded, like any other security, at some price v. A
+portfolio in this setting is a pair (q~, 0) E ~ x ~" representing q~ shares of the
+firm and a portfolio 0 of the other n securities. A budget-feasible plan for agent
+i, given prices (v, q, p ) E ~ × ~ " × ~ , is therefore some triple (q~, 0, c ) E
+   × ~" × ~ satisfying
+
+     (q~- 7i)v + q~(-O °. q) + O" q<~O ,
+
+     Ps" (cs - e~) <~ ~o6(y, p, O°)s + 2 Off#,        s e {1 . . . . .   s}.
+                                         j-I
+
+The budget constraint for the initial period reflects the share -q~0 °. q of the
+firm's initial dividend allotted to the shareholder. A budget-feasible plan
+(~o, 0, c) is optimal for agent i if there is no budget-feasible plan (q~', 0', c') with
+Ui(c' ) > Ui(c). A security-spot market equilibrium, given the firm's production
+and financial plan (y, 0 °) ¢ Y x E", is a collection (v, q, p, (q~g, 0/, c~)), i
+{ 1 , . . . , m}, satisfying:
+   (1) for i @ { 1 , . . . , m } , ( i,o i,c i) is an optimal plan for agent i g i v e n the
+           prices (v, q, p),
+   (2) markets clear: E i q i = 1, Z i 0 i = 0 and Y'i ci - ei = Y.
+   By the "irrelevance of corporate financial structure," we mean a result of the
+following sort, a version of Modigliani and Miller's assertions found, in a more
+general form, in DeMarzo (1988).
+
+Proposition 1. Suppose (v, q, p, (~i, 0 i, ci)), i @ { 1 , . . . , m}, is a security-spot
+market equilibrium given the firm's choice (y, 0 °) E Y x ~n. Let ~o @ ~ , be any
+other portfolio choice by the firm, and let ~i= oi + i(oO - ~o) be revised
+portfolios for the agents, i E {1 . . . . , m}. Then (v, q, p, ( i, ~i, ci)), i@
+{ 1 , . . . , m}, is an equilibrium given the firm's alternate choice (y, 0o)@
+YxR".
+
+  Proof is left as an easy exercise. Interpreting, an adjustment in the financial
+policy of the firm causes no change in its market value v. Moreover, every
+shareholder is indifferent to changes in the firm's financial structure, given the
+ability of each shareholder to adjust his or her own portfolio strategy so as to
+exactly offset any changes in the firm's financial structure.
+  The notes in Section 6 indicate a number of directions that one can take in
+order to overturn the irrelevance of corporate financial policy. The notes also
+1622                                                                                    D. Duffle
+
+introduce the literature on the role of spanning in shareholder unanimity, or
+lack thereof, concerning the production policy of the firm.
+
+
+2.3. The capital asset pricing model ( C A P M )
+
+Due to Sharpe (1964), Lintner (1965) and, with no riskless asset, Black (1972),
+the Capital Asset Pricing Model ( C A P M ) can also be viewed in Arrow's (1953)
+setting. First, we suppose there is only one commodity consumed in each state.
+Second, we fix this spot commodity, usually called "consumption," as the
+numeraire, so that Ps = 1 in each state s E {1 . . . . , S}. This allows us to view a
+security d r as a claim to units of account or to units of consumption. Finally, we
+append to the state set J2 = {1 . . . . . S} the o--algebra o~ = 2 of all subsets as
+well as a probability measure P on ~ , which (for concreteness and fairness to
+the strength of the preference assumptions to follow) is taken to represent the
+c o m m o n probability assessments 2 of the agents. In fact, for the CAPM, we
+could let (J2, o%, P ) be an arbitrary probability space, provided one restricts
+attention in the following calculations to r a n d o m variables with finite variance.
+   For convenience, the utility function U~ is defined on the whole space Es. For
+each agent i, the restriction of Ui to Z = s p a n ( { d ~ : l < . j < ~ n } ) is variance-
+averse if, for any c and c' in Z with E(c)= E(c'), we have Ui(c ) > Ui(c' )
+provided v a r ( c ) < var(c'), where var(-) denotes variance, treating a consump-
+tion vector c in Es as a random variable c : g2--->E. In infinite-state settings, if
+{dj} is jointly normally distributed, variance-aversion is implied by expected
+concave utility. This implication is generalized from normally distributed to
+spherically distributed dividends by Chamberlain (1983a).
+   We adopt the following principal assumptions.
+
+Assumption 1 (variance-aversion).     For all i E { 1 , . . . , m}, Ui is variance-
+averse when restricted to the span of security dividends, Z = span({dj : 1 ~<j ~<
+n}).
+Assumption 2 (endowment-spanning).             For all i ~ { 1 , . . . , m}, e i ~ Z.
+
+   For the economy ((U~, e i ) , (at/)), we take as given an equilibrium (q, (Oi)),
+i E (1 . . . . , m}, notationally suppressing the spot price Ps = 1 in each state s
+and the consumption plan c i = e i + Z~.=1 0jdj of each agent i. Equilibrium
+existence results can be found in Nielson (1985, 1987, 1989a,b).
+
+
+  2From an axiomatic point of view, probability assessments are properties of preferences with
+Savage's (1954) framework, which calls for an infinite set of states, but we shall merely take
+probabilities as given.
+Ch. 31: The Theory of Value in Security Markets                                                1623
+
+   Security pricing is arbitrage-free if O ' q > 0 for any portfolio 0 with total
+dividend ET= 1 0jdj > 0 and O . q = 0 whenever ET= ~ 0jdj = 0 . For example, if Ui
+is strictly increasing for some agent i and there is a security with non-zero
+non-negative dividends, then security pricing is arbitrage-free. Security pricing
+is risk-neutral if there is a constant K such that qj = KE(dj) for all j.
+Risk-neutral pricing is possible, but somewhat pathological with variance-
+aversion, 3 so we consider the following.
+
+Assumption 3. Security pricing is arbitrage-free and not risk-neutral.
+   The following proof of the C A P M allows for, but does not require, the
+presence of a riskless asset, some portfolio 0 whose total dividend Ej 0jdj is a
+non-zero constant. The result applies to an arbitrary probability space
+(J2, o%, P), and to a (closed) possibly infinite-dimensional linear subspace Z
+defining the span of security dividends. We first prove the "price form" of the
+CAPM, later reducing the CAPM to its return (or " b e t a " ) form.
+
+Proposition 2 (CAPM: price form).      Under Assumptions 1-3, for any equilib-
+rium ( q, (oi)), there are constants k and K such that the equilibrium security
+prices satisfy
+
+     qj=kcov(e, dj)+KE(dj),                 jE(1,...,n},                                       (2)
+
+where e = E i e i is the aggregate consumption.
+
+Proof. We take the case of no riskless asset, leaving the easier case with a
+riskless asset for the reader. Our proof is inspired by Chamberlain's (1988). We
+can endow Z = s p a n ( { d j : l < ~ j < ~ n } ) with the Hilbert-space inner product
+(c, c')~-~cov(c, c'). (Assumption 3 implies that Z is at least 2-dimensional.)
+Since security pricing is arbitrage-free, the linear functional r l : Z--~ ~ defined
+by
+
+
+             = 2 q,o,,          z: 2
+                j=l                  j-1
+
+
+is represented [as in Luenberger (1969)] by a unique 1r E Z in the form
+
+     //(z) = cov(z, ~'),        z ~ z.
+
+Likewise, let the expectation functional E : Z--~ ~ be represented by ~/E Z.
+
+  3For   example, let e1= d 1= - d 2 = - e 2 and U1= U2, which implies risk-neutral pricing.
+1624                                                                                                       D. Duffle
+
+For any agent i, let ~ denote the orthogonal projection of c ~ onto
+span({~r, r/}), and let 0 i denote any portfolio satisfying
+
+                      ^i         ~i
+       e ~+           Ojdj = c .
+                /=1
+
+By the definition of orthogonal projection, H(O ~ - Ci) = 0, S O                                    Oi   is budget-
+feasible. Since E(6 i - c i) = 0 and cov(6 i, 6i _ c i) = O,
+
+       v a r ( c i ) = v a r [ 6 i + (c i - 6 i ) ] = v a r ( d i ) + v a r ( c i - ~i)>~var(~i).
+
+We therefore know that Ci= ~i, for otherwise ~ i is strictly preferred to c i and is
+achieved by the budget-feasible portfolio 0i. Thus e = E i c i E span({~-, ~7}).
+Using Assumption 3, ~- = ke + K~? for some constants k and K with k ~ 0. It
+follows that, for any c C Z,
+
+       H ( c ) = k cov(e, c) + K covQ/, c) = k cov(e, c) + K E ( c ) .
+
+This produces the result in the absence of a riskless asset. With a riskless asset,
+the proof uses the inner product (c, c ' ) ~ E ( c c ' ) .
+
+   The return of any portfolio 0 @ En of securities with non-zero market value
+q • 0 is defined as the random variable
+
+                           o,4
+       Ro-
+                      q'O
+
+By the endowment-spanning assumption, there is a portfolio M ~ E ~ of
+                                 n         ~         m
+securities with total dividend E j= 1 Mjdj   e ---- Ei= 1 Ci, the equilibrium aggregate
+consumption. We refer to M as the market portfolio.
+
+Assumption 4 (non-triviality).                  q" M ~ 0 and var(RM) ¢ 0.
+
+   U n d e r Assumption 4, the beta of any portfolio 0 (of non-zero market value)
+is defined by
+
+                 cov(Ro, RM)
+       to   -         var(RM )
+
+Corollary (CAPM: return form). Under A s s u m p t i o n s 1-4, there is at least one
+portfolio q~ with non-zero market value and with 18 = O. Fixing q~, f o r any
+portfolio 0 with non-zero market value,
+Ch. 31: The Theory of Value in Security Markets                                     1625
+
+
+     e(Ro)   - e(R    ) =/30[e(nM)      -         .                                 (3)
+I f there is a riskless asset with non-zero market value, we can take ~ to be that
+riskless asset.
+
+Proof. The fact that there exists a "zero-beta" portfolio q~ follows from
+Assumption 3, which implies that Z is at least 2-dimensional and that some
+point in Z is uncorrelated with R M and has non-zero price. Equation (3)
+follows from (2) and a few algebraic manipulations.
+   The proof of Proposition 2 also shows a "mutual fund theorem." There exist
+two portfolios of securities, say ~0z and 8 , such that, for each agent i, the
+equilibrium consumption c i is financed by some portfolio ai~o z + bi~ B of these
+two mutual funds. For example, we could l e t m and B be portfolios such that
+  n
+Zj=~  q~jA dj =~7 and E~=
+                       n      B
+                          1 ¢pjdj = ~-. This follows from the fact that, for all
+i, c' Espan({Tr, r/}). A more natural choice would be to let one of the two
+mutual funds be M, the market portfolio. If a riskless asset exists, it would
+serve as the other mutual fund.
+
+
+3. Basic asset pricing techniques
+
+In this section, we review two basic theoretical techniques used in pricing
+securities. The first, arbitrage pricing, is transparent in concept, but deep in its
+application, for example, in continuous-time settings such as those illustrated in
+Section 5. The second, "representative-agent pricing," is merely a simple
+application of the standard formula equating ratios of prices with marginal
+rates of substitution. We will see representative-agent asset pricing first in the
+two-period setting of Arrow (1953) and then in an infinite-horizon setting. In
+Section 4, representative-agent pricing reappears in a multi-agent continuous-
+time setting.
+
+
+3.1. Arbitrage pricing
+
+Still maintaining the structure of Arrow's (1953) model as outlined in the
+previous section, consider a security-spot market equilibrium (q, p, (0 i, d)) for
+the economy ((dj), (U/, ei)), j E {1 . . . . , n}, i E ( 1 , . . . , m}. As in the CAPM,
+arbitrage-free security pricing implies the existence of a unique linear function-
+a l / / o n Z = s p a n ( { d j : l < - j < - n } ) by
+
+
+              j=l                 j=l
+1626                                                                                 D. Duffle
+
+  Arbitrage-free pricing also implies that H is strictly positive, that is, any
+portfolio with total dividend z > 0 has a positive total price H ( z ) > 0 (through-
+out, "z > 0" means z/> 0 and z # 0.)
+
+Lemma.    A n y strictly positive linear functional II on a linear subspace Z of a
+Euclidean space R s has a strictly positive linear extension ffl : ~s___~~.
+
+  This well known result, found for example in Gale (1960), can be proved by
+using the theorem of the alternative, and yields the following state-pricing
+result, which first appeared in Ross (1976c, p. 202).
+
+Corollary (state-pricing). If security pricing b arbitrage-free, there is some
+(state-price) vector cr E ~s++ such that
+                        S
+               =
+                                           z@Z.
+                       s=l
+
+
+  The state-price vector ~r is uniquely determined if and only if Z = R s.
+  Suppose some portfolio 0 has a dividend z = E~= 1 ~dj >>0 (me_aning z s > 0
+for all s). Assuming that (d, q) is arbitrage-free, we know that q- 0 = H(z) > O.
+We can therefore normalize prices and dividends relative to the price and
+dividends of O, respectively, by defining
+
+                   qj
+                               j E ( 1 . . . . . n},
+
+       it# -           ,, d#         ,     s@(1 .....        S},jE{I   ....   ,n}.
+                   ~j=l      t~djs
+
+  Security pricing for the normalized pair (c), d) is also arbitrage-free, implying
+an associated state-price vector ~- @ ~ s + with
+                   S
+       Oj --                             j E (1, . . . .   n}.
+               s=l
+
+
+For the portfolio O, we have O. c) = 1 and ~;=10jCljs ] for all s. This implies =
+
+       S
+that Es=~ ~rs = 1, so we may treat ~- as a vector of probability assessments of
+the states. Endowing ~Q = { 1 , . . . , S} with the o--algebra ~ consisting of all
+subsets, and giving (~, ~ ) the probability measure Q defined by Q({s}) = ~rs,
+we have
+
+       c~j=EQ(d~),                   j~E{1,...,n},                                        (4)
+Ch. 31: The Theory of Value in Security Markets                                 1627
+
+where E Q denotes expectations under Q. (As with the CAPM, we are treating
+an element of R s as a random variable on g2 into E.) In summary, by choosing
+an appropriate numeraire and probability assessments, one can always view the
+price of an asset as the expected value of its dividends.
+   The measure Q is called an equivalent martingale measure by Harrison and
+Kreps (1979), who extended this idea to a continuous-time setting, as ex-
+plained in Section 5. There is no general infinite-dimensional result, however,
+guaranteeing the existence of strictly positive linear extensions, which is
+annoying, since many financial models are by nature infinite-dimensional.
+There are, however, results such as the K r e i n - R u t m a n Theorem implying
+(weakly) positive linear extensions of positive linear functionals on a linear
+subspace with a positive interior point. Ross (1978a) was the first to apply this
+sort of result to infinite-dimensional asset pricing. For a strictly positive linear
+extension, it is typical, instead, to follow the lead of Harrison and Kreps (1979)
+and Kreps (1981) in assuming the existence, for some agent with convex
+continuous strictly increasing preferences, of an optimal consumption choice in
+the interior of a convex consumption set. The separating hyperplane theorem
+then produces a satisfactory strictly positive continuous linear extension of the
+price functional. Because of technical issues, even a strictly positive continuous
+linear extension does not guarantee the existence of an equivalent martingale
+measure. Rather than reviewing the infinite-dimensional case in more detail
+here, we refer readers to Section 5.
+
+
+3.2. Representative-agent pricing
+
+The object here is a formula relating the aggregate consumption level of the
+economy (which is, arguably, an observable macro-economic variable) to the
+linear functional H that prices securities. An example is the CAPM.
+   Suppose, to begin, that there is a single commodity (l = 1) and a single agent
+( m = l ) with a differentiable strictly monotone concave utility function
+U" ~s---> E and a consumption endowment e >>0. As with the CAPM, we
+normalize so that the equilibrium consumption price is Ps = 1 in each state
+s E {1 . . . . , S}, and assume that the security dividends (dis) are defined in
+terms of this same numeraire. By inspection, an equilibrium is given by the
+consumption choice c = e, the portfolio choice 0 = 0, and the security price
+vector q E ~" defined by
+
+     qj=VU(e)dj,        j~{1,...,n},
+
+where VU(e) denotes the vector of partial derivatives of U at e. Suppose, as
+previously, that O = { 1 , . . . , S} is endowed with the structure of a probability
+1628                                                                                     D. Duffle
+
+space and that vectors in R s are treated as r a n d o m variables. We consider the
+utility function U defined by U ( c ) = E [ u ( c ) ] , for some differentiable
+u : ~+ ~ R. In this case
+
+       qi = E [ u ' ( e ) d j ] ,   j ~ {1 . . . .   , n}.                                    (5)
+
+Despite its simplicity, this is a basic asset pricing formula used in much of
+financial economics and macro-economics. A multi-period analogue, suitable
+for econometric analysis, is reviewed in the next subsection.
+   Turning to the case of heterogeneous agents, we assume spanning:
+
+       span({dj: 1 ~<j ~< n}) = I~s .
+
+As stated in Section 2, with this spanning assumption an equilibrium consump-
+tion allocation (c ~) = {c ~E ~ s : 1 ~< i ~< m} is Pareto optimal for the agents
+(U~, ei), i E { 1 , . . . , m}, provided, for example, that, for all i, U i is increasing
+and strictly concave.
+   For any given "utility weights" A E ~ , let U~ : R s --~ ~ be defined by
+
+
+       U~(x) =            max       ~ t~iUi(xi).
+                     xl+'"+xm~x i-1
+By the Pareto optimality of (ci), we can choose A so that U~(e) = ziml t~iUi(ci),
+             m e i. In order to give an interpretation of prices in terms of
+where e = Zi=l
+marginal uti!ity, we want to guarantee that the equilibrium consumption
+allocation (c') is interior. For this, it is enough that IIvu,(c)ll-- ~ for c in the
+boundary of the positive cone. Pareto optimality then implies the co-linearity
+of {VUi(ci): 1<_ i <_ m } . The implicit function theorem 4 implies that U~ is
+differentiable, and the equilibrium security price vector is then given by
+
+       qj = kVUA(e)dj,              j ~ {1,...,       n},
+
+for some constant k > 0. Again, we have related security prices to aggregate
+consumption.
+   In order to exploit the special case of von N e u m a n n - M o r g e n s t e r n (expected
+utility) preferences, we let O = {1 . . . . . S} be given the structure of a prob-
+ability space (12, ~ , P), and treat any x E R s as a random variable x : g2--* ~.
+We assume, for each agent i, the preference representation Ui(x ) = E[ui(x)] ,
+where u,. is differentiable, increasing and strictly concave. The representative-
+agent utility function Ux is then of the form
+
+ 4For details and the required regularity on utility functions, see Mas-Colell (1985).
+Ch. 31: The Theory of Value in Security Markets                                                   1629
+
+     V~(x)= E[u~(x)I,               x~S,
+
+where u A : R+ ~ N is defined by
+
+
+     u~(a) =               max         ~, )tiui(ai)   subject to al + . . . + a , , < ~ a .
+               (al .....     am)~-~r~ i = I
+
+It follows that
+
+     qj = kE[u'~(e)d~] = k l E ( d j ) + k 2 cov[u~(e), dr],           j E {1 . . . . .     n},   (6)
+
+for positive constants k, k I and k 2. Constantinides (1982) developed a finite-
+dimensional multi-period version of this construction.
+  If u i is locally quadratic at the equilibrium consumption level c i, then
+u~(c i) = a i + bic i for some constants a i and bi, and thus u'a(e ) = a + be for some
+constants a and b. We then have
+
+     q~ = kEIu'~(e)di] = k,E(dj) + k2b cov(dj, e ) ,                j~ (1,...,            n},
+
+from which we recover the CAPM. O f course, we could have obtained the
+CAPM directly from the fact that concave quadratic expected utility is var-
+iance-averse.
+
+
+3.3. Recursive representative-agent pricing
+
+The work of L e R o y (1973) and Rubinstein (1976) on asset pricing in an
+infinite-horizon setting was capped off by Lucas (1978) with a simple recursive
+pricing relation known as the "stochastic Euler equation." As shown by
+Kandori (1988), few assumptions are required for the existence of equilibria
+with this pricing formula, given the usual outright assumption of a single agent.
+   In order to see this model in a simple form, let (J2, o%, P ) be a probability
+space and let gr = { ~ : t ~ N} denote a sequence of sub-o--algebras of ~ that is
+increasing in the sense that t/> s implies that ~, C ~,. The set o~ of events
+represents information available at time t. A sequence { X , } of random
+variables is adapted if, for all t, X t is o~t-measurable. Naturally, all economic
+processes in the model are adapted.
+   Let L denote the space of bounded adapted sequences, with the usual
+positive cone L+. The single agent in the model is represented by an
+endowment sequence e ~ L and a utility function U : L + ~ [~, There are n
+securities represented by a collection d = (d 1. . . . , d n) ~ L n of dividend se-
+quences. The economy is therefore completely specified by the list
+1630                                                                           D. Duffle
+
+       ((g2, ~ , P), U:, (U, e), d ) .
+
+   As in the CAPM, we take it that the securities' dividends are paid in units of
+the single consumption commodity. Given a vector of security price processes
+S = (S ~, . . . , S ' ) E L", a budget-feasible plan for the agent is a security trading
+strategy 0 = ( 0 1 , . . . , on)~ L" satisfying, for all t E N ,
+
+       c~=--et+Ot_ ~ . d , - S , . ( O , - O t _ , ) > ~ O ,
+
+with 00 = ( 1 , . . . , 1). That is, 0 is feasible if the associated consumption
+sequence c o is non-negative. A budget-feasible trading strategy 0 is optimal if
+there is no budget-feasible strategy q~ such that U(c ~) > U(c°). A n equilibrium
+is a security price process {S,} such that the (no-trade) strategy 0", defined by
+0* = ( 1 , . . . , 1) for all t, is an optimal trading strategy.
+   For simplicity, we suppose that
+
+       U(c) =                           ,                                           (7)
+                       tEl~
+
+
+where u : •+ ~ E is, say, bounded and measurable and/3 E (0, 1). Extensions
+are discussed at the end of this subsection.
+   The following proposition states that an equilibrium is defined by a separat-
+ing hyperplane argument. Since there is but a single agent, there is no need to
+apply (as is commonly done) fixed point theory, Markovian assumptions, or
+Bellman's principle of dynamic programming.
+
+Proposition 3. Suppose u is increasing, bounded, differentiable and strictly
+concave. Let c* = e t + E~ d/ define the total consumption process c*. I f c* > 0
+almost surely for all t, then equilibrium is defined by
+
+
+       St
+            ,              Izs,,
+                u'(e,) E L S > t /3   U (cs)d ,
+                                                         ]
+                                                     W*t ,     a.s., t E N .        (8)
+
+
+Proof. For the given price process {St}, we need only show optimality of the
+trading strategy 0". The associated consumption process is c*. The proof here
+is the same as that used in Duffle, Geanakoplos, Mas-Colell and McLennan
+(1988). Let q~ be an arbitrary budget-feasible policy.
+   The first step is to show that, for any given T E N,
+                          T
+
+
+
+
+                     +/3TE[u'(C~c)Sr " (¢r -- 0})1.                                 (9)
+Ch. 31: The Theory of Value in Security Markets                                                                 1631
+
+We prove (9) by induction. For T = 1, (9) is true since concavity of u i implies
+that u(cT) >-- u(cq~) + u'(cT)(cT - c~). Next, we show, for any ~-E ~, that if (9)
+is true for T = ~-, then (9) is true for T = ~- + 1. By the construction of S,
+
+     u'(c*AS,        • ( ~ - o7) =/~e[u        ' (C¢+l)(S,r+
+                                                   *         1 -'b de+l)       [ ~.~r] " (¢~. - 0~.) ,   a.s.
+
+
+In addition, concavity of u implies that
+
+     u(c;+~)/> u ( C + , )      + u'(c:+,)(c;+,          - C+,)-
+
+Then (9) follows for T = ~-+ 1 by combining the last two relations with the
+identity
+
+     ( S t + 1 "l- dr+l).   (~Or -- 0"~) Jr- e ; + 1 -- c ~ + 1 = S~_+l • (~t)~.+l - - 0 ~ + 1 ) .
+
+Thus (9) follows for all T by induction. Since u and c* are bounded and u is
+concave, { u ' ( c * ) c * } is bounded. Thus {St} is (as presumed) bounded. Since
+{~Pt- 0"} is also bounded, it follows that { u ' ( c * ) S t • (q~t- 0")} is bounded.
+From this, [ 3 r E [ u ' ( c ~ ) S r • ( q ~ r - 0~)]---~0 as T--.oo. Combining this fact with
+(9), we have U(c*) >~ U(c¢). Since ~p is arbitrary, 0* is optimal, so {St} is an
+equilibrium. Uniqueness is shown with an argument by contradiction that we
+leave to the leader.
+
+Corollary (stochastic Euler equation). Under the s a m e conditions, f o r the
+unique equilibrium {S,} a n d any time t,
+
+     S,         fl      E [ u (Ct+l)(St+ 1 + d,+,)            ffS]      a.s.
+             u'(c*)
+Proof. This follows from substitution of the equilibrium equation (8) for S,+ 1
+into the equilibrium equation (8) for S t , and by applying the law of iterated
+expectations.
+
+  Just as in the previous subsection, one can extend the representative-agent
+asset-pricing formula shown here to economies with heterogeneous agents,
+provided the securities are spanning and all consumption choices are interior.
+Rather than pursue this here, we return to it in the continuous-time framework
+of the following section.
+
+
+3.4. E x t e n d e d recursive preference models and time consistency
+
+The additively separable utility criterion (7) is restrictive. For example, this
+utility criterion cannot reflect any attitude toward the timing of the resolution
+1632                                                                           D. Duffle
+
+of uncertainty, as pointed out by Kreps and Porteus (1978). For settings like
+the present, a utility model developed by Epstein and Zin (1989a) retains the
+recursive structure of the additively separable model while admitting prefer-
+ences for early or for late resolution of uncertainty, and for independent
+adjustment of intertemporal elasticity of substitution and risk aversion. The
+two basic primitives of the Epstein-Zin utility model are:
+    (i) a certainty equivalent functional m : ~ ( ~ ) - - ~ ~ (where ~ ( ~ ) denotes the
+probability measures on the real line) and
+   (ii) an aggregator W : ~÷ × ~---~ ~.
+The certainty equivalent m is defined so that m(Sx) = x for any dirac measure
+tSx, consistent with indifference between any distribution/z of utility in the next
+period and the deterministic utility m(/z). An adapted stochastic process V is
+by definition the utility process for a consumption process c if V uniquely
+satisfies, for all t,
+
+       V, = W[c,, m(-V~÷,l~,)],
+
+where -V,+ 1[fit is the conditional distribution of V,+ 1 given ~ . (We could also
+append the condition that Vt = lira r V,r, where V r is the utility process for c in
+a T-horizon model with Vr = 0.) We then have the utility function U on L+
+defined by U ( c ) = 1/1. As a special case, we can recover the additively
+separable criterion (7) W ( x , y) = x + f l y and re(u) = ~ x d/z(x) (expectation).
+   The relaxation of the additively separable criterion (7) to general recursive
+utilities, such as the Epstein-Zin model, opens the way to a rich set of
+implications of attitudes towards risk for security pricing. For example, one can
+immediately study, using an appropriate certainty equivalent m, various forms
+of Machina's (1982) relaxation of the independence axiom of expected utility,
+or an alternative axiomatization of risk preferences such as that of Dekel
+(1986) and Chew (1989). Other extensions of the additively separable criterion
+(7) are cited in Section 6.6.
+   In a multi-period model, one reconsider the optimality of an initially chosen
+strategy at intermediate dates, after the passage of time and revelation of
+information, setting up the issue of "time consistency" examined by Johnsen
+and Donaldson (1985). In treating this problem, one usually restricts attention
+to preferences defined at each date and each state of the world that are
+time-consistent, in the sense that: for any c and ~"in L and any stopping time T,
+if c t = ~, for all t ~< T and if the continuation of c beginning at time T is strictly
+preferred to the continuation of ~" beginning at time T, then c is strictly
+preferred to ~"beginning at time zero. If we denote by V c the utility process for
+c under recursive preference primitives (m, W), we can then define c to be
+preferred to ~ at time t if V t > V~ almost surely. Monotonicity conditions on m
+and W are then sufficient for the time-consistency of recursive preferences,
+including the additively separable criterion.
+Ch. 31: The Theory of Value in Security Markets                                          1633
+
+
+4. Continuous-time equilibrium in security markets
+
+This section reviews the main concepts of general equilibrium and equilibrium
+asset pricing models in a continuous-time financial setting.
+
+
+4.1. General equilibrium in continuous-time
+
+The objective in this first subsection is to formulate and demonstrate general
+equilibria in a continuous-time setting with security markets. The approach is
+basically an extension of Arrow's model of Section 2. We will eventually
+presume that the available securities are dynamically spanning; that is, given
+the possibilities of continuous trading, markets are effectively complete. By
+using recent infinite-dimensional conditions for (static) complete contingent-
+commodity market equilibria discussed in Chapter 5, we can then implement a
+complete contingent-commodity equilibrium consumption allocation within a
+continuous-time security-spot market equilibrium.
+    The setting for uncertainty is a filtered probability space ( ~ , if, U:, P ) for the
+time set 9 - = [0, T], as described in the appendix, where U:= {~t: t E [0, T]}
+satisfies the usual conditions and if0 contains all subsets of zero probability
+events. The o--algebra fit represents the information available at time t. A
+cumulative dividend process is an integrable predictable semimartingale. For a
+dividend process D, the random variable D t represents the cumulative number
+of units of account paid by the security in dividends up to and including time t.
+A semimartingale is right continuous with left limits, so D t = limsu D s for all t
+almost surely and D,_ ~ limst , D s exists for all t almost surely. The difference
+A D t = D , - O t _ is the jump of D at t, a lump sum dividend. Let @ denote the
+space of dividend processes. If S is the stochastic price process of a security
+with the dividend process D, then G, = S, + D, represents the number of units
+of account at time t due to an agent holding one unit of the security from time
+0 to time t. We call the process G = S + D the gain process of this security. If
+one holds 0t units of the security from time t until time ~-, one realizes a
+dividend gain of O t ( D ~ - Dr) and a capital gain of Ot(S~ - St), adding up to the
+total gain O,(G~ - G,). If one varies one's holdings of the security at times
+to, tl . . . . . t~ (with 0 = t o < t~ < • • • < tk), then the total gain through time t k is
+
+     k-1
+     E o,,(o,,+,- G,).
+     /-0
+
+
+Extending to the case of "continual trading," if G is a semimartingale and one
+chooses, as a strategy for the number of units of the security to hold at each
+time in [0, T], some process 0 from the space L I [ G ] (the space of predictable
+1634                                                                            D. Duffle
+
+processes described in the appendix), then the total gain between any times t
+and ~- is the stochastic integral J'[ 0s d G s.
+   One of the primitives of our economy is a vector D = ( D °, . . . , D N) E @N+I
+comprising N + 1 dividend processes. With only a small loss in generality, we
+take D O to be a unit discount bond payable at T; that is, D t = 0 , t < T and
+D T = 1. Letting 5e denote the space of semimartingales, a gain operator is a
+linear function H : ~ - - - ~ b° mapping each dividend process D to its gain
+G = I I ( D ) . Given H, we can define the gain process G = ( G O . . . , G N) by
+G ' = H ( D ' ) . Given (H, D ) , a trading strategy is an ~u+l-valued process
+0 = (0 °, . . . . ON) in L ~[G], with 0, representing the portfolio of securities held
+at time t. The total gain process for 0 ~ L I [ G ] is .f 0, dG,.
+   For 1 given commodities, a consumption process is a predictable process
+c : O × [0, T]---~ R l with E ( f o r c,. c t dt) < ~. As usual, two consumption pro-
+cesses are treated as equivalent if they are equal almost everywhere on
+O × [0, T]. We let L denote the space of (equivalence classes o f ) c o n s u m p t i o n
+processes. For a given consumption process c E L, the vector c, represents the
+rate (per unit of time) at which the ~e commodities are consumed at time t.
+Likewise, a spot price process is some element p of L, with p, representing the
+vector of unit prices of the l commodities at time t. Given p , a consumption
+process c is therefore financed by paying units of account at the rate p , . c, at
+time t. Each agent i E {1 . . . . , m} is defined by an endowment e i in the usual
+positive cone L+ of L and by a utility function U i : L+ ~ ~.
+    Given a gain operator 1I, which defines the security price process S =
+H ( D ) - D, and given a spot price process p E L , a trading strategy Ofinances a
+consumption process c E L at an initial cost of ~b(c) if:
+     (i) Oo.S o = O(c);
+    (ii) for all t C [0, T], O,.(S, + A D , ) = Oo. S o + .[o O~d G s - fo Ps .c~ ds;
+   (iii) 0 T . ( S v + A D T ) = O.
+   The cost O(c) represents the required initial investment; the terminal con-
+straint (iii) requires that the terminal market value of the trading strategy is
+zero; while the intermediate constraint (ii) requires that the interim value of
+the trading strategy is precisely that generated by security trading gains net of
+consumption purchases. If, as in the equilibria we are about to describe,
+S r = O, then (iii) is superfluous.
+    Given (//, p), a budget-feasible plan for agent i is a pair (0, c) consisting of a
+trading strategy 0 and a consumption process c such that 0 finances the net
+consumption purchase c - e i at an initial cost of zero (since there is no initial
+endowment of securities). A budget-feasible plan (0, c) is optimal for agent i if
+there is no budget-feasible plan (0', c') such that Ui(c' ) > Ui(c ).
+    A security-spot market equilibrium for the economy
+
+       ~=((~,~,F,P),D,(U~,e~)),            iE{1,...,m),
+Ch. 31: The Theory of Value in Security Markets                                          1635
+
+
+is a collection (1I, p, (0 ~, ci)), i E{1 . . . . , m}, such that, given the gain
+o p e r a t o r / / a n d spot price process p, for each agent i E { 1 , . . . , m}, the plan
+(0', c') is optimal, and markets clear: Zi~ ~ c i - e' = 0 and Elm1 0 / = 0.
+   This is clearly a continuous-time analogue of Arrow (1953). Just as in that
+model, sufficient conditions for an equilibrium are conditions ensuring a (static)
+Walrasian equilibrium for the complete contingent-commodity markets
+economy (U i, ei), i E {1 . . . . . m}, as well as a spanning condition on the
+security dividends D.
+   Since L is a Hilbert lattice under the inner product ('1") defined by
+                      T
+
+        lc,=E(f   0
+
+
+we can exploit utility conditions developed by Mas-Colell (1986) for the
+existence of a (static) contingent-commodity market equilibrium. Let Ilcll 2=
+(clc) define a topology on L, and define a utility function U to be v-proper on
+X, for some v E L+ and X C L+, if there exists a scalar e > 0 such that, for all
+x in X, a in [0, o~), and z in L+,
+
+
+
+For further details, see Chapter 34. We have the following variant of Mas-
+Colell's (1986) Theorem.
+
+Theorem 1. Let e = Eirn=l e ~. Suppose, for each agent i ~ { 1 , . . . , m}, that U~ is
+quasi-concave, continuous, locally non-satiated in the order interval [0, e], and
+e-proper on [0, e]. Then (U i, e ~) has a complete contingent-commodity market
+equilibrium (~b, (ci)), where ~b : L--~ ~ is a continuous linear price functional
+and the allocation (c ~) is Pareto optimal.
+
+  The properness assumption is satisfied, for example, if Ui has an additive
+representation of the form
+                      T
+
+              E[f                  , c     L+,                                          (lo)
+                  0
+
+
+where    U i : ~ l X [0, T]--~R is strictly increasing and concave such that
+D+~ui(O, t), the right derivative of ui(., t) at zero, is bounded in t. For later
+purposes of pricing securities, however, we will need to work with a pointwise-
+interior equilibrium allocation (c I > 0 a.s. for all t for all i), and will therefore
+1636                                                                            D. Duffle
+
+later cite an alternative existence result using the Inada condition D c+ ui(O, t) =
++do for all t.
+   In order to formulate a dynamic spanning condition, we consider first the
+following related definition. An NN-valued martingale M = (M a. . . . , M N) is a
+martingale generator for (12, ~ , g:, P) if, for any martingale X, there exists
+q~ E L l [ M ] such that for all t, X t = X o + ~o q~s dM, almost surely.
+
+Assumption (dynamic spanning). There exists a probability measure Q on
+(12, i f ) , uniformly equivalent 5 to P, such that the martingales M7 =
+EQ(DrlffS), t E [ 0 , T], n E{1 . . . . , N ) , form a martingale generator for
+(12, o%,D:, Q).
+
+  The dynamic spanning assumption is discussed in the setting of Brownian
+Motion in the next subsection. The semimartingale property and the definition
+of f 0 dS are invariant under the substitution of an equivalent probability
+measure. The definition of L~[G] is also invariant under the substitution of a
+uniformly equivalent measure Q for P, and vice versa. Likewise, the definition
+and topology of the consumption space L is invariant under substitution of Q
+for P, and vice versa. Consider the gain operator H Q defined by H O ( D ) t =
+EQ(D~I~,).
+Lemma (spanning). Suppose D satisfies the dynamic spanning condition under
+the probability measure Q. Given the gain operator FI ~ and a spot price process
+p, any consumption process c is financed at the (unique) initial cost ~bo (c) = E Q
+       p , . c, a t ) .
+
+Proof. Let (p, c) E L x L be arbitrary. Under the dynamic spanning condi-
+tion, the Q-martingales M = (G 1. . . . , G N) defined by G n = IIQ(D ~) form a
+martingale generator for (g2, ~-, Y, Q). Let
+                              T
+
+
+
+
+                          0
+
+Since X is a Q-martingale, by dynamic spanning there exists p =
+(q 1,..., ., q s ) E L I[M] such that X t = X o + So q~sdM, almost surely, t ~ [0, rl.
+Let 0 n = p", 1 ~ n ~ N, and let 0 ° be defined by
+
+
+       O°t = X , -                ps'csds-   ~, O;(S t + A D t ) ,   t~[O,T].       (11)
+                                             n=l
+                          0
+
+
+  5A probability measure Q is uniformly equivalent to P if the Radon-Nikodym derivatives
+dQ/dP and dP/dQ are essentially bounded.
+Ch. 31: The Theory of Value in Security Markets                                         1637
+
+The predictability of D implies, by an argument left to the reader, that 0 ° is
+predictable. Since G O= H ° ( D °) is identically equal to 1, we know that
+S 0° d G ° - - 0 . By construction, conditions (ii) and (iii) for 0 to finance c are
+satisfied, and 00 • S O= X o = ~bp°(C). The uniqueness of 0o • S O (over all 0 financ-
+ing c) follows immediately.
+
+Theorem     2.  Suppose that (U i, ei), i E {1 . . . . . m}, has a (static) complete
+contingent-commodity market equilibrium (~b, (ci)). (For this, it suffices that U~
+satisfies the regularity conditions of Theorem 1.) If the dividend process D
+satisfies the dynamic spanning condition, then ((qt, ~, ~:, p), (Ui, ci), D) has a
+security-spot market equilibrium with the same consumption allocation (ci).
+
+Proof.  Let Q be uniformly equivalent to P such that G - - H Q ( D ) is a
+martingale generator. Since L is a Hilbert space, the given contingent-
+commodity market equilibrium price function ~b has a representation of the
+form
+
+
+     @(c)=              EQ(fp,.c,dt), c L,                                             (12)
+
+
+for a unique spot price process p ~ L+. Since D satisfies the dynamic spanning
+condition, by the previous lemma the consumption process c' - e ~ is financed
+                  •              i           •             Q i       i    •      Q    i  -
+by some trading strategy 0 at the unique cost ~p(c - e ). Since (~bp, (c)) is a
+contingent-commodity market equilibrium, however, q , p ~ ( i e i ) = 0 . Thus
+(0', c') is a budget-feasible plan for i. We can choose O' in this fashion
+for i < m. Since c m__ e m =--Eg=     ,,-x1 Ci - e,i and by linearity throughout, the
+trading strategy 0 m = - E i =m-1 0 i finances C m - e m at an initial cost of zero, so
+(Om, Cm) is a budget-feasible plan for agent m. The plans (0 i, ci), i ~
+{ 1 , . . . , m}, are market clearing. It remains to show optimality: that there is
+                              ^i   Ai                    •                  Ai        i
+no budget-feasible plan (0, c ) for some agent t such that Ui(c ) > Ui(c ).
+   We will show a contradiction, assuming that such a superior plan (0~, 6i)
+exists. Since Ui(~ i) > Ui(c i) and (g,p~, (ci)) is a complete contingent-commodity
+market equilibrium, gtQ(O   : i) > tpOp(Ci). If b i finances o i _ _ e,i however, it does so
+at the unique cost ~b~(~' - e') > q,°p(c- e i) = 0, which contradicts the assump-
+tion that (0 i, oi) is budget-feasible• This proves optimality•
+
+
+4.2. The dynamic spanning condition and Girsanov's Theorem
+
+This subsection discusses sufficient conditions for a dividend process to satisfy
+the dynamic spanning condition.
+1638                                                                                      D. Duffle
+
+   As explained in the appendix, an integrable semimartingale X is character-
+ized by the fact that it can be written as the sum M + A of an integrable
+process A of finite variation and a martingale M. If D is an EN-valued
+semimartingale of the form M + A, where M is a martingale generator, there is
+no guarantee that the ~N-valued process X defined by X t = E ( M T + Arl~,),
+t E [0, T], defines a martingale generator. On the other hand, under technical
+regularity conditions, one can apply the Girsanov-Lenglart T h e o r e m for the
+existence of a new measure Q under which D is a martingale and inherits the
+martingale generator property of M. Further discussion of this appears in
+Section 5.9.
+   For a concrete example, suppose that Y is the standard filtration of a
+Standard Brownian Motion B in ~d, for some dimension d. Then B is itself a
+martingale generator, as is any martingale in ~ N of the form X, = f0 q~s dBs,
+t E [0, T], if and only if {~s} is a (N × d)-matrix-valued process of essential 6
+rank d. Now, suppose that d D , = bt, d t + o-tdB . where f o'tdB t has the
+martingale generator property (that is, o- has essential rank d.) U n d e r technical
+regularity conditions on or and /x, there exists an equivalent probability
+measure Q and a Brownian Motion /~ in R a under Q such that d D t = o-t d/3,,
+which implies that D is itself a martingale generator for (12, o%, ~, Q). With
+d = N for instance, it is enough that /x and or are bounded and that o-~ has a
+uniformly bounded inverse. In that case, Q is defined by
+                         T                    T
+
+       d P = exp             q~1dBl - ~           ~,. q~, dt ,                                (13)
+                     0                    0
+
+
+where q~t = o ' t l / ' L t " Moroever, /~ is defined by /~, = B t - f o ~s ds. Indeed this
+construction o f / } and Q succeeds under the weaker regularity conditions of the
+following theorem.
+
+Theorem 3 (Girsanov).         Suppose ~ is an ~d-valued predictable process for
+(12, ~, ~:, P), where ~: is the standard filtration o f a Standard Brownian Motion
+B in R d. Provided E[exp(½ for q~t" q~, dt)] < ~, the R a d o n - N i k o d y m derivative
+given by (13) defines a probability measure Q such that
+
+
+       /3,=B,-fqsds,               t@[0, T ] ,
+                 0
+
+
+is a Standard Brownian Motion on (O, 0%, ~:, Q).
+
+  6The essential rank of ~ is d if rank[q~(w, t)] = d almost everywhere on 12 × [0, T].
+Ch. 31: The Theory of Value in Security Markets                                     1639
+
+
+   As pointed out by Harrison and Kreps (1979), and further illustrated in
+Section 5, Girsanov's Theorem can sometimes lead to an explicit calculation of
+the arbitrage price of securities.
+   Aside from the case of Brownian filtrations, well known examples of
+filtrations with an identifiable martingale generator include the standard filtra-
+tions of event trees (including finite-state Markov chains), point processes
+(such as a Poisson process) and Azema's martingale.
+
+
+4.3. The representative-agent asset pricing formula
+
+Here, we specialize to a setting that produces a continuous-time multi-agent
+analogue to the multi-period representative-agent formula of Section 3. This
+subsection and the next are based on Duffle and Zame (1989). We take our
+original definition of a continuous-time security-spot market model
+((J2, o%, I:, P), (U~, e/), D), i E { 1 , . . . , m}, but adopt the assumption that
+there is only 1 = 1 commodity, and that for all i, U~ has a utility representation
+of the form
+                      T
+
+                                      c~_L+ ,
+                  0
+
+
+where u i : ~ + x [0, T]--> ~ is regular, in the sense that ui is smooth (say C 4)
+restricted to (e, oo) for any • > 0, and, for all t, u~(-, t) : ~+ --> R is increasing
+and strictly concave with unbounded derivative uic(-, t). Under all of these
+conditions, we say that U~ is additively separable and regular (us). As men-
+tioned previously, the Inada condition of "infinite marginal utility at zero"
+implies that Pareto optimal consumption levels must be strictly positive almost
+everywhere, which is useful for our purposes. Unfortunately, the unbounded-
+hess of uic is also inconsistent with the properness condition used in Theorem
+1. Nevertheless, we can exploit the additively separable restriction on utility for
+the following result, which was independently shown by Araujo and Monteiro
+(1989) and Duffle and Zame (1989). This type of result was later given new
+and successively simpler proofs by Karatzas, Lakner, Lehoczky and Shreve
+(1988) as well as Dana and Pontier (1989).
+
+Proposition 4.     Suppose, for all i, that U i is additively separable and regular. I f
+the total endowment e = Ei~=l e i is bounded away from zero, then the economy
+(Ui, ei), i E {1, . . . , m}, has a complete contingent-commodity market equilib-
+rium (~, (ci)), i E {1, . . . , m}, with c i bounded away f r o m zero for any agent i
+having e i ~ O.
+1640                                                                                  D. Duffle
+
+  Uniqueness of equilibria is discussed by Karatzas, Lakner, Lehoczky and
+Shreve (1988). Araujo and Monteiro (1987) have pointed out the restrictive-
+ness of assuming that e is bounded away from zero. One may relax this
+assumption in a production economy.
+  Given an equilibrium (~b, (c~)) for the complete contingent-commodity mar-
+ket economy (U, ei), a representative agent is a utility function UA : L+ --->~ of
+                         m
+the form, for some A E R+,
+
+       Ux(x) =               max               ~ l~iUi(x i)   subject to ~ x i <~x,       (14)
+                 xicL+, i E { I . . . . .   m} i=l                       i=1
+
+
+such that (g,, e) is the (no-trade) equilibrium for the single-agent economy
+(Ua, e). Equivalently, a representative agent for (~b, (ci)) is defined by agent
+weights A ~ ~7 such that e E arg max c U~(c) subject to ~b(c) ~ ~(e).
+
+Proposition 5.  Suppose, for all i, that U i is additively separable and regular
+(ui), and that e = ~ i ei is bounded away from zero. There is a complete-
+contingent commodity market equilibrium (~b, (ci)) with a representative agent
+Ua for some A ~ ~"~. Let u A : ~+ x [0, T]---~ ~ be defined by
+                       m
+       Ua(a, t ) = max 2.~ Aiui(ai, t)               subject to ~ a i <~a .               (15)
+                     °lCR~ l i=1                                i=l
+
+
+ Then, U~ is additively separable and regular (u a), and A can be chosen so that,
+for any c E L, ~b(c) = [for uAc(e,, t)c, dt].
+
+    The representative-agent part of the proof, due to Huang (1987), is an
+extension of the representative-agent construction of Section 3.2 to this
+infinite-dimensional setting.
+    Combining Proposition 5 with Theorem 2 of Section 4.2, we have the
+existence of a security-spot market equilibrium (II, p, (0 i, ci)), i ~ {1 . . . . , m},
+provided the dividend process D satisfies the dynamic spanning condition.
+    Given an equilibrium (1I, p, (0 i, ci)), i E { 1 , . . . , m}, we now study the
+"real" security price process S defined by S, = S,/p,, t E [0, T]. By "real," we
+mean the price relative to the numeraire defined at each time t by the
+consumption commodity. If the integral /9, = f0 (1/Ps)dDs is well-defined,
+t h e n / 9 is the associated real dividend process. We can also define a real security
+to be a finite variation dividend process Y representing a cumulative claim to Y,
+units of the consumption commodity through time t. If the integral D r =
+fo Ps d Ys is a well-defined 7 (nominal) dividend process, we say that Y is
+
+  7If Y is an integrable semimartingale, then, under the conditions of Proposition 4 S P, dY, is
+automatically well-definedsince the spot-price process p is predictable and bounded.
+Ch. 31: The Theory of Value in Security Markets                                       1641
+
+
+
+admissible. Any consumption process c E L, for example, generates an admiss-
+ible real dividend process Y defined by Y, = J'0 cs ds, which has the correspond-
+ing nominal dividend process D Y defined by D tY = .fot psc~ ds. The introduction
+of any admissible real security Y has no effect on the equilibrium shown in the
+proof of Theorem 2.
+
+Proposition 6. Suppose ((12, o%, 0:, P), (Ui, ei), D ) is a security-spot market
+economy such that:
+     (i) for all i, U i is additively separable and regular (ui),
+    (ii) the aggregate endowment e = ~,,im_l e i is bounded away f r o m zero,
+   (iii) the security dividend process D satisfies the Dynamic Spanning con-
+          dition.
+ Then there is a security-spot market equilibrium (H, p, (0 i, ci)), i E {1 . . . . . m},
+with a representative agent Ux that is additively separable and regular (uA), and
+for which the real price process S y o f any admissible real dividend process Y
+satisfies
+                                      T
+
+                ,
+     Sv, - u,c(e,,t ) E
+                                 if u,c(e,,s) d Y , ~, ] a.s., t e l 0 , T].
+                                  l
+                                                                                     (16)
+
+
+Proof. The existence of an equilibrium (H, p, (0;, c;)), i E {1 . . . . . m}, is
+guaranteed by Proposition 5 and Theorem 2 of Section 4.2, with the gain
+operator
+
+     I I ( D ) = H Q ( D ) = E°(DTI~,), t ~ [0, T],
+
+for an appropriate probability measure Q. From Proposition 4, we can also
+take it that the underlying complete contingent-commodity market equilibrium
+(q,, (c;)) has a price functional of the form
+                     T
+
+
+
+
+                 0
+                                              4'
+We know that, for a unique p in L,
+                                          T
+
+                                                   c@L.
+           =                 =    o(f
+                                      0
+
+
+It follows that Pt U,c(e,, t)/~:,, t @ [0, T], where { ~,} is the density process for
+                         =
+
+
+Q; that is, ~, = E ( ( d Q / d P ) t ~ , ) . [One can review Duffle (1986) for the details
+on this last point.]
+1642                                                                                       D. Duffle
+
+  Let Y be an admissible real dividend process. The (nominal) gain process of
+Y is defined by
+                          T
+
+
+
+
+                      0
+
+                                      T
+
+
+
+
+                                  t
+                                              ~s
+                                          T
+                              1
+                                                                    t ~ [0, T].
+                                      t
+
+
+The last equality relies on an application of Fubini's Theorem for conditional
+expectations, which can be found in Ethier and Kurtz (1986, p. 74). Since
+(j, = uac(e,, t)/p,, the corresponding real price process S Y is therefore given by
+                                                       T
+
+
+                 p,               - uA~(e,, t) E           ua~(e ~, s) d   ~,     ,   tE[O, TI,
+                                                   t
+
+
+which completes the proof.
+
+  The representative-agent real security pricing formula (16) is an obvious
+analogue of the discrete-time single-agent multi-period asset pricing formula of
+Section 3.
+
+Example (the term structure). As an application of this asset pricing model, let
+Y denote the cumulative dividend process representing the payoff of a zero-
+coupon default-free bond of unit principal maturing at time ~-E [0, T]. This
+means that I1, = 0 for t < r, while Yt = 1 for t/> r. Equation (16) then implies
+that the price of this bond is zero after maturity, and at any time t before
+maturity has the price E[uac(e ~, r)l ff°t]/uac(e ,, t). Various parametric assump-
+tions concerning the distribution of the aggregate endowment process e and the
+representative-agent utility u, are sometimes used to calculate this conditional
+expectation. The most famous example is the term structure model of Cox,
+Ingersoll and Ross (1985a).
+
+
+4.4. The consumption-based C A P M
+
+Continuing to narrow our focus, we restrict ourselves in this subsection to the
+standard filtration Y of a Standard Brownian Motion B in ~u, for some
+Ch. 31: The Theory of Value in Security Markets                                     1643
+
+
+dimension d. With additively separable and regular utility, this produces the
+Consumption-Based Capital Asset Pricing Model ( C C A P M ) of Breeden
+(1979). Breeden's original proof assumes the existence of an equilibrium with
+pointwise interior consumption choices and optimality characterized by a
+smooth solution to the Bellman equation for Markov dynamic programming.
+This subsection shows that that representative-agent pricing approach allows
+for primitive conditions leading directly to an equilibrium satisfying the
+CCAPM.
+  Before proceeding, we need to record the following version of Ito's Lemma.
+In this setting, an Ito process in R" is a semimartingale of the form
+
+
+     Xt=x+iixsds+fo'~dB,,                 t E [0, T ] ,
+                 0            0
+
+
+where ix is an R"-valued adapted process and o- is an n x d matrix-valued
+predictable process. The stochastic differential form for X, which is purely
+formal notation, is
+
+     dX t = / x t dt + ~rt dB t .
+
+It is a common abuse of the meaning of this representation of X to treat ixt as
+the "instantaneous conditional expectation of d X , , " and likewise to treat o-to-t
+as the "instantaneous conditional covariance matrix of dXt." Of course, this
+can be justified for square integrable X by passing to limits the mean and
+covariance matrix of Xt+ ~ - X t, conditional on oft, as 6 --->0. For the following,
+fx denotes the partial derivative of a function f : ~" x [0, T]---> ~ with respect to
+x, and likewise for f, and fx~.
+
+Ito's Lemma. For any ~n-valued Ito process X with d X t = ix, dt + or, dB, and
+any C 2 function f " ~" x [0, T] ~ ~, the process Y defined by Yt = f ( X t , t),
+t@ [0, T], is also an Ito process with d Y t = ixf(t) dt + fx(X,, t)o-t dB,, where
+
+     Ixr(t) = fx(X,, t)ix, + f,(X,, t) + ½ tr[~rlr f~x(X,, t)o',].
+
+  The conditions for Ito's Lemma can be weakened in many directions.
+  We now fix an economy ((£2, .~, ~:, P), (Ui, ei), D ) , i @ { 1 , . . . , m}, satisfy-
+ing the conditions of Proposition 5, where F is the filtration generated by a
+Standard Brownian Motion B in ~d. By that proposition, there exists an
+equilibrium satisfying the representative-agent real asset pricing formula
+                                 T
+                ' E [I Uac(e s, s) d
+     SVt - uAc(e,,-----~)                         ~   ,   t E [0, T],
+                             t
+1644                                                                                      D. Duffle
+
+for any admissible real dividend process Y, where ua defines the associated
+representative-agent utility function.
+  Since the C C A P M is by nature a statement about the "instantaneous
+covariance of de," with other variables, we need something like the following
+condition on the aggregate endowment.
+
+Ito Endowments.             The aggregate endowment e is an Ito process.
+
+  It is in fact enough for most of the following that e is a semimartingale. We
+henceforth write de, =/~e(t) dt + (re(t) dB,. Using Ito's Lemma and the fact
+(verified with the Implicit Function Theorem) that u~c is a C 2 function, the
+process ~-, Uac(et, t) has the stochastic differential representation
+              =
+
+
+
+
+       d~rt = [uAc,(e,, t)tze(t ) + u~t(e,, t) + ½uxc~c(e ,, t)oT(t ) • ~r~(t)] dt
+               + ua~(e,, t)o'e(t) d B , .
+
+For any admissible real dividend process Y, with real equilibrium price process
+V = S v, the process Z defined by Z, = f0 Its dYs + 7rtV, is a martingale since, for
+any interval [t, s],
+
+
+
+       E(Z~]o%,) =          7r~ d Y , + E                      1 E
+                                                7r~ dY" + Trs 7r~        ~r~dY~ ~-~ ,~,
+                        0                   t                        s
+
+
+
+
+                      = f 7r~ dY~ + 7rtE = Z, •
+                        0
+
+
+   Suppose Y is an Ito process of the form d Y t = izv(t ) d t + ~ry(t) dB,. This
+implies (by Ito's Lemma) that the real price process V is also an Ito process,
+with a representation of the form dV, =/Xv(t ) d t + O-v(t ) d B , . Again applying
+Ito's Lemma,
+
+       d Z t = [Trtlxr(t ) + ~,l.tv(t ) + Vtlx (t ) + u~¢c(et, t)(re(t ) • Cry(t)] dt
+                  + '~z(t) d B , ,
+
+for some O-z(t ) that we need not calculate here. An Ito process dX, =
+izx(t) dt + O'x(t ) d B t is a martingale if and only if iZx(t ) = 0 almost everywhere.
+Since Z is a martingale, we therefore have, almost everywhere,
+
+       ,rrtI/~y(t ) + ~v(t)] + V d ~ ( t ) + mcc(e,, t)o-e(t ) • O-v(t ) = O .
+Ch. 31: The Theory of Value in Security Markets                                       1645
+
+Assuming that lit ~ 0, we can divide through by 7r,V~ and rearrange to obtain
+
+     t ~ ( t ) + lxy(t)       -uxcc(et, t) fiv(t)
+               Vt       - r,= ua~(et , t )   Vt . ~ ( t ) ,                          (17)
+
+where r, = - g , ~ ( t ) / T r t . Formally speaking, if we treat (d E + dY~)/V~ as the
+"instantaneous real r e t u r n " on the security, it is natural to treat
+
+     R, -     v(t) +   y(t)
+                  V,
+
+as the "instantaneous mean rate of return" and (trv(t)/V~). fie(t) as the
+"instantaneous covariance between the return dV~/V~ and aggregate consump-
+tion increment det," following the heuristic conventions outlined earlier. If the
+return is "riskless," that is, if trv(t ) = 0, then we h a v e / ~ = r,, so we call r~ the
+riskless rate of return. Since ~', = uAc(e,, t) is the "representative-agent margi-
+nal utility," we can therefore view the riskless rate r, = - t z ~ ( t ) / c r , as the
+exponential rate of decline of the representative-agent marginal utility, a
+characterization uncovered (in a more narrow single-agent Markov setting) by
+Cox, Ingersoll and Ross (1985b). The difference R t - r t is known as the excess
+mean rate of return of the asset, and based on (17) satisfies the proportionality
+restriction
+
+                 -Uxcc(et, t)
+     gt- rt-      Uxc(et ' t)   oR(t ) • fie(t),                                     (18)
+
+where fiR(t) = fiv(t)/V,. In words, the mean excess rate of return on a security
+is proportional to "instantaneous covariance" with aggregate consumption
+increments. The constant of proportionality is the risk aversion coefficient of
+the representative agent. This is a form of the CCAPM. We summarize as
+follows.
+
+Proposition 7 (CCAPM).        Suppose the conditions of Proposition 5 are satis-
+fied, that ~ is the standard filtration of a Standard Brownian Motion B in ~a,
+and that the aggregate endowment process e is an Ito process. Then there exists a
+security-spot market equilibrium in which, at any time t, the return of any
+security (with non-zero price) satisfies (18).
+
+  We can also view the C C A P M in a traditional " b e t a " form. Because of the
+dynamic spanning condition, one can assume without loss of generality that
+there is some security whose real price process, say V*, has a diffusion process
+or* with o-* = kto-e for some positive predictable k, characterizing the security
+1646                                                                        D. Duffle
+
+as one whose return is "instantaneously perfectly correlated" with aggregate
+consumption increments. For such a security, the instantaneous mean rate of
+return, denoted/~*, satisfies the CCAPM, implying that
+
+                  _ Ua~c(e ,, t)
+       R* - r t     uac(e,, t) ~rR*(t)'°'e(t)'                                  (19)
+
+
+where trR.(t ) = ~r*(t)/V*,. One defines for any given security the "instanta-
+neous regression coefficient"
+
+                ~rR(t)" ~rg.(t)
+       fin(t) = o_R.(t), o.R.(t )
+
+(assuming that ~rn.(t ) ~ 0), as the beta of that security relative to aggregate
+consumption. Combining this expression with the originally stated form (18) of
+the CCAPM, we have the traditional "beta form"
+
+        R,-   r, = f l g ( t ) ( R * - r , ) ,                                  (20)
+
+satisfied by all securities (with non-zero market values). The beta form (20) is
+implied by, but does not imply, the representative-agent form (18) of the
+CCAPM since (20) applies even if the representative-agent risk aversion
+coefficient defined by -uAcc(e t, t)/u~c(e,, t) is replaced in (18) by any other
+coefficient. For example (under strong conditions on an equilibrium), a version
+of the beta form of the CCAPM is satisfied even without dynamic spanning.
+The supporting arguments may be found in Breeden (1979). At this writing,
+however, primitive conditions for multi-agent equilibrium that do not require
+dynamic spanning remain to be shown.
+   Of course, Sections 4.3 and 4.4 are based on the strong assumption of
+additively separable utility; for extensions, see Section 6.6.
+
+
+5. Continuous-time derivative asset pricing
+
+5.1. Prologue
+
+This section characterizes, with the aid of martingale theory, the arbitrage-flee
+pricing of derivative assets, those whose dividends can be financed by trading
+other "primitive" securities. Under the assumption of no arbitrage oppor-
+tunities, the price of a derivative asset is the initial investment cost in primitive
+securities required to replicate the dividends of the derivative asset. If this were
+not the case, a position in the derivative asset combined with an offsetting
+Ch. 31: The Theory of Value in Security Markets                                            1647
+
+
+position in the replicating trading strategy would produce an arbitrage. This
+obviously ignores transactions costs.
+   Of course, the primitive securities must themselves be priced, say by an
+equilibrium asset pricing model or even by actual financial markets, but it is
+nevertheless useful to have a model that prices some (derivative) securities
+relative to other (primitive) securities. The most famous example of this is the
+Black-Scholes (1973) formula for the price of a European call option on a
+security whose price process is a geometric Brownian motion. Arbitrage pricing
+is perhaps the most actively used asset pricing technique in practical applica--
+tions.
+   A large part of this section follows the lines of Harrison and Kreps (1979),
+establishing, in the manner of Section 3.1, that the absence of arbitrage implies
+the existence of an equivalent martingale measure. From this, any derivative
+security price can be calculated as the expected discounted present value of the
+security's dividend stream, substituting the equivalent martingale measure for
+the originally given probability measure in calculating the expectation.
+
+
+5.2.   The setup
+
+
+A basic primitive is a filtered probability space (/2, o%, ~:, P), where 0: =
+{o%,: t E [ 0 , T]} is an augmented filtration of it-algebras satisfying the usual
+conditions, as explained in the Appendix. The o--algebra ~t is the set of events
+characterizing information held by investors at time t. For simplicity, we take it
+that o%0 is almost trivial, in that it includes no events with probability in (0, 1),
+and without loss of generality take f f = o%r.
+   The s h o r t - t e r m rate, if it exists, is an adapted process r satisfying ~0c Ir,] d t <
+   almost surely, with r t interpreted as the dividend rate demanded at time t on
+a security whose price is always equal to 1. That is, r t is the continuously
+compounding interest rate on riskless deposits at time t. The existence of the
+short-term rate is itself an assumption that can be avoided for the following, at
+some cost in concreteness. We actually assume, henceforth, that the short-term
+rate exists and is bounded.
+   By initially investing one unit of account at the short-term rate and continu-
+ally reinvesting the original deposit and accumulated interest dividends at the
+short rate, the total balance Z t held at time t is determined by the ordinary
+differential equation
+
+       dZ t
+       dt     - r~Z~ ,   Z o=1.
+
+
+The solution is of course Z, = exp(f0 r s ds).
+1648                                                                        D. Duffle
+
+  Likewise, investing one unit of account at any time t in the same short-rate
+investment strategy yields by time ~"
+
+
+         =exp(f rs4 l
+
+
+
+
+   Also given are N securities with cumulative dividend processes D ~ , . . . , D u
+and price processes S 1, . . . , S N. By definition, these are integrable semimar-
+tingales, with D predictable. We let {D O = f 0 r s d s : 0 ~ < t ~< T} denote the
+cumulative interest dividends on the short-term deposit security, with associ-
+ated price process S Oidentically equal to 1. This makes for the vector dividend
+process D = (D ° . . . , D N) and price process S = (S °, . . . , Sn). The associated
+gain process is G = D + S.
+   Unless otherwise stated, we continue to use the convention that the price
+processes are ex dividend, meaning that the cum dividend market value of a
+unit of security n at time t is S7 + ADT, the price plus any lump sum dividend
+paid at that time t.
+   As in Section 4, a trading strategy is an ~N+l-valued process 0 E LI[G].
+Aside from the natural informational constraint, the restriction that 0 E L I[G]
+is technical, mildly limiting the speed and sizes of trades, and is automatically
+satisfied in a finite-dimensional setting. Several alternative sets of technical
+assumptions will lead to the basic conclusions of this section, as shown for
+example by Dybvig and Huang (1988).
+
+
+5.3. Arbitrage and self-financing strategies
+
+A dividend process C is financed by a trading strategy 0 if
+
+
+       O,.S,=Oo. S o + f O s d G s - C , _ ,   t E [0, T ] ,                    (21)
+                           0
+
+
+
+meaning that the current market value O,.S, of the strategy at time t is the
+initial investment value 00 • So, plus the trading gains fo Os dGs, less the
+cumulative dividends C t removed from the strategy by time t.
+   A n arbitrage is a trading strategy 0 with initial investment value 00 • S O~<0,
+financing a non-negative dividend process D °, and having a non-negative
+cum-dividend final value Or.(S r + ADr), with one of these three non-zero.
+The basic goal of this section is to characterize the prices of securities under an
+assumption of no arbitrages.
+Ch. 31: The Theory of Value in Security Markets                                    1649
+
+ A trading strategy 0 is self-financing if it finances a zero dividend process,
+meaning that the strategy neither generates nor requires income during (0, T).
+
+Lemma 1.      There is an arbitrage if and only if there is a self-financing arbitrage.
+
+Proof. A self-financing arbitrage is an arbitrage. Suppose there is an arbitrage
+0. By the definition of a dividend process, the dividend process D o financed by
+0 is a semimartingale. Consider the trading strategy q~ = (q0, . . . . q N) defined
+by q~ = 0, j ~ 0 and ~o° = J'0 fs., dD°. In other words, ~pre-invests the dividends
+financed by 0 at the short rate. The strategy 0 + ~o is then a self-financing
+arbitrage. (It is clearly an arbitrage, and is self-financing by a calculation using
+Ito's Lemma.)
+
+   If T is the terminal date of the economy, it seems compelling that S T = 0
+since there are no dividends after time T. As pointed out by Ohashi (1987),
+this is actually an assumption that goes beyond the absence of arbitrage, since
+it may be impossible to carry out an arbitrage with S T ~ 0 if S T is not
+measurable with respect to ~ r - , the left limit of the filtration at T. This may be
+viewed as a technical limitation of the model that can be eliminated by any of
+several minor assumptions. For example, we could allow an extra round of
+~r-measurable trades at time T, or could extend the time horizon of the
+economy to [0, ~). Unless otherwise stated, we do not assume that S T = 0.
+
+
+5.4. The arbitrage pricing functional
+
+Let O denote the space of self-financing trading strategies and M = {0T • (S T +
+ADT): 0 U O) C L l(p), the marketed subspace of potential final values.
+
+Proposition 8. There is no arbitrage if and only if there is a unique strictly
+positive linear functional 4' : M---> • defined by 4'[0T • (S T + ADT) ] = 00 • S 0.
+
+Proof. Suppose there is no self-financing arbitrage. For two self-financing
+strategies 0 and q~ satisfying 0T • (S T + ADT) = q~T"(ST + ADT), we claim that
+00" So = q~0"So- If not, say if 00 • S O> q~0"So, then ~o - 0 is a self-financing
+arbitrage. Thus ~bis well defined. Strict positivity of 4' follows directly from the
+definition of an arbitrage. Conversely, if 4' is uniquely well defined and strictly
+positive, there is no self-financing arbitrage. By Lemma 1, it suffices to
+examine self-financing arbitrages.
+
+  Our objective now is to characterize, under the assumption of no arbitrage,
+the arbitrage pricing functional 4' given by Proposition 8.
+1650                                                                            D. Duffle
+
+5.5. Numeraire-invariance
+
+Before proceeding, we will put in place for later use a natural fact: changing
+the numeraire for prices and dividends has no real effects. A price deflator is a
+positive predictable semimartingale/3 that is bounded and bounded away from
+zero. For example, /3, could be the reciprocal of the price of a particular
+security (such as a foreign currency) or commodity (such as gold). The
+following proposition states the obvious fact that re-expressing all prices and
+dividends with respect to a price deflator has no impact on the ability of a
+trading strategy to finance a dividend process, nor on the real price at which it
+is financed. First, let D e be the deflated dividend process defined by Dff =
+S0 [3s dD~, and S e be the deflated price process defined St~ = [3tSt.
+
+Proposition 9 (numeraire-invariance).     Let [3 be any price deflator. Suppose 0
+finances a finite variation dividend process C, given securities defined by the
+ dividend process D and price process S. Then, given the securities defined by the
+ deflated dividend process D t3 and deflated price process S t3, the same trading
+strategy 0 finances the deflated dividend process C e defined by C~ = So [3s dCs.
+
+  The proof by Huang (1985a) is a lengthy application of lto's Lemma for
+semimartingales and is not repeated here. The following corollary is immediate
+from the definitions of M, 6) and ~0.
+
+Corollary.   If (D, S) admits no arbitrage, then (D e, S e) admits no arbitrage.
+The marketed subspaces M under (D, S) and M e under (D t~, S t~) are related by
+x E M if and only ifx[3~ E M e. The respective spaces 6) and 6)e of self-financing
+trading strategies are the same. In the absence of arbitrage, the respective
+arbitrage pricing functionals ~Oand ~e are related by [3oqJ(x) = t,oe(x[3~).
+
+5.6. Equivalent martingale measure
+
+We now consider the price deflator 6 defined by 6t = Z t 1 ~-- e x p ( - f 0 r s ds), and
+define the deflated gain process G ~ by G ~ = D ~ + S ~. This is merely the gain
+relative to the numeraire defined by the market value Z of the short-rate
+re-investment strategy. An equivalent martingale measure is a probability
+measure Q, equivalent to P, such that G ~ is a Q-martingale. That is, under an
+equivalent martingale measure Q, for any times t and ,r >i t, EQ(G~I,~t)---- G~,
+where E ~ denotes expectation with respect to Q, implying that
+                         T
+
+
+       s, = g, e Q           dD, +       ,                                          (22)
+                     l
+
+a useful formula.
+Ch. 31: The Theory of Value in Security Markets                               1651
+
+   In spirit, based on the same arguments used in Section 3.1, the existence of
+an equivalent martingale measure is equivalent to the absence of arbitrage.
+Unfortunately, in an infinite-dimensional setting, this equivalence can be upset
+by various technical problems, as explained for example by Back and Pliska
+(1989). The principal difficulty is that there is no general result guaranteeing
+that the arbitrage pricing functional ~b can be extended to a strictly positive
+linear functional on L~(P). If o%is finite, the extension follows immediately
+from the finite-dimensional lemma of section 3.1. For now, we will merely take
+:T to be finite, and later return to provide other sufficient conditions for a
+strictly positive linear extension. The following theorem is conceptually the
+same as the main result of Harrison and Kreps (1979).
+
+Theorem 4 (Harrison-Kreps). Suppose ,~ is finite. Then there is no arbitrage if
+and only if there is an equivalent martingale measure.
+
+   The following proof is written as though o%is general, since the arguments
+are general, with the exception of the extension result, and can be used again
+later.
+
+Proof. (Only if): Suppose there is no arbitrage. Let q, be defined by
+Proposition 8. By the extension lemma of Section 3.1, q, has a strictly positive
+linear extension qt : LI(P)--*ffL By a result sometimes known as Choquet's
+Theorem, any non-negative linear functional on L I(P) is continuous, so that
+is continuous. [See, for example, Schaefer (1974).] By the Riesz Representa-
+tion Theorem for L t(P), there is a unique bounded strictly positive random
+variable 7r such that
+
+           =             x
+
+
+
+We define a measure Q on (O, if) by
+
+     Q ( A ) = E(1AZTTr ) ,     A E ~.
+
+We have Q ( O ) = E(ZrTr)= ~b(ZT)= 1, since Z T is by definition the final
+payoff of a strategy requiring an initial investment of 1 unit of account. Thus Q
+is a probability measure, and is equivalent to P since ZTTr is strictly positive
+almost surely. For any random variable x integrable with respect to P, the
+expectation of x with respect to Q is well defined since the Radon-Nikodym
+derivative d Q / d P = ZTIr is bounded.
+   For any security j, we will show that {J'0 6s dD~ + ~,S~: t E [0, T]} is a
+martingale under Q, completing the "only if" portion of the proof. This is
+trivial for j = 0. For any j 1> 1, it is enough to show, for any times t and s > t
+and any event A E ~ , that
+1652                                                                      D. Duffle
+                                              s
+
+       EQ(1AC tS{) = E°[1A(f 8o dD{+ 6sS{)] •                                (23)
+                                          t
+
+To this end, consider the trading strategy 0 defined by:
+  (1) at any time r <~ t, let 0, = 0;
+  (2) at any time r E (t, s], let
+       (a) 0{ = 1 A,
+      (b) 0~ = 0, k ~ ' { 0 , j},
+         (C)   0 r0 = 1 A ( -   StL,r
+                                  J   -~- f; fo.¢ dD~);
+   (3) at any time ~-E (s, T],
+         (a) 0~ = 0 , k ¢ 0 ,
+         (b) 0 ° : Vsfs.,, where Vs = IA(S ~ -ft,sS{ --]-f; fv.s dD~).
+   The strategy 0 merely holds one share of security j between times t and s in
+event A, financing the cost S{ by borrowing at the short rate, and continually
+re-investing the dividends at the short rate. At time s, the unit of security j is
+sold, and the entire resulting balance Vs is re-invested at the short rate until
+time T.
+   The final market value of the strategy is 0 °. Since the initial investment is
+0o • S o = 0, we have, by definition of ~0,
+
+       0 = q,(0 °) - E(         0 °) :-                                      (24)
+
+The definition of 0 ° in 3(b), however, implies that (23) and (24) are equiva-
+lent, proving the "only if" part of the result.
+   (If): Suppose Q is an equivalent martingale measure. Let 0 be a self-
+financing trading strategy. The numeraire-invariance Proposition 9 implies that
+                                                      T
+
+       8T[Ov'(S y + A D r ) ] = O o" S o + f 0t d G ~ .                      (25)
+                                                  0
+
+
+Since d Q / d P is bounded (because o% is finite) and 8 is bounded, 0 is in
+L~[G~], where the notation indicates expectation relative to Q. That is,
+J" 0 d G ~ is a martingale with respect to Q. Taking expectations with respect to
+Q on each side of (25) leaves
+
+       EQ[6rOT • (S T + ADT) ] = Oo. S o .
+
+This defines the pricing functional q; of Proposition 8 by qJ(x)= EQ(STX),
+X E M. As such, q; is linear and strictly positive, implying the absence of
+arbitrage.
+Ch. 31: The Theory of Value in Security Markets                               1653
+
+5. 7. Alternate sufficient conditions for equivalent martingale measures
+
+Theorem 4 is the main result of this section, but relies on the assumption that
+there is only a finite number of distinct events. There are at least two other
+sufficient conditions that have been studied in the literature:
+   (1) the existence of an optimal policy for some agent whose preferences
+satisfy regularity conditions;
+   (2) the absence of a free lunch, an approximate notion of arbitrage due to
+Kreps (1981).
+   We will state the sufficiency of these conditions in turn. We omit proofs,
+since these alternative sufficient conditions for equivalent martingale measures
+merely shore up the natural intuition of Theorem 4 with the technical
+qualifications required in an infinite-dimensional setting for a strictly positive
+linear extension of the arbitrage pricing functional.
+   Consider some agent with a utility function U : L I ( P ) - - ~ N facing the
+problem
+
+     max U[OT • (S T + ADT) ] .                                              (26)
+     0EO
+
+
+Proposition 10. Suppose U is quasi-concave, continuous and strictly increas-
+ing. Then there exists an equivalent martingale measure if problem (26) has a
+solution.
+
+   Harrison and Kreps (1979) call the existence of a solution to (26) viability.
+Their proof of a result essentially the same as Proposition 10 will also suffice
+here. Naturally, the proof first uses the fact that viability implies lack of
+arbitrage. The arbitrage pricing functional ~0 has a strictly positive linear
+extension given by a re-scaling of the linear functional defining a separating
+hyperplane between:
+   (1) the upper contour set {x E L1(P): U(x) >! U(x*)} at x* = 0~- (S~ +
+ADr), the final wealth financed by a solution 0* to (26), and
+   (2) the budget feasible set {x E M: 0(x) ~< ~0(x*)}.
+Given this extension of 0, the proof of an equivalent martingale measure
+follows the "only if" part of the proof of Theorem 4. The basic idea of the
+result extends to a model with preferences over multiple commodities and over
+consumption processes on [0, T]. Essentially, the desired extension of 0 is a
+shadow price or Lagrange multiplier for the final wealth budget constraint.
+   Now we record the fact that the absence of a free lunch, a construction due
+to Kreps (1981), is also a sufficient condition for the existence of an equivalent
+martingale measure. In the context of securities with no arbitrage, with
+associated marketed subspace M and arbitrage price functional ~0, a free lunch
+is a sequence {(m,, x,)} in M × L I ( P ) satisfying:
+1654                                                                      D. Duffle
+
+(1) m. >i x,,,
+(2) x. converges in L~(P) to some non-zero k ~ LI(P)+, and
+(3) lim inf ~(m.) <~O.
+The three conditions suggest the possibility, in a limiting sense, of obtaining a
+payoff k "better than zero" at a zero or negative price. The absence of free
+lunches implies the absence of arbitrages, and a bit more.
+
+Proposition 11. Suppose (O, o%, P) is separable. If there is no free lunch, then
+there exists an equivalent martingale measure.
+
+   The separability of (O, o%, p) is a mild regularity condition that is satisfied,
+for example, if ~ is the o--algebra generated by a Standard Brownian Motion
+in some Euclidean space. The proof by Duffle and Huang (1985) shows that
+the absence of free lunches implies that the arbitrage pricing functional 0 has a
+strictly positive linear extension.
+   In general, we can draw on the following result for other possible sufficient
+conditions.
+
+Proposition 12. Suppose there is no arbitrage and the arbitrage pricing func-
+tional qJ has a strictly positive linear extension to L i(p). Then there is an
+equivalent martingale measure.
+
+  Again, the proof is the "only if" portion of the proof of Theorem 4.
+
+
+5. 8. Equivalent martingale measure and the state price process
+
+Given the setup ((~, if, D:, P), (D, S)) of Section 5.2, suppose the hypotheses
+of Proposition 12 are satisfied. Then there is an equivalent martingale measure
+Q, where the Radon-Nikodym derivative d Q / d P is bounded. Recall from
+Section 4 that the density process ~: for Q is defined by s~t = E((dQ/dP)/,~).
+  We now pick a particular security of the N + 1, with price process, say V,
+and dividend process, say C. For the next result, we will use the assumption
+that C is of finite variation. For example, C is of finite variation if defined by
+C, = fo Ps "cs ds for some multi-commodity consumption process c and spot
+price process p whose product is integrable. More generally, as described in the
+Appendix, a finite variation process is a semimartingale that can be written as
+the sum of an increasing and a decreasing process.
+  From (22), for any times t and ~- with r 1> t,
+                     7
+
+
+
+          1 if 6sdCs +6.~V.~ '~t] •
+       Vt=~tEQ                                                                (27)
+                 t
+Ch. 31: The Theory of Value in Security Markets                                              1655
+
+ The following result s makes a connection between the equivalent martingale
+measure and the state price process.
+
+Proposition 13.    Let 7r be the process defined by 7"Ft = 6 t ~ t • I f C is o f finite
+variation, then for any times t and ~">i t,
+                         T
+
+
+            x if
+     V, = - - E
+           lr,
+                     !
+                             ~r, d C~ + ~r V, ~ ,   ]   .
+
+
+  The p r o o f follows the lines of the proof of Proposition 6, where the state
+price process ~r is identified as the marginal utility process {uxc(e t, t)} for a
+particular representative-agent equilibrium with additive separable utilities.
+
+
+5.9. Arbitrage pricing of redundant securities
+
+Once again, consider the setup described in Section 5.2, with the no-arbitrage
+hypotheses of Proposition 12. An equivalent martingale measure Q for (D, S)
+is fixed for this subsection. In addition to the given set (D, S) of securities,
+consider a new security with a dividend process C and price process V. We are
+interested in knowing whether the same equivalent martingale measure Q will
+also serve to price C, that is, whether (27) applies for all t and ~-i> t. In that
+case, we say that C is priced by Q. A n obvious sufficient condition is the
+existence of a trading strategy 0 that finances C.
+
+Lemma 2. Suppose ((D, C), (S, V)) admits no arbitrage. I f (ST, VT) = 0 and
+there exists a trading strategy 0 that finances C, then C is priced by Q.
+
+Proof. Suppose that 0 finances C. Pick any time t. By writing down the
+financing condition under the deflator 6, taking expectation at t given ~t, and
+using S T = O, we have
+                                   T
+
+
+                 1                     oC ¢ if,).
+                               t
+
+It remains to confirm (27) by showing that V, = 0,- S t. If this is not the case, say
+if Vt > 0t • S t on some event A in o%t with P ( A ) > 0, consider the following
+trading strategy. Let q~ be the trading strategy that invests at the short rate, at
+any time s, ft,s(V~--Ot'St)l(t,T)×z(S), plus the RN+2-valued trading strategy
+1A ×(t.T](0, -- 1), holding - 1 units of C and adopting the strategy 0 from time t.
+
+  8At the author's request, Steven Shreve constructed a counter-example for the case of a dividend
+process C that is not of finite variation.
+1656                                                                      D. Duffle
+
+Then ~ois a self-financing arbitrage, with zero initial investment and final value
+equal to ft,r(V~ - 0,. St)l A > 0. This contradicts the assumed absence of arbi-
+trage, proving the result.
+
+   The lemma suggests that we can price C according to the same equivalent
+martingale measure Q if C is redundant, in the sense that it can be financed by
+trading the original securities. (The qualification that ($7-, Vr)= 0 is to be
+expected given the discussion at the end of Section 5.3.) It is natural to expect
+redundancy of any dividend process C given (D, S) if D satisfies a dynamic
+spanning condition like that described in Section 4. The next result develops an
+alternative spanning condition directly on the martingale component of the
+gain process G = D + S. As an integrable semimartingale, each gain process
+G j can be written as the sum of a martingale M / and a bounded variation
+predictable process A j with A~ = 0. A special semimartingale is a semimartin-
+gale (or vector of semimartingales) with a unique such decomposition. For
+example, any semimartingale with bounded jumps (in particular, any continu-
+ous semimartingale) is special.
+
+Proposition 14. Suppose the gain process G is special and d P / d Q is bounded
+or every Q-martingale has bounded jumps. If the martingale component of G is
+a martingale generator under P, then G ~ is a martingale generator under Q and
+any dividend process can be financed by some trading strategy.
+
+Proof. Let M be the martingale component of G. It is immediate that Y is a
+martingale generator when defined by Y, = J0 6s dMs. By Lemma 3.2 in Duffle
+(1985), Y is special under Q. By the uniqueness of the decomposition of Y
+under Q, it follows that G ~ is the martingale component under Q of Y, which
+by Theorem 3.2 in Duffle (1985) implies that G ~ is a martingale generator
+under Q. The remainder of the proof is an obvious extension of the proof of
+the spanning iemma of Section 4.1.
+
+Corollary. Under the assumptions of Proposition 14, there is a unique equiva-
+lent martingale measure.
+
+Proof. The fact that G ~ is a martingale generator under an equivalent
+martingale measure Q implies that M = L I(p). This requires that, for any
+event A E ~, Q(A) = ~ ( Z T I A ) , which fixes Q.
+
+
+5.10. The Brownian case: spanning and Girsanov's Theorem
+
+This subsection explores the implications of the last in a setting of Brownian
+information. We continue under the hypotheses of Proposition 12 and fix an
+Ch. 31: The Theory of Value in Security Markets                                                             1657
+
+equivalent martingale m e a s u r e Q. T h e h y p o t h e s e s of P r o p o s i t i o n 14 are easily
+c h e c k e d if 0: is g e n e r a t e d by s o m e S t a n d a r d B r o w n i a n M o t i o n B, say in R d. In
+that case, let M d e n o t e the martingale part of G. As stated in Section 4.2, B is
+itself a martingale g e n e r a t o r , so we can always write, for s o m e predictable
+process o" that is K x d matrix-valued, M, = J'0 °'s dBs, 0 <~ t ~< T. P r o v i d e d the
+rank of o- is d a l m o s t e v e r y w h e r e , M is a martingale g e n e r a t o r , and the
+conditions o f P r o p o s i t i o n 14 are satisfied since every martingale on a B r o w n i a n
+filtration has c o n t i n u o u s sample paths (almost surely).
+    T h e B r o w n i a n case is also particularly nice because it allows us to calculate
+Q. S u p p o s e , for e x a m p l e , that G is an Ito process. In that case, we can always
+write
+
+      d G 7 = bet dt + 6,o-, d B , ,
+
+for some a d a p t e d (vector) drift process be, with o- as described in the last
+paragraph. A s s u m i n g that or has r a n k d almost e v e r y w h e r e , we can define an
+Ra-valued a d a p t e d process ~o w i t h otq~t = - b e , ~ 6 t almost e v e r y w h e r e . I g n o r i n g
+integrability for the m o m e n t , let B t = B, - .fo ~°s ds. T h e n 9
+
+      d G 7 = bet d t + ~,o-7 d B t
+
+             = bet dt + 6,o-,(d/~ t + q~t dt)
+
+             = be, dt + 6,o"t d / ) t - bet dt
+
+             = 6,o-, d B , .
+
+Since Q is uniquely defined, according to the corollary to P r o p o s i t i o n 14, Q
+must be that m e a s u r e o b t a i n e d by an application of G i r s a n o v ' s T h e o r e m . T h a t
+is, it must be the case that d Q / d P is defined by (13) and t h a t / 3 is a S t a n d a r d
+B r o w n i a n M o t i o n u n d e r Q.
+   In short, this provides us with a direct calculation of d Q / d P , which can then
+be used to calculate the price of any security, say by (27). T h e qualification in
+L e m m a 2 that " V T = 0" is automatically satisfied in this setting, since every
+semimartingale on a B r o w n i a n filtration is predictable. 1°
+   F o r example, consider an additional security with dividend process C defined
+by C t = O , t ~ ' ,        and C t = H ,  t i > % w h e r e ~- is a stopping time and H is
+
+   9For disciples of semimartingale theory, a more direct way to see this representation of G ~under
+Q is to check that the matrix-valued "sharp brackets" process (G ~, G ~) is preserved under a
+change of equivalent measure. Since this process is differentiable with respect to time and G ~ is a
+martingale under Q, there exists a Brownian motion /) under Q such that dG7 = ~to~tdJ~,. For
+details, see, for example, Jacod (1979).
+   1°This predictability is proved in a written communication from Kai Lai Chung and Ruth
+Williams. See also Proposition 4 of Ohashi (1987), which is relevant since the Brownian filtration is
+left-continuous.
+1658                                                                                                                 D. Duffle
+
+o ~ - m e a s u r a b l e . In o t h e r w o r d s , C p a y s a l u m p sum d i v i d e n d o f H at t h e
+s t o p p i n g t i m e r. A s s u m i n g o- has r a n k d a l m o s t e v e r y w h e r e , (27) i m p l i e s t h a t
+t h e u n i q u e a r b i t r a g e f r e e - p r i c e p r o c e s s V o f t h e a d d i t i o n a l s e c u r i t y satisfies
+
+
+       v,=g, 1 Eo_(6~HI~t ) ,                t<'c     ,                                                                   (28)
+
+
+where
+                           T                     T
+
+        dPQ exp(f d t if  0
+                                        - ~
+                                                0
+                                                     Ct" q~t d t   )   ,
+
+
+a n d w h e r e q~ is d e f i n e d b y cr, q~t = - t x t / 6 ,.
+    In m a n y a p p l i c a t i o n s , D = 0         and H=g(S~,~')           for s o m e g : ~ N + l ×
+[0, T]----> R. W e can t a k e it t h a t d S t = ut d t + o"t d B , for s o m e drift p r o c e s s u. W e
+k n o w t h a t S a = G a is a m a r t i n g a l e u n d e r Q , so an a p p l i c a t i o n o f I t o ' s L e m m a
+implies that
+
+       d S t = r t S t d t + o"t d[~, ,                                                                                   (29)
+
+w h e r e / ~ is t h e S t a n d a r d B r o w n i a n M o t i o n u n d e r Q c o n s t r u c t e d a b o v e . R a t h e r
+t h a n using d Q / d P e x p l i c i t l y as in (28), w e c a n i n s t e a d use t h e e x p r e s s i o n (29)
+for dSt u n d e r Q to r e p r e s e n t t h e a r b i t r a g e - f r e e p r i c e of t h e a d d i t i o n a l s e c u r i t y
+in t h e f o r m
+
+                1
+       V,=          E    [6    g(ST, "r)lo ] ,         t< r .
+
+
+    A s a s p e c i a l case, s u p p o s e N = d = 1, r t ~-/~ for s o m e c o n s t a n t /~ a n d
+o-t = ~ S , for s o m e c o n s t a n t ~. B y I t o ' s L e m m a , S T = S O exp[(/~ - ~ 2 / 2 ) r + / ~ ] ,
+y i e l d i n g t h e a r b i t r a g e free initial p r i c e
+
+       Vo -- EQ[e-R g(S ,
+
+T h e b e s t k n o w n e x a m p l e is t h e B l a c k - S c h o l e s (1973) o p t i o n p r i c i n g f o r m u l a ,
+for w h i c h ~- = T a n d g ( x , T ) = (x - 2 ) + is t h e e x p i r y v a l u e 11 o f a E u r o p e a n call
+o p t i o n with e x e r c i s e p r i c e 2. In t h a t case, w e h a v e t h e explicit c a l c u l a t i o n ,
+
+
+  11Theoption gives its owner the right, but not the obligation, to purchase the underlying asset at
+the exercise price ~ fixed in advance. If the underlying price X T at the expiry date T of the option
+exceeds the exercise price, the option holder will exercise the option for a net payoff of X T - ~.
+Otherwise, the option expires with no value. Thus g(x, T) = (x - £)+ =- max(x - ~, 0).
+Ch. 31: The Theory of Value in Security Markets                                1659
+
+known as the Black-Scholes option pricing formula,
+
+     V0 = S0~(da) - e-kr~q'(dl - & V ~ ) ,
+
+where @ is the standard normal cumulative distribution function and
+
+           1     / S e kr\              t~V~
+     d~- ~ W l o g ~ - - ) +            ~-
+
+The Black-Scholes formula was originally computed more tediously by a direct
+solution of a partial differential equation studied in the next subsection.
+  If the dividend g(ST, r) is paid at a stopping time r chosen by the owner of
+the security, the absence of arbitrage implies that T is rationally chosen so as to
+maximize the market value of the security. That is,
+
+     V0 = sup E O [ ¢ g ( S ~ , ~-)].
+             T
+
+
+
+For instance, an American put option has payoff g ( S , , .c) = ( £ - ST) + at an
+exercise date ~- chosen by the holder of the option. Progress on this problem
+has been made in sources cited in Section 6.10.
+
+
+5. 11. The M a r k o v case: the P D E f o r derivative asset prices
+
+This subsection characterizes arbitrage-free derivative asset prices in a Markov
+state space setting. We will derive a partial differential equation (PDE) for the
+derivative asset price, and then provide sufficient conditions for the existence
+of a smooth solution. Of course, the solution is exactly that defined by the
+conditional expectation (27), but the equivalent martingale measure Q is
+implicit, rather than explicit, in the PDE. Finally, we mention several tech-
+niques that are commonly used for solving the PDE, at least numerically. In
+practice, a Markov setting is the most commonly found in application because
+of its computational and econometric advantages.
+  The state of the market model is defined by an ~K-valued process {X,}
+satisfying the stochastic differential equation
+
+     d X t = l,(Xt, t) dt + ~l(Xt, t) d B ' ,   Xo= x ,
+
+where B is a Standard Brownian Motion in ~d and u : ~ × [0, T]--~ I~r and
+~ : E r × [0, T]---~E K×d satisfy regularity conditions ensuring existence and
+strong uniqueness of solutions. Details can be found, for example, in Chung
+and Williams (1989); it is enough that both v and r/are Borel measurable and
+1660                                                                                         D. Duffle
+
+satisfy a Lipschitz 12 condition as well as a growth 13 condition, both with respect
+to their first (state) argument.
+    The "primitive" securities are defined by functions (6e, 8, R) on •K >~ [0, T]
+that satisfy regularity conditions to be added later. Specifically, the RN-valued
+function 9 ° defines the N "risky" security prices by ~ ( X t , t) = ( S1
+                                                                       ,,.. . ,
+The corresponding N dividend processes are defined by D~ = J'0 ~ ( X s , s ) d s ,
+j/> 1. As usual, security number zero has price identically equal to 1 and a
+dividend rate equal to the short rate process r, in this case given by r, =
+R ( X , , t). For convenience, we depart from our usual convention and take the
+cure dividend security pricing convention.
+    For a full general equilibrium setting with this form of price behavior,
+consider the equilibrium described by Proposition 6. Suppose the exogenous
+Markov process X determines the aggregate e n d o w m e n t process e for that
+economy by e, = h(Xt, t) for some smooth function h, and suppose each
+primitive security j ~ 1 has a real dividend process of the form D~ =
+f0      (xs, s) ds, t < r and            = for    (Xs, s) ds + gj(XT,           for measurable fj
+and gj. Relation (16) and the calculation r, = - I ~ ( t ) / ~ ( t ) of the short rate
+imply that S t = (1, 6e(Xt, t)) and that r t R ( X , t) for measurable functions 6e
+                                                      =
+
+
+and R. See Huang (1987) for extensive analysis of such a Markovian
+equilibrium.
+   An additional security, to be priced, has a dividend process C defined by
+C, = So f ( X s , s) ds, t < T and C r = for f(X~, s) ds + g ( X r , T), where f and g
+are real-valued functions on E r × [0, T] with properties to be specified. In
+many applications, such as the original Black-Scholes model, the state process
+X is actually the security price process S itself. In that case, the additional
+security to be priced is called derivative because its dividends are functions of
+the underlying asset price process. For example, in the Black-Scholes call
+option pricing model, X is a geometric Brownian Motion describing the price
+of a given security (that has no dividends), and the derivative dividend process
+is defined by f = 0 and g(x, T ) = (x - 3?) +, where J? is the option's exercise
+price, as explained in Section 5.10.
+   We presume that the dividend process C defined by f and g can be financed
+given (D, S), and later return to provide sufficient conditions for this assump-
+tion, as well as several other assumptions made (rather loosely) along the way
+to a conjectured solution for the price process V. At the final stage, w e c a n
+state a formal theorem.
+   The absence of arbitrage implies restrictions on the price process V for C.
+Rather than pursuing the existence of an equivalent martingale measure,
+however, we will use the redundancy of C and the absence of arbitrage to
+
+     ~2There exists a constant k such that IIn(x, t) - "q(y, t)ll ~ kllx - yH for all x andy and all t.
+     13There exists a constant k such that IIn(x, t)H ~<k(1 + Ilxll) for all x and all t.
+Ch. 31: The Theory of Value in Security Markets                                                  1661
+
+
+derive a PDE in R E × [0, T] whose solution J, if sufficiently well behaved,
+evaluates V as Vt = J ( X t, t).
+   Assuming that J is sufficiently smooth for an application of Ito's Lemm&
+V t = J ( X t, t) implies that
+
+      d V t = ~ J ( X t , t) dt + J~(Xt, t)r/(Xt, t) dBt ,                                       (30)
+
+where, for any smooth function H,
+
+      ~ H ( x , t) = Hx(x, t ) v ( x , t) + Ht(x, t) + 1 tr[~?(x, t ) V H ~ ( x , t)*l(x, t)],
+
+with subscripts indicating the obvious partial derivatives.
+  By assumption, a trading strategy 0 finances the dividend process C. Barring
+arbitrage, this means that, for all t,
+
+        • s, = v ,                                                                               (31)
+
+and
+
+
+      0,- S t = 00-S O+ f 0s d G s - C t .                                                       (32)
+                            0
+
+Substituting the various functions applied above, and denoting 0 ° = b, and
+(01. . . . . ON) = a t, relation (31) implies that
+
+      a t • 5e(Xt, t) + b t = J ( X t , t ) ,     t E [0, T].                                    (33)
+
+From (31) and (32), with the obvious notational shorthand,
+
+      d V t + f ( X t , t) dt = a t • [6(Xt, t) dt + ~5t(Xt, t) dt + 5ex(Xt, t)•(Xt, t) dBt]
+                                 + b t R ( X , , t) d t .                                        (34)
+
+Ito processes are special semimartingales and can therefore be uniquely
+decomposed as the sum of a constant, a stochastic integral with respect to the
+Brownian motion B and an ordinary Lebesgue integral with respect to " t i m e "
+t. This means that we can equate the coefficients of dB, and dt separately in
+(34), using (30), to derive several necessary conditions for no arbitrage and the
+fact that 0 finances C. First, equating coefficients in dB t from (34) leaves
+(almost everywhere)
+
+      a,b°x(Xt, t)rl(X t, t) = J~(Xt, t)r/(X,, t ) ,            t E [ 0 , T].                    (35)
+1662                                                                                            D. Duffle
+
+In order to find a t satisfying (35), it is enough (and close to necessary) that b°x
+is everywhere of rank K, in which case
+
+       a, = J~(X,, t)f~x(Xt, t)T[sex(Xt, t)Sfx(X,, 07] -1 .                                         (36)
+
+Next, (33) and (36) imply that
+
+       b t = J ( S t , t) - J~(S,, t)~°x(St, t ) [ ~ x ( S t , t ) ~ x ( X . t)T]-~Se(X,, t).       (37)
+
+Finally, equating the coefficients of dt in (34), using (36) and (37), leaves
+
+       R(Xt, t)J(X,, t) = Jx(X,, t)lx(X,, t) + J~(X,, t)
+                                    + ½tr[n(X,, t)TJxx(X,, On(X,, t)] + f(X,, t),                   (38)
+
+where IX : ~ : x [0, T] ~ R K is defined by
+
+       Ix(x, t) = Sx(x, t)T[sex(X, t)fPx(X, t) TI-'[R(x, t)Se(X, t) -- 6(X, t) -- oWt(X,t)
+                    -- ½q(x, t)],                                                                  (39)
+and where q/(x, t) = tr[~/(x, t) • J t),7(x, t)].
+  Of course, (38) is automatically satisfied if J solves the parabolic PDE in
+R/~ x [0, T] given by
+
+       R(x, t)J(x, t) = J~(x, t)Ix(x, t) + Jr(x, t)
+                                 + ½ tr[n(x, t)TJxx(X, t)rl(X, t)] + f(X, t).                      (40)
+
+The boundary condition imposed on (40) by equating the cum dividend final
+market value J(Xr, T) with the final payoff g(Xr, T) is
+
+       J(x, T) = g(x, T ) ,           x E ~K.                                                      (41)
+
+   We can immediately conjecture a solution to (40), (41) by applying Ito's
+Lemma. For each (x, t ) E RKX [0, T], assuming the expectation is well de-
+fined, let
+                             T
+                     r   ~
+
+
+
+
+                         t
+
+
+where {Ysx., : t ~ < s ~ T )         solves
+Ch. 31: The Theory of Value in Security Markets                                             1663
+
+
+     yx,t = x +
+                         t
+                             ix(Y~X , t , r ) d r +
+                                                      f
+                                                      t
+                                                          r/( Y ,"" , r ) d B , ,   s~ t,   (43)
+
+and where
+                 $
+
+
+      o(s) = f R( Y x,
+                    ," , r) dr
+             t
+
+
+A unique solution to (43) exists under the usual conditions on ix and ~7
+mentioned above. If J is indeed well defined by (42) and smooth enough for an
+application of Ito's Lemma, it follows immediately from Ito's Lemma that J
+solves the PDE (40) with boundary condition (41). This is often called the
+Feynman-Kac solution of the PDE.
+  All of the above calculations can be justified with known conditions on the
+functions (ix, r/, 6, R, f, g) under which (42) is well defined and generates the
+unique solution J to (40), (41) satisfying a growth condition in the state
+variable. Typical alternative sets of conditions are due to Dynkin (1965),
+Freidlin (1985) and Krylov (1980). The following result is representative.
+
+Krylov's Theorem.      Suppose ix and ~ satisfy a Lipschitz condition in the state
+variable, and that all of the functions (t,, 77, 6, R, f, g) are Borel measurable,
+have two continuous derivatives with respect to the state variable, and that the
+functions and their first and second derivatives with respect to the state variable
+satisfy a growth condition with respect to the state variable. Then (42) defines a
+solution J to the P D E (40), (41), the unique solution satisfying a growth
+condition with respect to the state variable.
+
+  I f ~ v has eigenvalues bounded away from zero (or "uniform ellipticity"),
+Krylov's smoothness conditions can be weakened significantly. Our prior
+analysis now justifies the following claim.
+
+Corollary.   Suppose ( ( D , C ) , ( S , V ) ) admits no arbitrage, rank(b°x)=K
+everywhere, and (ix, ~7, 6, R, f, g) satisfies Krylov's conditions. Then J is well
+defined by (42), C is financed by the trading strategy (b, a) defined by (36) and
+(37), and the price process V o f C is given by V t = J(X,, t).
+
+   As an example, we can take the case 6 = 0 and 5¢(x, t) = x, in which case
+Ix(x, t) = R(x, t)x. Then
+                     T
+
+
+                                J\    t'                                                    (44)
+                 0
+1664                                                                        D. Duffle
+
+where Y is the "pseudo-price process" defined by the stochastic differential
+equation
+
+       dYt=r(Yt, t)Ytdt+tT(Yt, t)dBt,        Y0 = X0,                           (45)
+
+and where ,p(t) = J'0 r(Ys, s) ds. Of course, the distribution of the pseudo-price
+process Y under P is the same as that of the price process S itself under the
+equivalent martingale measure Q, as shown by comparing (29) and (45), and
+the solution given here for V0 is exactly that obtained in Section 5.10.
+  In particular, we can easily recover the Black-Scholes formula in the case
+K = 1, R(x, t) = R, f = O, g(x, t) = (x - a?)+ and tr(x, t) = ~x, where/~, 2? and t~
+are positive constants. It follows from (44) that
+
+       v0 = E [ e - k T ( V T -- g ) + ] ,                                      (46)
+
+where YT = X0exp[(R-t~2/2) T + &B~]. Relation (46) defines the Black-
+Scholes option pricing formula, as stated in the Section 5.10. Of course, the
+payoff function (x, t ) ~ ( x - £ ) + is not as smooth as required by Krylov's
+conditions, being non-differentiable at £, but those conditions can be extended
+to incorporate a function g that is continuous with finitely many pieces that are
+smooth in Krylov's sense, yielding a solution J that is smooth in R/< × [0, T),
+but not of course at T.
+
+
+
+5.12. Approximate solution of the arbitrage PDE
+
+The Black-Scholes option pricing formula is one of several closed-form
+solutions available for arbitrage pricing of particular derivative securities in this
+setting. (Some of the other examples are cited in Section 6.10.) As a practical
+technique for pricing many different forms of derivative securities, however,
+one typically relies on approximate solutions, usually obtained with the aid of a
+computer. Commonly used algorithms involve Monte-Carlo simulation of the
+expectation in (43) or direct numerical solution of the PDE (40), say by
+finite-difference or finite-element algorithms (see Section 6.10 for references).
+For simple problems based on a geometric Brownian price process, solutions
+are also frequently estimated by approximating the "pseudo-price" process Y
+with a binomial process, calculating the discrete analogue to (42) by a
+backward recursion, and then improving the approximation error by reducing
+the length of a trading period. The latter approach was popularized by Cox,
+Ross and Rubinstein (1979), who showed by an explicit calculation (involving
+the central limit theorem) that a natural binomial approximation of the price
+Ch. 31: The Theory of Value in Security Markets                              1665
+
+process X leads to a sequence of option prices converging, with the number of
+trading periods per unit of time, to the Black-Scholes formula.
+
+
+5.13. Extensions of the P D E method
+
+The same PDE approach can be extended so as to allow T to be replaced by a
+stopping time z defined as the hitting time of (Xt, t) on some regular set, or
+"liquidation boundary." Dynkin (1965), for example, shows sufficient condi-
+tions on the coefficient functions and the liquidation boundary for an analogue
+to Krylov's Theorem.
+   In principle, although there are few available results, the PDE (40) also
+extends to the pricing of securities that the holder may exchange at any time
+for a pre-arranged liquidation value, the classic example being an American
+put option, whose liquidation value is the excess (if any) of the option's
+exercise price over the current price of the underlying security. Recent
+literature on the American put is cited in Section 6.10. Although it is
+unrealistic to expect a closed-form solution for the American put, there has
+been much progress in defining the optimal liquidation boundary in the
+Black-Scholes setting. The optimal liquidation boundary is that yielding the
+supremum arbitrage-free value for the derivative security. The PDE (40), with
+the associated free boundary, is often termed a Stefan problem.
+   The PDE approach can also be extended in like generality to the pricing of
+continuously re-settled securities, such as futures and futures options, as shown
+by Black (1976), Cox, Ingersoll and Ross (1981b) and Duffle and Stanton
+(1988).
+
+
+6. Further reading
+
+This section points to additional sources of reading on the topics presented in
+this chapter, as well as a range of literature on related topics that have not
+been reviewed.
+
+6.1. General references
+
+There are a number of monographs presenting the topics of this chapter at
+various levels, including Fama and Miller (1972), Mossin (1973), Fama (1976),
+Ingersoll (1987), Jarrow (1988), Huang and Litzenberger (1988) and Duffle
+(1988). Survey articles include those of Kreps (1979), Merton (1987),
+Rothschild (1986), Marimon (1987), Radner (1988), DeMarzo and Van Nuys
+(1988) and Constantinides (1989).
+1666                                                                     D. Duffle
+
+6.2. Finite-dimensional general equilibrium in security markets
+
+Chapter 30 reviews the literature on existence, optimality, and multiplicity of
+finite-dimensional security-market equilibria. We will therefore limit ourselves
+here to mentioning, in addition to Arrow (1953), the key contributions of
+Debreu (1953), Radner (1967, 1972) and Hart (1975) in formulating the
+central issues. For existence of equilibria with references defined directly on a
+linear space of portfolio choices, see Hart (1974), Nielson (1986b) and Werner
+(1987).
+
+
+6.3. Spanning and the behavior of the firm
+
+The Modigliani and Miller (1958) results on the irrelevance of financial policy
+are given a general finite-dimensional treatment in incomplete markets by
+Duffle and Sharer (1986) and DeMarzo (1988). Financial policy is relevant
+under almost any departure from the neo-classical assumptions, such as taxes
+[Miller (1977)], asymmetric information [Jensen and Meckling (1976), Ross
+(1977), Myers and Majluf (1984), Duffle and DeMarzo (1988)], introduction of
+options on the firm [Detemple, Gottardi and Polemarchakis (1989)] or bank-
+ruptcy [Hellwig (1981)].
+  There is not yet a generally accepted paradigm for the production decisions
+of the firm without some sort of spanning condition. Arrow and Debreu (1954)
+merely took it as an axiom of competitive behavior that firms maximize their
+market value. With complete spanning, of course, shareholders unanimously
+support this objective, since it generates maximal budget-feasible choice sets
+for shareholders. This unanimity result was extended by Diamond (1967) and
+Ekern and Wilson (1974) to the case of security markets that span the set of
+feasible dividends of the firm. Makowski (1983) pointed out that this spanning
+condition is automatically satisfied if shareholders act as though the span of
+security markets is fixed, independently of the firm's choice. Duffle and Shafer
+(1986) showed that, if shareholder's do not treat the span of markets as fixed,
+then, generically, all but at most one shareholder objects to maximizing market
+value. Of course, the very objective of value maximization is not well defined
+unless firms have conjectures concerning the value of securities outside of the
+current span of markets. Duffle and Shafer (1986) show generic existence of
+equilibria when conjectures are defined by state-prices, in the sense of Section
+3.1. Dr6ze (1974), instead, takes it as an axiom that firms maximize according
+to state prices defined by a weighted sum of agents' marginal rates of
+substitution (given by the vector VUi(ci), in the notation of Section 3.2), with
+weights proportional to shareholdings. This objective generates constrained
+Pareto optimal allocations with a single spot consumption commodity, although
+Ch. 31: The Theory of Value in Securi~ Markeu                              1667
+
+Geanakoplos, Magill, Quinzii and Dr~,ze (1987) overturn this optimality
+property with multiple spot commodities.
+  Further characterization of the theory of the firm in incomplete security
+markets is provided by Aghion and Bolton (1986), Allen and Gale (1987),
+Bester (1982), Brealey and Myers (1984), Burke (1986), DeMarzo (1987),
+DeMarzo and Duffle (1988), Fama (1978), Gevers (1974), Grossman and Hart
+(1979, 1987), Grossman and Stiglitz (1976), Harris and Raviv (1987), Hart
+(1977, 1979, 1987), Jensen and Long (1972), Kreps (1979), Leland (1973,
+1974, 1978), Marimon (1987), Merton and Subrahmanyam (1974), Myers
+(1984), Radner (1974), Satterthwaite (1981) and Stiglitz (1972, 1974, 1982)o
+
+
+6.4. Mutual funds and factors in asset prices
+
+The CAPM is a single-factor pricing model; the factor is the market portfolio.
+The CCAPM is also a single-factor model; the factor at each point in time is
+the growth rate of consumption over the next "instant." A general multi-
+period single-factor model always applies under mild regularity conditions, as
+shown, for example, by Hansen and Richard (1987); the general problem is
+econometric identification of the factor. The CAPM is based on the sufficiency
+of two mutual funds for Pareto optimality; further sufficient conditions are
+given by Cass and Stiglitz (1970) and Ross (1978b); additional recommended
+readings are the papers by Rubinstein (1974), Nielson (1986a) and Stiglitz
+(1989).
+  Ross (1976a) described a multi-factor asset pricing model called the APT;
+sufficient conditions are provided by Huberman (1982) and Connor (1984).
+Approximate multi-factor models are characterized by Chamberlain (1983b)
+and Chamberlain and Rothschild (1983).
+
+
+6.5. Asymmetric information
+
+Most of the available asset pricing results with asymmetric information are
+based on strong parametric assumptions, as in Admati (1985), Bray (1981),
+Carino (1987), Dothan and Feldman (1986), Gennotte (1984) and Grossman
+(1976). Hindy (1989) presents a non-parametric but "bounded rationality"
+model.
+  Examples of the literature on asset valuation with a specialist market maker
+and asymmetric information include the work of Admati and Pfleiderer (1988),
+Glosten and Milgrom (1985) and Haggerty (1985). This is a very small sample;
+Bhattacharya and Constantinides (1989) have edited a selection of readings on
+the role of information in financial economics.
+1668                                                                        D. Duffle
+
+6.6. Equilibrium asset pricing models
+
+Further examples of asset pricing models under the additive separable prefer-
+ence assumptions of Sections 3.2, 3.3 and 4.3 include the papers of Back
+(1988), Breeden (1986), Breeden and Litzenberger (1978), Grauer and Litzen-
+berger (1979), Kraus and Litzenberger (1975), and Merton (1973a).
+   By relaxing the additively separable model of preferences described in
+Sections 3.3 and 4.3, a range of alternative asset pricing formulas can be
+achieved. Asset pricing models based on alternative preference specifications
+have been described by Bergman (1985), Constantinides (1988), Duffle and
+Epstein (1989), Epstein and Zin (1989a) and Sundaresan (1989). Hindy and
+Huang (1989) formalize the notion of intertemporal substitution of consump-
+tion, relaxing the continuous-time assumption of consumption at rates.
+
+
+
+6. 7. Extended notions of spanning
+
+Models of general equilibrium based on multi-period notions of spanning have
+been developed by Friesen (1974), Kreps (1982) and Duffle and Huang (1985),
+which introduces the dynamic spanning condition of Section 4. For technical
+results on the closely associated problem of "martingale multiplicity," the
+reader is referred to Clark (1970), Davis and Varaiya (1974), Kunita and
+Watanabe (1967) and Jacod (1977).
+  Static notions of spanning based on the formation of options and compound
+options are due to Ross (1976b), Breeden and Litzenberger (1978), Brown and
+Ross (1988), Jarrow and Green (1985) and Nachman (1988).
+
+
+
+6.8. Asset pricing with "frictions"
+
+The majority of this chapter is based on the costless formation of unrestricted
+portfolios. For asset-pricing models incorporating one or more of transactions
+costs, taxes, cash-in-advance constraints, credit constraints, and so on, please
+see Back (1986), Back and Pliska (1986), Constantinides (1986), Dybvig and
+Huang (1988), Grossman and Laroque (1987), Lucas and Stokey (1987),
+Leland (1985), Prisman (1985), Ross (1987), Svensson (1988), Scheinkman
+and Weiss (1986) and Townsend (1984). Svensson (1988) and Scheinkman
+(1989) discuss the limited results available on asset pricing results that explicitly
+incorporate the incomplete markets constraint.
+Ch. 31: The Theory of Value in Security Markets                               1669
+
+6.9. Technical references on continuous-time m o d e l s
+
+Brownian motion was actually formulated by Bachelier (1900) as a model of
+stock prices. On diffusion processes and stochastic differential equations~
+standard references include Arnold (1974), Freedman (1983), Friedman
+(1975), Gihman and Skorohod (1972), Ikeda and Watanabe (1981), Karatzas
+and Shreve (1988), Krylov (1980) and Lipster and Shiryayev (1977). More
+abstract treatments of stochastic integration are provided by Chung and
+Williams (1983), Dellacherie and Meyer (1978, 1982), Durrett (1984), Ethier
+and Kurtz (1986), Jacod (1979), Kopp (1984) and Protter (1989). The
+central results on the behavior of semimartingales under a change of prob-o
+ability measure are given by Girsanov (1960), Lenglart (1977) and Memin
+(1980).
+   The technical foundations of continuous-time security prices and trading in
+an abstract setting has been developed in a series of papers by Harrison and
+Kreps (1979), Harrison and Pliska (1981, 1983), Huang (1985a,b) and Pliska
+(1982).
+
+
+
+6.10. Derivative asset pricing
+
+Varian (1987) is a useful introductory exposition of the arbitrage notion of
+derivative asset pricing. The literature that applies the arbitrage approach to
+the pricing of derivative securities (that is, securities whose dividends are
+functions of the prices or dividends of other securities) is far too voluminous to
+even list here. The most famous example is the option pricing formula of Black
+and Scholes (1973), which is given a detailed treatment in the book by Cox and
+Rubinstein (1985). Other prominent examples are the papers by Breeden and
+Litzenberger (1978), Brennan and Schwartz (1977, 1979), Carr (1987), Cheng
+(1987), Cox, Ingersoll and Ross (1981a,b), Cox and Ross (1976), Cox, Ross
+and Rubinstein (1979), Duffle and Stanton (1989), Geske (1979), Goldman,
+Sosin and Gatto (1979), Heath, Jarrow and Morton (1987), Hemler (1987),
+Ho and Lee (1986), Hull (1989), Ingersoll (1977), Johnson (1987), Margrabe
+(1978), Merton (1973b, 1974, 1976, 1977), Mfiller (1985) and Richard (1978).
+Numerical solution methods are described by Boyle (1977), Jones and
+Jacobs (1986), Miltersen and Nielsen (1989) and Geske and Shastri (1985).
+Progress on the pricing of American options can be found in Geske and
+Johnson (1984), Parkinson (1977), Jamshidian (1989), Carr and Myneni
+(1989), Carr, Jarrow and Myneni (1989), Barone-Adesi and Elliott (1989) and
+Kim (1989).
+1670                                                                        D. Duffle
+
+6.11. Infinite horizon recursive models
+
+The model in Section 3.3 is usually presented in a Markov setting, as in Lucas
+(1978) and Prescott and Mehra (1980). The determination of an equilibrium is
+more interesting with production, as shown by Brock (1979, 1982). The
+monograph by Stokey and Lucas (with Prescott) (1989) is a good source for
+details.
+
+
+6.12. Estimation
+
+The many papers on econometric estimation of the asset pricing models
+presented in this chapter include those of Breeden, Gibbons and Litzenberger
+(1986), Brown and Gibbons (1985), Epstein and Zin (1989), Hansen (1989)
+and Hansen and Singleton (1982, 1983). Singleton (1987) surveys some of the
+econometric work on asset pricing models.
+
+
+Appendix: Stochastic integration
+
+This appendix is provided for the convenience of those readers interested in
+the definition of stochastic integration and the underlying technical details.
+Before beginning, however, we assure the reader that, limiting attention to a
+large subclass of integrands (0) and integrators (G), the stochastic integral
+  0 d G is nothing more than the limit in probability of the obvious sum,
+       k-1
+
+       jE ° o,,( c,,+, - c,),
+
+as the maximum length of a time interval tj+ 1 -- tj converges to zero. For this
+limited but easy definition of the stochastic integral, see Protter (1989).
+    As primitives, we have a probability (g2, ~-, P), a time interval 3- = [0, T] or
+3 - = [0, oo), and a family ~: = {o%,: t E 3-} of sub-o--algebras of 0%satisfying the
+usual conditions:
+(1) o%t C o%s whenever s i> t (increasing);
+(2) o%0 includes all subsets of zero-probability events in o% (augmentation);
+(3) for all t E 3-, ~ = ~ s > t f f s (right-continuity).
+    A stochastic process is a family X = (X,: t @ 3-} of random variables. Unless
+otherwise stated, we take a stochastic process to be real-valued. A process X is
+adapted if X t is o%,-measurable for all t. An adapted process X is integrable if
+E(Ixt[ ) is finite for all t. A martingale is an adapted integrable stochastic
+process X with the property:
+Ch. 31: The Theory of Value in Security Markets                                    1671
+
+     E(X,]~) = & ,                 a.s. whenever s ~< t ,
+
+where E ( . i ~ ) denotes conditional expectation.
+
+Example ( B r o w n i a n motion). A stochastic process B on some probability
+space is a Standard Brownian Motion if:
+    (a) for any 0 ~< s < t < ~, B, - B s is normally distributed with zero expecta-
+tion and variance equal to t - s;
+   (b) for any 0 ~< t o < t 1 < - . . < t t < ~, the random variables {B(t0) , B(t~) --
+B(tk_l): 1 <<-k <~ l}, are independent; and
+    (c) P ( B o = O) = 1.
+For d E N , a Standard Brownian Motion in R d is an Rd-valued process
+( B (1), . . . , B (d)) made up of d independent Standard Brownian Motions.
+   It is normal to use a filtration U:with respect to which the Standard Brownian
+Motion B is a martingale. For example, we could take ~, to be the it-algebra
+generated by { Bs: 0 <~ s ~< t} as well as the subsets of zero-probability events in
+~. The resulting filtration U:= {o~,: t E 3-} is called the standard filtration of B.
+This ends the example.
+
+  A process X is left-continuous if limtv~X , = X , for all s almost surely. The
+predictable o--algebra on £2 × 3 - i s that generated by the left-continuous
+adapted processes. A stochastic process 0 is predictable if 0 : O × if---> R is
+measurable with respect to the predictable o--algebra. In continuous-time
+settings, it is natural to restrict agents to predictable strategies.
+  A martingale X is square-integrable if {X~: t ~ 3-} is an integrable process.
+The quadratic variation of a square-integrable martingale S is the unique
+increasing process denoted [S] such that, for each t @ J-,
+
+                      2n    1
+
+     [S,]= lim ~                [S(t~+l)-S(t~)] 2 ,
+                n ~   i=0
+
+
+
+
+where t~' = i2-nt for 0 ~< i ~<2". [The limit is in the space L I ( P ) . ] Roughly
+speaking, [St] is the limit of squared changes of S during [0, t], where the
+length of time intervals over which the changes are measured shrinks to zero.
+For a Standard Brownian Motion B, [Bt] = t almost surely for all t.
+   Let M 2 denote the space of square-integrable martingales. For each S ~ M 2,
+let L2[S] denote the space consisting of any predictable process 0 with
+            t
+
+
+     E(I0:                            for a,, in
+        0
+1672                                                                             D.   Duffle
+
+
+(Since [S] is increasing and 0,2 is positive, the integral 50 0,z dlS], is always well
+defined, although possibly + % for each t and each w in O as a Stieltjes
+integral.) We will next define a stochastic integral J" 0 dS for S ~ ~ z and
+0 E L2[SI .
+   We first take the case 3--= [0, T]. A stochastic process 0 is elementary if in
+each state 0o E 12 there is partition {(0, q], (t~, t2] . . . . . (t k, T]} such that 0 is
+constant over each set in the partition. That is, an elementary process is
+piecewise constant and left-continuous. The stochastic integral f0~ 0t dS t is
+easily and intuitively defined for any elementary process 0 as a sum of the form
+           T
+
+
+       foldS,= E                     o(t~_,)Is(t,)       -   s(t,_,)].
+       0             ( k : tk<-T }
+
+
+
+
+This defines a process y 0 dS = {J'o °T dS~: t C 3-}. Let L2[S]~ = {0 E L2[S]: 0
+is elementary}. The following lemma can be proved as an exercise.
+
+Lemma.         IfS~M            2 a n d O @ L 2 [ S ] ~ , then S O d S @ ~ 2 .
+
+  We next define a norm 11"11~2 o n M 2 (that gives M 2 the structure of a Hilbert
+space) by
+
+       IlSll~2 = V v a r ( S 0 ,           s~        ~
+
+Likewise, for each S @ j/2, a semi-norm II'lls is defined on L2[S] by
+
+                 [(f       T
+                                          ,11,2
+       II011,= E               0~dlS],)]             , OEL2[S].
+                       0
+
+
+
+It turns out that
+
+
+       I[01ls=    rOdS ~2, O~L2[SI~, S~/~2,
+which defines an isometry that can be extended to L2[S], allowing us to define
+the stochastic integral f 0 dS for any 0 ~ L2[S] as follows.
+
+Theorem (definition of stochastic integration). For any S E ~ 2 and any
+       2              •                   -  2
+0. E L. [S],
+          .
+             there
+               .
+                   extsts a sequence
+                                2
+                                     {On} m L [S]~o such that II0n - 011,~ o . There
+ts a untque martmgale m ill , denoted f 0 dS, such that for any such sequence
+{0,}, {j" 0ndS} converges in 11-11~2 to y o as.
+Ch. 31: The Theory of Value in Security Markets                                              1673
+
+    This definition of the stochastic integral is extended from i f = [0, T] to
+i f = [0, ~) by defining J" 0 dS on [0, ~) via its restriction to [0, T] for each T.
+While the above definition is perfectly satisfactory for many applications, it
+must be extended to handle more general processes 0 and S. In order to do
+this, we next define the most general class of such S for which a stochastic
+integral can be defined with reasonable properties; this is the class of semi-
+martingales. We first need a few additional definitions.
+    A if-valued random variable ~- is a stopping time if the event {to
+g2: r(to) ~< t} is in o%tfor all t in if. For an adapted process X and stopping time
+z, the stopped process X ~ is defined by X~(t) = X ( t ) , t <~ z, and X~(t) = X('r),
+t > ~'. An adapted process X is a local martingale if there is a sequence { % } of
+stopping times with % ~< %+, and limn__,~ % = ~ almost surely such that X ~" is a
+martingale for all n. (In particular, a martingale is a local martingale.)
+    A stochastic process X is a finite variation process if X = A - B, where A
+and B are adapted processes that are increasing (almost surely). A stochastic
+process S is a semimartingale if S = M + A for some local martingale M and
+finite variation process A.
+    A stochastic integral ~ 0 dS is defined, for predictable 0 and semimartingale
+S, if there is a decomposition S = M + A of S as the sum of a local martingale
+M and a finite variation process A such t h a t j" 0 d M and J" 0 dA are well
+defined. In that case, J ' 0 d S = J ' 0 d M +       f 0 d A does not depend on the
+decomposition. While we do not define ~ 0 d M and J" 0 dA explicitly, the
+former is a natural extension of the integral f 0 d M for M C ~ 2 and 0 E
+L2[M], while j'0r 0t d A , is the classical Stieltjes integral for each to G O.
+    For any semimartingale S, we let L ~[S] denote the set of predictable 0 such
+that the stochastic integral .~ 0 dS is a well-defined and integrable process.
+Given an ~N-valued process S = ( S ' , . . . , S N) for which S = is a semimartingale,
+n~{1,...,N},          we can define 0 = ( 0 1 , . . . , 0 N ) @ L I [ S ] and . ~ 0 d S by a
+natural extension of the one-dimensional case. For a precise definition, see
+Jacod (1979). One should think of ~ 0 dS as En=                N 1 f On da n, although, in
+pathological cases, this is only true in a limiting sense. (If I: is the standard
+filtration of a Brownian motion, J" 0 dS = E~_, ~ 0 ndS".) Protter (1989) is an
+excellent introduction to stochastic integration.
+
+
+References
+
+Admati, A. (1985) 'A noisy rational expectations equilibrium for multi-asset securities markets',
+ Econometrica, 53: 629-657.
+Admati, A. and P. Pfleiderer (1988) 'A theory of intraday patterns: volume and price variability',
+ Review of Financial Studies, 1: 3-40.
+Aghion, P. and P. Bolton (1986) 'An "incomplete contracts" approach to bankruptcy and the
+ optimal financial structure of the firm', Unpublished, Department of Economics, Harvard
+ University.
+1674                                                                                    D. Duffle
+
+Allen, F. and D. Gale (1987) 'Optimal security design', Unpublished, Department of Economics,
+  University of Pittsburgh.
+Araujo, A. and P. Monteiro (1987) 'Generic non-existence of equilibria in finance models',
+  Unpublished, Instituto de Matem~itica Pura e Aplicada, Rio de Janeiro.
+Araujo A. and P. Monteiro (1989) 'Existence without uniform conditions', Journal of Economic
+  Theory, 48: 416-427.
+Arnold, L. (1974) Stochastic differential equations: theory and applications. New York: Wiley.
+Arrow, K. (1951) 'An extension of the basic theorems of classical welfare economics', In: J.
+  Neyman, ed., Proceedings of the Second Berkeley Symposium on Mathematical Statistics and
+  Probability. Berkeley: University of California Press, pp. 507-532.
+Arrow, K. (1953) 'Le r61e des valeurs boursi6res pour la repartition la meillure des risques',
+  Colloq. Internat. Centre National de la Recherche Scientifique (Paris, 1952), Econometrie, 40:
+  41-47; discussion, pp. 47-48, CNRS Paris, 1953. English translation: (1964) Review of
+  Economic Studies 31: 91-96.
+Arrow, K. and G. Debreu (1954) 'Existence of an equilibrium for a competitive economy',
+  Econometrica, 22: 265-290.
+Bachelier, L. (1900) 'Th6orie de la speculation', Annales Scientifiques de l'Ecole Normale
+  Supdrieure, troisi~me serie, 17: 21-88. Translation: P. Cootner, ed., The random character of
+  stock market prices: Cambridge, MA: MIT Press.
+Back, K. (1986) 'Securities market equilibrium without bankruptcy: contingent claim valuation and
+  the Martingale property', Research Paper 683, Center For Mathematical Studies in Economics
+  and Management Science, Northwestern University.
+Back, K. (1988) 'Correlation of consumption, state prices, and risk premia for general asset price
+  processes', Unpublished, Department of Finance, Indiana University.
+Back, K. and S. Pliska (1986) 'Discrete versus continuous trading in securities markets with net
+  worth constraints', Working Paper 700, Center for Mathematical Studies in Economics and
+  Management Science, Northwestern University.
+Back, K. and S. Pliska (1989) 'On the fundamental theorem of asset pricing with an infinite state
+  space', Unpublished, Department of Finance, Indiana University.
+Barone-Adesi, G. and R. Elliott (1989) 'The valuation of American options', Unpublished,
+  University of Alberta.
+Bergman, Y. (1985) 'Time preference and capital asset pricing models', Journal of Financial
+  Economics', 14: 145-159.
+Bester, H. (1982) 'On shareholder unanimity in the mean-variance model', Economics Letters, 10:
+  363-367.
+Bhattacharya, S. and G. Constantinides, eds. (1989) Financial markets with incomplete informa-
+  tion, frontiers of modern financial theory, Vol. 2. Totowa, NJ: Rowman and Littlefield.
+Black, F. (1972) 'Capital market equilibrium with restricted borrowing', Journal of Business, 45:
+  444-454.
+Black, F. (1976) 'The pricing of commodity contracts', Journal of Financial Economics, 3:
+  167-179.
+Black, F. and M. Scholes (1973) 'The pricing of options and corporate liabilities', Journal of
+  Political Economy, 81: 637-654,
+Boyle, P. (1977) 'Options: a Monte Carlo approach', Journal of Financial Economics, 4: 323-338.
+Bray, M. (1981) 'Futures trading, rational expectations and the efficient markets hypothesis',
+  Econometrica, 49: 575-596.
+Brealey, R. and S. Myers (1984) Principles of corporate finance (2nd edn.). New York: McGraw-
+  Hill.
+Breeden, D. (1979) 'An intertemporal asset pricing model with stochastic consumption and
+  investment opportunities', Journal of Financial Economics, 7: 265-296.
+Breeden, D. (1986) 'Consumption, production, inflation and interest rates', Journal of Financial
+  Economics, 16: 3-39.
+Breeden, D., M. Gibbons and R. Litzenberger (1986) 'Empirical tests of the consumption-oriented
+  CAPM', Research Paper 879, Graduate School of Business, Stanford University.
+Breeden, D. and R. Litzenberger (1978) 'Prices of state-contingent claims implicit in option
+  prices', Journal of Business, 51: 621-651.
+Ch. 31: The Theory of Value in Security Markets                                                 1675
+
+Brennan, M. and E. Schwartz (1977) 'The valuation of American put options', Journal of Finance,
+  32: 449-462.
+Brennan, M. and E. Schwartz (1979) 'A continuous time approach to the pricing of bonds',
+  Journal of Banking and Finance, 3: 133-155.
+Brock, W. (1979) 'An integration of stochastic growth theory and the theory of finance, Part I: The
+  growth model', in: J. Green and J. Scheinkman, eds., General equilibrium, growth, and trade.
+  New York: Academic Press, pp. 165-192.
+Brock, W. (1982) 'Asset prices in a production economy', in: J. McCall, ed., The economics of
+  information and uncertainly. Chicago, IL: University of Chicago Press, pp. 1-46.
+Brown, D. and M. Gibbons (1985) 'A simple econometric approach for utility-based asset pricing
+  models', Journal of Finance, 40: 359-381.
+Brown, D. and S. Ross (1988) "Spanning, valuation, and options', Unpublished, Cowles Founda-
+  tion, Yale University.
+Burke, J. (1986) Existence of equilibrium for incomplete market economies with production and
+  stock trading', Unpublished, Department of Economics, Texas A & M University.
+Carino, D. (1987) 'Multiperiod security markets with diversely informed agents', PhD Thesis,
+  Engineering-Economic Systems Department, Stanford University.
+Carr, P. (1987) 'Treasury bond futures and the quality option', Unpublished, Graduate School of
+  Management, University of California, Los Angeles.
+Carr, P. and R. Myneni (1989) 'A representation of the American equity put option', Un-
+  published, Cornell University.
+Carr, P., R. Jarrow and R. Myneni (1989) 'Alternative characterizations of American put options',
+  Unpublished, Cornell University.
+Cass, D. and J. Stiglitz (1970) 'The structure of investor preferences and asset returns, and
+  separability in portfolio allocation: a contribution to the pure theory of mutual funds', Journal of
+  Economic Theory, 2: 122-160.
+Chamberlain, G. (1983a) 'A characterization of the distributions that imply mean-variance utility
+  functions', Journal of Economic Theory, 29: 185-201.
+Chamberlain, G. (1983b) 'Funds, factors, and diversification in arbitrage pricing models',
+  Econometrica, 51: 1305-1323.
+Chamberlain, G. (1988) 'Asset pricing in multiperiod security markets', Econometrica, 56:
+  1283-1300.
+Chamberlain, G. and M. Rothschild (1983) 'Arbitrage, factor structure, and mean-variance
+  analysis on large asset markets', Econometrica, 51: 1281-1304.
+Cheng, S. (1987) 'Pricing models for multiple-currency option bonds', Unpublished, Graduate
+  School of Business, Stanford University.
+Chew, S. (1989) 'Axiomatic utility theories with the betweenness property', Annals of Operations
+  Research, 19: 273-298.
+Christensen, P. (1987) 'An intuitive approach to the Harrison and Kreps concept of arbitrage
+  pricing for continuous time diffusions', Unpublished, Department of Management, Odense
+  University, Denmark.
+Chung, K.L. and R. Williams (1983) An introduction to stochastic integration. Boston: Birkhhuser.
+Clark, J. (1970) 'The representation of functionals of Brownian Motion by stochastic integrals',
+  Annals of Mathematical Statistics, 41: 1282-1295.
+Clark, S. (1990) 'The valuation problem in arbitrage price theory'. Unpublished. Department of
+   Statistics, University of Kentucky, Journal of Mathematical Economics, in press.
+Connor, G. (1984) 'A unified beta pricing theory', Journal of Economic Theory, 34: 13-31.
+Constantinides, G. (1982) 'Intertemporal asset pricing with heterogenous consumers and without
+   demand aggregation', Journal of Business, 55: 253-267.
+Constantinides, G. (1986) 'Capital market equilibrium with transactions costs', Journal of Political
+   Economy, 94: 842-862.
+Constantinides, G. (1988) 'Habit formation: a resolution of the equity premium puzzle', Un-
+   published, Graduate School of Business, University of Chicago.
+Constantinides, G. (1989) 'Theory of valuation: overview and recent developments', in: S.
+   Bhattacharya and G. Constantinides, Theory of valuation: Frontiers of modern financial theory,
+   Vol. 1. Totowa, N J: Rowman and Littlefield.
+1676                                                                                     D. Duffle
+
+Cox, J., J. Ingersoll and S. Ross (1981a) 'A re-examination of traditional hypotheses about the
+  term structure of interest rates', Journal of Finance, 36: 769-799.
+Cox, J., J. Ingersoll and S. Ross (1981b) 'The relation between forward prices and futures prices',
+ Journal of Financial Economics, 9:321-346.
+Cox, J., J. Ingersoll and S. Ross (1985a) 'A theory of the term structure of interest rates',
+  Eeonometrica, 53: 385-408.
+Cox, J., J. Ingersoll and S. Ross (1985b) 'An intertemporal general equilibrium model of asset
+  prices', Econometrica, 53: 363-384.
+Cox, J. and S. Ross (1976) 'The valuation of options for alternative stochastic processes', Journal
+  of Financial Economics, 3: 145-166.
+Cox, J., S. Ross and M. Rubinstein (1979) 'Option pricing: a simplified approach', Journal of
+  Financial Economics, 7: 229-263.
+Cox, J. and M. Rubinstein (1985) Options markets. Englewood Cliffs, NJ: Prentice Hall.
+Dana, R.-A. (1990) 'Existence, uniqueness and determinacy of Arrow-Debreu equilibria in
+  finance models'. Unpublished. Laboratoire de Math6matiques Fondamentales, University of
+  Paris VI.
+Dana, R.-A. and M. Pontier (1989) 'On the existence of a stochastic equilibrium, a remark',
+  Unpublished, Laboratoire de Math6matiques Fondamentales, Universit6 de Paris VI.
+Davis, M.H. and P. Varaiya (1974) 'The multiplicity of an increasing family of cr-fields', The
+  Annals of Probability, 2: 958-963.
+Debreu, G. (1951) 'The coefficient of resource utilization', Econometrica, 19: 273-292.
+Debreu, G. (1953) 'Une economie de l'incertain', Unpublished, Electricit6 de France.
+Debreu, G. (1959) Theory of value. Cowles Foundation Monograph 17, New Haven, CT: Yale
+  University Press.
+Dekel, E. (1986) 'An axiomatic characterization of preferences under uncertainty', Journal of
+  Economic Theory, 40: 304-3t8.
+Dellacherie, C. and P. Meyer (1978) Probabilities and potential. New York: North-Holland.
+Dellacherie, C. and P. Meyer (1982) Probabilities and potential B: Theory of Martingales. New
+  York: North-Holland.
+DeMarzo, P. (1987) 'Majority rule and corporate control: the rule of the dominant shareholder',
+  Unpublished, Department of Economics, Stanford University.
+DeMarzo, P. (1988) 'An extension of the Modigliani-Miller Theorem to stochastic economies with
+  incomplete markets', Journal of Economic Theory, 45: 353-369.
+DeMarzo, P. and D. Duffle (1991) 'Corporate financial hedging with proprietary information',
+  Unpublished, Stanford University; Journal of Economic Theory, 53: in press.
+DeMarzo, P. and K. Van Nuys (1988) 'Lecture notes in theoretical finance', Unpublished, Institute
+  for Mathematical Studies in the Social Sciences Lectures in Economics, based on Lectures of
+  William A. Brock at the Graduate School of Business, Stanford University.
+Detemple, J., P. Gottardi and H. Polemarchakis (1989) 'The relevance of financial policy',
+  Working Paper, Graduate School of Business, Columbia University.
+Detemple J. and F. Zapatero (1990) 'Asset prices in an exchange economy with habit formation',
+  Unpublished. Columbia University.
+Diamond, P. (1967) 'The role of a stock market in a general equilibrium model with technological
+  uncertainty', American Economic Review, 57: 759-776.
+Dothan, M. and D. Feldman (1986) 'Equilibrium interest rates and multiperiod bonds in a partially
+  observable economy', Unpublished, Vanderbilt University.
+Dr~ze, J. (1974) 'Investment under private ownership: optimality, equilibrium and stability', in: J.
+  Dr~ze, ed., Allocation under uncertainty: equilibrium and optimality. New York: Wiley, pp.
+  129-165.
+Duffle, D. (1985) 'Predictable representation of Martingale spaces and changes of probability
+  measure', in: J. Azema and M. Yor, eds., Seminaire de ProbabilitEs. XIX, Lecture Notes in
+  Mathematics Number 1123. New York: Springer-Verlag, pp. 278-284.
+Duffle, D. (1986) 'Stochastic equilibria: existence, spanning number, and the "no expected
+  financial gain from trade" hypothesis', Econometrica, 54: 1161-1184.
+Duffle, D. (1988) Security markets: stochastic models. Boston: Academic Press.
+Duffle D. (1990) 'The nature of incomplete security markets', Unpublished. Graduate School of
+Ch. 31: The Theory of Value in Security Markets                                               1677
+
+   Business, Stanford University, forthcoming in: J.-J. Laffont and C. Sims, eds., Advances in
+   Econometrics, Sixth World Congress. Cambridge University Press.
+Duffle, D. and L. Epstein (1989) 'Stochastic differential utility and asset pricing', Unpublished,
+   Graduate School of Business, Stanford University.
+Duffle, D., J. Geanakoplos, A. Mas-Colell and A. McLennan (1988) 'Stationary Markov
+  equilibria', Unpublished, Graduate School of Business, Stanford University.
+Duffle, D. and C. Huang (1985) 'Implementing Arrow-Debreu equilibria by continuous trading of
+  few long-lived securities', Econometrica, 53: 1337-1356.
+Duffle, D. and W. Shafer (1986) 'Equilibrium and the role of the firm in incomplete markets',
+   Research Paper 915, Graduate School of Business, Stanford University.
+Duffle, D. and C. Skiadas (1990) 'Continuous-time security pricing: a utility gradient approach'~
+  Unpublished. Graduate School of Business, Stanford University.
+Duffle, D. and R. Stanton (1988) 'Pricing continuously resettled contingent claims', Unpublished,
+  Graduate School of Business, Stanford University.
+Duffle, D. and W. Zame (1959) 'The consumption-based capital asset pricing model', Economet-
+  rica, 57: 1279-1297.
+Durrett, R. (1984) Brownian motion and martingales in analysis. Belmont, CA: Wadsworth.
+Dybvig, P. and C.-F. Huang (1988) 'Nonnegafive wealth, absence of arbitrage, and feasible
+  consumption plans', Review of Financial Studies, 1: 377-402.
+Dynkin, E. (1965) Markov Processes. Berlin, Springer-Verlag.
+Ekern, S. and R. Wilson (1974) 'On the theory of the firm in an economy with incomplete
+  markets', Bell Journal of Economics and Management Science, 5: 171-180.
+Epstein, L. and S. Zin (1989a) 'Substitution, risk aversion and the temporal behavior of
+  consumption and asset returns: a theoretical framework', Econometrica, 57: 937-969.
+Epstein, L. and S. Zin (1989b) 'Substitution, risk aversion and the temporal behavior of
+  consumption and asset returns: an empirical analysis', Unpublished, Department of Economics,
+  University of Toronto.
+Ethier, S. and T. Kurtz (1986) Markov processes: characterization and convergence. New York:
+  Wiley.
+Fama, E. (1976) Foundations of finance. New York: Basic Books.
+Fama, E. (1978) 'The effects of a firm's investment and financing decisions on the welfare of its
+  security holders', American Economic Review, 68: 272-284.
+Fama, E. and M. Miller (1972) The theory of finance. New York: Holt, Rinehart and Winston.
+Freedman, D. (1983) Brownian motion and diffusion. New York: Springer-Verlag.
+Freidlin, M. (1985) Functional Integration and Partial Differential Equations. Princeton University
+  Press.
+Friedman, A. (1975) Stochastic differential equations and applications, vol. I. New York: Academic
+  Press.
+Friesen, P. (1974) 'A reinterpretation of the equilibrium theory of Arrow and Debreu in terms of
+  financial markets', Technical Report 126, Institute for Mathematical Studies in the Social
+  Sciences, Stanford University.
+Gale, D: (1960) The theory of linear economic models. New York: McGraw-Hill.
+Geanakoplos, J., M. Magill, M. Ouinzii and J. Dr~ze (1987) 'Generic inefficiency of stock market
+  equilibrium when markets are incomplete', Working Paper M8735, Department of Economics,
+  University of Southern California.
+Gennotte, G. (1984) 'Continuous-time production economies under incomplete information I: a
+  separation theorem', Working Paper 1612-84, Sloan School, Massachusetts Institute of Tech-
+  nology.
+Geske, R. (1979) 'The valuation of compound options', Journal of Financial Economics, 7: 63-81.
+Geske, R. and H. Johnson (1984) 'The American put option valued analytically', Journal of
+  Finance, 39: 1511-1524.
+Geske, R. and K. Shastri (1985) 'Valuation by approximation: a comparison of alternative option
+  valuation techniques', Journal of Financial and Quantitative Analysis, 20: 45-71.
+Gevers L. (1974) 'Competitive equilibrium of the stock exchange and Pareto efficiency', in: J.
+  Dr~ze, ed., Allocation under uncertainty: equilibrium and optimality. New York: Wiley, pp.
+  167-191.
+1678                                                                                    D. Duffle
+
+Gihman, 1. and A. Skorohod (1972) Stochastic differential equations. New York: Springer-Verlag.
+Girsanov, I. (1960) 'On transforming a certain class of stochastic processes by absolutely
+  continuous substitution of measures', Theory of Probability and Its Applications, 5: 285-301.
+Glosten, L. and P. Milgrom (1985) 'Bid, ask, and transaction prices in a specialist market with
+  heterogeneously informed traders', Journal of Financial Economics, 14: 71-100.
+Goldman, B., H. Sosin and M. Gatto (1979) 'Path dependent options: "buy at the low, sell at the
+  high" ', Journal of Finance, 34: 1111-1127.
+Grauer, F. and R. Litzenberger (1979) 'The pricing of commodity futures contracts, nominal
+  bonds, and other risky assets under commodity price uncertainty', Journal of Finance, 44:
+  69-84.
+Grossman, S. (1976) 'On the efficiency of competitive stock markets where traders have diverse
+  information', Journal of Finance, 31: 573-585.
+Grossman, S. and O. Hart (1979) 'A theory of competitive equilibrium in stock market
+  economies', Econometrica, 47: 293-330.
+Grossman, S. and O. Hart (1987) 'One share/one vote and the market for corporate control',
+  Unpublished, Department of Economics, Princeton University.
+Grossman, S. and G. Laroque (1989) 'Asset pricing and optimal portfolio choice in the presence of
+  illiquid durable consumption goods', Econometrica, 58: 25-52.
+Grossman, S. and J. Stiglitz (1976) 'On stockholder unanimity in making production and financial
+  decisions', Technical Report No. 224, Institute for Mathematical Studies in the Social Sciences,
+  Stanford University.
+Haggerty, K. (1985) Equilibrium bid-ask spreads in a dealership market, PhD Thesis, Graduate
+  School of Business, Stanford University.
+Hansen, L. (1989) 'Semi-parametric efficiency bounds for linear time series models', Unpublished,
+  University of Chicago.
+Hansen, L. and S. Richard (1987) 'The role of conditioning information in deducing testable
+  restrictions implied by dynamic asset pricing models', Econometrica, 55: 587-614.
+Hansen, L. and K. Singleton (1982) 'Generalized instrumental variables estimation of nonlinear
+  rational expectations models', Econometrica, 50: 1269-1286.
+Hansen, L. and K. Singleton (1983) 'Stochastic consumption, risk aversion, and the temporal
+  behavior of asset returns', Journal of Political Economy, 91: 249-265.
+Harris, M. and A. Raviv (1987) 'Corporate governance: voting rights and majority rules', Working
+  Paper 33, Kellogg School, Northwestern University.
+Harrison, J.M. and D. Kreps (1979) 'Martingales and arbitrage in multiperiod securities markets',
+  Journal of Economic Theory, 20: 381-408.
+Harrison, J.M. and S. Pliska (1981) 'Martingales and stochastic integrals in the theory of
+  continuous trading', Stochastic Processes and Their Applications, 11: 215-260.
+Harrison, J.M. and S. Pliska (1983) 'A stochastic calculus model of continuous trading: complete
+  markets', Stochastic Processes and their Applications, 15: 313-316.
+Hart, O. (1974) 'On the existence of equilibria in a securities market model', Journal of Economic
+  Theory 9: 293-311.
+Hart, O. (1975) 'On the optimality of equilibrium when the market structure is incomplete',
+  Journal of Economic Theory, 11: 418-443.
+Hart, O. (1977) 'Takeover bids and stock market equilibrium', Journal of Economic Theory, 9:
+  53 -83.
+Hart, O. (1979) 'On shareholder unanimity in large stock market economies', Econometrica, 47:
+  1057-1082.
+Hart, O. (1987) 'Capital structure as a control mechanism in corporations', Research Paper 441,
+  Department of Economics, Massachusetts Institute of Technology.
+Heath, D., R. Jarrow and A. Morton (1987) 'Bond pricing and the term structure of interest rates:
+  a new methodology', Unpublished, Cornell University.
+Hetlwig, M. (1981) 'Bankruptcy, limited liability, and the Modigliani-Miller theorem', American
+  Economic Review, 71: 155-170.
+Hemler, M. (1987) 'The quality delivery option in treasury bond futures contracts', Unpublished,
+  Graduate School of Business, University of Chicago.
+Hicks, J. (1939) Value and capital. Oxford: Clarendon Press.
+Ch. 31: The Theory of Value in Security Markets                                                1679
+
+Hindy, A. (1989) 'An equilibrium model of futures markets dynamics', Unpublished, Sloan School
+  of Management, M.I.T.
+Hindy, A. and C.F. Huang (1989) 'On intertemporal preferences with a continuous-time dimen-
+  sion II: The case of uncertainty', Unpublished, Sloan School of Management, M.I.T.
+Ho, T. and S. Lee (1986) 'Term structure movements and pricing interest rate contingent claims',
+  Journal of Finance, 41: 1011-1029.
+Huang, C.F. (1985a) 'Information structures and viable price systems', Journal of Mathematical
+  Economics, 14: 215-240.
+Huang, C.F. (1985b) 'Information structure and equilibrium asset prices', Journal of Economic
+  Theory, 31: 33-71.
+Huang, C.F. (1987) 'An intertemporal general equilibrium asset pricing model: the case of
+  diffusion information', Econometrica, 55: 117-142.
+Huang, C. and R. Litzenberger (1988) Foundations for financial economics. Amsterdam: North-
+  Holland.
+Huberman, G. (1982) 'A simple approach to arbitrage pricing theory', Journal of Economic
+  Theory, 28: 183-191.
+Hull, J. (1989) Options, futures, and other derivative securities. Englewood Cliffs, N J: Prentice
+  Hall.
+Ikeda, N. and S. Watanabe (198l) Stochastic differential equations and diffusion processes.
+  Amsterdam: North-Holland.
+Ingersoll, J. (1977) 'A contingent-claims valuation of convertible securities', Journal of Financial
+  Economics, 4: 289-322.
+Ingersoll, J. (1987) Theory of financial decision making. Totowa, NJ: Rowman and Littlefield.
+Jacod, J. (1977) ' A general theorem of representation for martingales', Proceedings of the
+  Symposia in Pure Mathematics, 31: 37-53.
+Jacod, J. (1979) Calcul stochastique et probl~mes de martingales, Lecture Notes in Mathematics
+  No. 714. Berlin: Springer-Verlag.
+Jamshidian, F. (1989) 'Free-boundary formulas for American options', Unpublished, Merrill
+  Lynch Capital Markets.
+Jarrow, R. (t988) Finance Theory. Englewood Cliffs, NJ: Prentice Hall.
+Jarrow, R. and R. Green (1985) 'Spanning and completeness in markets with contingent claims',
+  Unpublished, Cornell University.
+Jensen, M. and J. Long (1972) 'Corporate investment under uncertainty and Pareto optimality in
+  the capital markets', Bell Journal of Economics and Management Science, 3: 151-174.
+Jensen, M. and W. Meckling (1976) 'Theory of the firm: managerial behavior, agency costs and
+  ownership structure', Journal of Financial Economics, 3: 305-360.
+Johnsen T. and J. Donaldsen (1985) 'The structure of intertemporal preferences under uncertainty
+  and time consistent plans', Econometrica, 53: 1451-1463.
+Johnson, H. (1987) 'Options on the maximum or the minimum of several assets', Journal of
+  Financial and Quantitative Analysis, 22: 277-283.
+Jones, R. and R. Jacobs (1986) 'History dependent financial claims: Monte Carlo valuation',
+  Unpublished, Simon Fraser University.
+Kandori, M. (1988) 'Equivalent equilibria', International Economic Review, 29: 401-417.
+Karatzas, I., P. Lakner, J. Lehoczky and S. Shreve (1988) 'Dynamic equilibria in a multi-agent
+  economy: construction and uniqueness', Research Paper 88-9, Carnegie-Mellon University.
+Karatzas, I. and S. Shreve (1988) Brownian motion and stochastic calculus. New York: Springer-
+  Verlag.
+Kim, I.J. (1989) 'The analytic valuation of American puts', Unpublished, New York University.
+Kopp, P. (1984) Martingales and stochastic integrals. Cambridge: Cambridge University
+  Press.
+Kraus, A and R. Litzenberger (1975) 'Market equilibrium in a multiperiod state preference model
+  with logarithmic utility', Journal of Finance, 30: 1213-1227.
+Kreps, D. (1979) 'Three essays on capital markets', Technical Report 298, Institute for Mathemati-
+  cal Studies in The Social Sciences, Stanford University.
+Kreps, D. (1981) 'Arbitrage and equilibrium in economies with infinitely many commodities',
+  Journal of Mathematical Economics, 8: 15-35.
+1680                                                                                       D. Duffle
+
+Kreps, D. (1982) 'Multiperiod securities and the efficient allocation of risk: a comment on the
+  Black-Scholes option pricing model', in: J. McCall, ed., The economics of uncertainty and
+  information. Chicago, IL: University of Chicago Press, pp. 203-232.
+Kreps, D. and E. Porteus (1978) 'Temporal resolution of uncertainty and dynamic choice theory',
+  Econometrica, 46: 185-200.
+Krylov, N. (1980) Controlled diffusion processes. New York: Springer-Verlag.
+Kunita, H. and S. Watanabe (1967) 'On square-integrable martingales', Nagoya Mathematics
+  Journal, 30: 209-245.
+Leland, H. (1973) 'Capital asset markets, production, and optimality: a synthesis', Technical
+  Report 115, Institute for Mathematical Studies in the Social Sciences, Stanford University.
+Leland, H. (1974) 'Production theory and the stock market', Bell Journal of Economics and
+  Management Science, 5: 125-144.
+Leland, H. (1978) 'Information, management choice, and stockholder unanimity', Review of
+  Economic Studies, 45: 527-534.
+Leland, H. (1985) 'Option pricing and replication with transactions costs', Journal of Finance, 40:
+  1283-1301.
+Lenglart, E. (1977) 'Transformation des martingales locales par changement absolument continu
+  de probabilites', Zeitschrift fiir Wahrscheinlichkeitstheorie, 39: 65-70.
+LeRoy, S. (1973) 'Risk aversion and the martingale property of stock prices', International
+  Economic Review, 14: 436-446.
+Lintner, J. (1965) 'The valuation of risky assets and the selection of risky investment in stock
+  portfolios and capital budgets', Review of Economics and Statistics, 47: 13-37.
+Lipster, R. and A. Shiryayev (1977) Statistics of random processes 1: General theory. New York:
+  Springer-Verlag.
+Lucas, R. (1978) 'Asset prices in an exchange economy', Econometrica, 46: 1429-1445.
+Lucas, R. and N. Stokey (1987) 'Money and interest in a cash-in-advance economy', Economet-
+  rica, 55: 491-514.
+Luenberger, D. (1969) Optimization by vector space methods. New York: Wiley.
+Machina, M. (1982) '"Expected utility" analysis without the independence axiom', Econometrica,
+  50: 277-323.
+Magill, M. and W. Shafer (1991) 'Incomplete markets', in: W. Hildenbrand and H. Sonnenschein,
+  eds., Handbook of mathematical economics, Vol. IV. Amsterdam: Elsevier (this Handbook).
+Makowski, L. (1983) 'Competitive stock markets', Review of Economic Studies, 50: 305-330.
+Margrabe, W. (1978) 'The value of an option to exchange one asset for another', Journal of
+  Finance, 33: 177-186.
+Marimon, R. (1987) 'Kreps' "Three Essays on Capital Markets" Almost Ten Years Later',
+  Unpublished, Department of Economics, University of Minnesota; Revista Espaffola de
+  Economia, in press.
+Mas-Colell, A. (1985) The theory of general economic equilibrium-a differentiable approach.
+  Cambridge: Cambridge University Press.
+Mas-Colell, A. (1986) 'The price equilibrium existence problem in topological vector lattices',
+  Econometrica, 54: 1039-1054.
+Mas-Colell, A. and W. Zame (1991) 'Infinite-dimensional equilibria', in: W. Hildenbrand and H.
+  Sonnenschein, eds., Handbook of mathematical economics, Vol. IV. Amsterdam: Elsevier (this
+  Handbook).
+McKenzie, L. (1954) 'On equilibrium in Graham's model of world trade and other competitive
+  systems', Econometrica, 22: 147-161.
+Memin, J. (1980) 'Espaces de semimartingales et changement de probabilit6s', Zeitschrift fiir
+  Wahrscheinlichkeitstheorie, 52: 9-39.
+Merton, R. (1973a) 'An intertemporal capital asset pricing model', Econometrica, 41: 867-888.
+Merton, R. (1973b) 'The theory of rational option pricing', Bell Journal of Economics and
+  Management Science, 4: 141-183.
+Merton, R. (t974) 'On the pricing of corporate debt: the risk structure of interest rates', Journal of
+  Finance, 29: 449-470.
+Merton, R. (1976) 'Option pricing when the underlying stock returns are discontinuous', Journal
+  of Financial Economics, 5: 125-144.
+Ch. 31: The Theory of Value in Security Markets                                                 1681
+
+Merton, R. (1977) 'On the pricing of contingent claims and the Modigliani-Miller theorem',
+  Journal of Financial Economics, 5: 241-250.
+Merton, R. (1987) 'Capital market theory and the pricing of financial securities', Working Paper
+   1818-86, Sloan School of Management, Massachusetts Institute of Technology.
+Merton, R. and M. Subrahmanyam (1974) 'The optimality of a competitive stock market', Bell
+  Journal of Economics and Management Science, 5: 145-170.
+Miller, M. (1977) 'Debt and taxes', Journal of Finance, 32: 261-275.
+Miltersen, K. and L. Nielsen (1989) 'The pricing of contingent claims written on bonds by
+   simulation of bond price processes', Unpublished, Odense University.
+Modigliani, F. and M. Miller (1958) 'The cost of capital, corporation finance, and the theory of
+   investment', American Economic Review, 48: 261-297.
+Mossin, J. (1973) Theory of financial markets. Englewood Cliffs, NJ: Prentice Hall.
+M/iller, S. (1985) Arbitrage pricing of contingent claims, Lecture Notes in Economics and
+   Mathematical Systems, Vol. 254. New York: Springer-Verlag.
+Myers, S. (1984) 'The capital structure puzzle', Journal of Finance, 39: 575-592.
+Myers, S. and N. Majluf (1984) 'Corporate financing and investment decisions when firms have
+   information that investors do not have', Journal of Financial Economics, 13: 187-221.
+Nachman, D. (1988) 'Spanning and completeness with options', Review of Financial Studies, 1:
+  311-328.
+Nielson L.T. (1985) 'Preference structure and equilibrium in the classical capital asset pricing
+   model', Unpublished, Department of Finance, University of Texas at Austin.
+Nielson L.T. (1986a) 'Mutual fund separation, factor structure and robustness', Unpublished,
+   Department of Finance, University of Texas at Austin.
+Nielson L.T. (1986b) 'Asset market equilibrium with short selling', Unpublished, Department of
+  Economics, University of Texas, Austin.
+Nielson L.T. (1987) 'Equilibrium in CAPM without a riskless asset', Working Paper 87188-2-3,
+  Department of Finance, University of Texas at Austin.
+Nielson L.T. (1989a) 'Existence of equilibrium in the CAPM', Unpublished, Institute of
+  Economics, University of Copenhagen.
+Nielson L.T. (1989b) 'Existence of equilibrium in CAPM: further results', Unpublished, Institute
+  of Economics, University of Copenhagen.
+Ohashi, K. (1987) 'On security prices at the terminal date in a continuous time trading with
+  dividends model', Unpublished, Hitosubashi University.
+Parkinson, M. (1977) 'Option pricing: the American put', Journal of Business, 50: 21-36.
+Pliska, S. (1982) 'A stochastic calculus model of continuous trading: return processes and
+  investment plans', Research Paper 517, Center for Mathematical Studies in Economics and
+  Management Science, Northwestern University.
+Prescott, E. and R. Mehra (1980) 'Recursive competitive equilibrium: the case of homogeneous
+  households', Econometrica, 48: 1365-1379.
+Prisman, E. (1985) 'Valuation of risky assets in arbitrage free economies with frictions', Un-
+  published, University of Arizona.
+Protter, P. (1989) Stochastic integration and stochastic differential equations. Berlin: Springer-
+  Verlag.
+Radner, R. (1967) 'Equilibre des march6s a terme et au comptant en cas d'incertitude', Cahiers
+  d'Econom~trie, 4: 35-52.
+Radner, R. (1972) 'Existence of equilibrium of plans, prices and price expectations in a sequence
+  of markets', Econometrica, 40: 289-303.
+Radner, R. (1974) 'A note on unanimity of stockholders' preferences among alternative produc-
+  tion plans: a reformulation of the Ekern-Wilson model', The Bell Journal of Economics and
+  Management Science, 5: 181-186.
+Radner, R. (1988) 'Intertemporal general equilibrium', Unpublished, AT&T Bell Laboratories,
+  Murray Hill, NJ.
+Richard, S. (1978) 'An arbitrage model of the term structure of interest rates', Journal of Financial
+  Economics, 6: 33-57.
+Ross, S.A. (1976a) 'The arbitrage theory of capital asset pricing', Journal of Economic Theory, 13:
+  341-360.
+1682                                                                                     D. Duffle
+
+Ross, S.A. (1976b) 'Options and efficiency', Quarterly Journal of Economics, 90: 75-89.
+Ross, S.A, (1976e) 'Risk, return, and arbitrage', in: I. Friend and J. Bickler, eds. Risk and return
+   in finance. Ballinger, Cambridge, MA.
+Ross, S.A. (1977) 'The determination of financial structure: the incentive-signalling approach',
+   Bell Journal of Economics (Spring) 23-40.
+Ross, S.A. (1978a) 'A simple approach to the valuation of risky streams', Journal of Business, 51:
+   453-475.
+Ross, S.A. (1978b) 'Mutual fund separation in financial theory-the separating distributions',
+  Journal of Economic Theory, 17: 254-286.
+Ross, S.A. (1987) 'Arbitrage and martingales with taxation', Journal of Political Economy, 95:
+   371-393.
+Rothschild, M. (1986) 'Asset pricing theories', in: W. Heller and D. Starrett, eds., Uncertainty,
+   information and communication - essays in honor of Kenneth J. Arrow, Vol. III. Cambridge:
+   Cambridge University Press, pp. 97-128.
+Rubinstein, M. (1974) 'An aggregation theorem for securities markets', Journal of Financial
+   Economics, 1: 225-244.
+Rubinstein, M. (1976) 'The valuation of uncertain income streams and the pricing of options', Bell
+  Journal of Economics, 7: 407-425.
+Satterthwaite, M. (1981) 'On the scope of the stockholder unanimity theorems', International
+   Economic Review, 22: 119-133.
+Savage, L.J. (1954) The foundations of statistics. New York: Wiley.
+Schaefer, H. (1974) Banach lattices and positive operators. Berlin: Springer-Verlag.
+Scheinkman, J. (1989) 'Market incompleteness and the equilibrium valuation of assets', in: S.
+  Bhattacharya and G. Constantinides, eds., Theory of valuation, frontiers of modern financial
+   theory, Vol. 1. Totowa, NJ: Rowman and Littlefield, pp. 45-52.
+Scheinkman, J. and L. Weiss (1986) 'Borrowing constraints and aggregate economic activity',
+   Econometrica, 54: 23-46.
+Sharpe, W. (1964) 'Capital asset prices: a theory of market equilibrium under conditions of risk',
+  Journal of Finance, 19: 425-442.
+Singleton, K. (1987) 'Speculation and estimation of intertemporal asset pricing models', Research
+  Paper 964, Graduate School of Business, Stanford University.
+Stiglitz, J. (1972) 'On the optimality of the stock market allocation of investment', Quarterly
+  Journal of Economics, 86: 25-60.
+Stiglitz, J. (1974) 'On the irrelevance of corporate financial policy', American Economic Review,
+  64: 851-866.
+Stiglitz, J. (1982) 'The inefficiency of the stock market equilibrium', Review of Economic Studies,
+  49: 241-261.
+Stiglitz, J. (1989) 'Mutual funds, capital structure, and economic efficiency', in: S. Bhattacharya
+  and G. Constantinides, eds., Theory of valuation, frontiers of modern financial theory, Vol. 1.
+  Totowa, NJ: Rowman and Littlefield, pp. 342-356.
+Stokey, N. and R. Lucas (with E. Prescott) (1989) Recursive methods in economic dynamics.
+  Cambridge, MA: Harvard University Press.
+Sundaresan, S. (1985) 'Intertemporally dependent preferences and the volatility of consumption
+  and wealth', Review of Financial Studies, 2: 73-90.
+Svensson, L. (1988) 'Portfolio choice and asset pricing with nontraded assets', Unpublished,
+  Institute for International Economic Studies, University of Stockholm.
+Townsend, R. (1984) 'Asset prices in a monetary economy', Unpublished, Department of
+  Economics, University of Chicago.
+Varian, H. (1987) 'The arbitrage principle in financial economics', Economic Perspectives, 1:
+  55 -72.
+Werner, J. (1987) 'Arbitrage and the existence of competitive equilibrium', Econometriea, 55:
+  1403-1418.
