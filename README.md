@@ -88,7 +88,6 @@ Operational tips:
 
 Documentation policy:
 - `README.md` is the single source of truth.
-- Legacy docs are kept under `_old/`.
 
 ## Purpose and Approach
 
