@@ -12,7 +12,7 @@ text to experiment.
 
 <img src="https://hilpisch.com/tpq_logo.png" alt="TPQ Logo" width="350" />
 
-Authors: The Python Quants with Codex and GPT-5
+Author: Dr. Yves J. Hilpisch (The Python Quants GmbH)<br>AI-Powered by GPT 5.x
 
 ## Installation
 
@@ -112,7 +112,7 @@ yoctoGPT offers three selectable architectures:
 
 Select the variant at train time via `--model_type` and it will be recorded in the checkpoint. The chat and sampler utilities auto‑detect it on load.
 
-### Why AdvancedGPT
+### Why `gpt_plus` (AdvancedGPT)
 
 - RoPE: rotary positions improve inductive bias and longer‑context generalization; typically yields small but consistent validation‑loss/perplexity gains, especially when eval context approaches or exceeds train context.
 - RMSNorm + biasless linears: stabilizes optimization and reduces gradient noise; often enables slightly higher learning rates and modest val‑loss improvements versus LayerNorm + biased linears.
@@ -248,6 +248,16 @@ Randomize the train/val split (helps reduce distribution shift):
 python -m scripts.prepare_tokenizer --all_txt_in_dir --text_dir data --out_dir data/token --vocab_size 8000 --random_split --split_seed 1337
 ```
 
+Choose split granularity explicitly:
+
+```
+# Auto: chunk-level for small corpora, file-level for larger multi-file corpora
+python -m scripts.prepare_tokenizer --all_txt_in_dir --text_dir data --out_dir data/token --vocab_size 8000 --random_split --split_level auto
+
+# Recommended for small corpora (avoids "whole file in val" behavior)
+python -m scripts.prepare_tokenizer --all_txt_in_dir --text_dir data --out_dir data/token --vocab_size 8000 --random_split --split_level chunk
+```
+
 2) Train:
 
 ```
@@ -264,6 +274,31 @@ Speed‑focused variant (token mode):
 
 ```
 python -m yoctoGPT.train --mode token --data_dir data/token --tokenizer_path data/token/tokenizer.json --ckpt_dir checkpoints/token_fast --model_type gpt_fast --n_layer 6 --n_head 6 --n_embd 384 --block_size 256 --batch_size 64 --max_iters 5000
+```
+
+Reference Colab L4 profile (finance token corpus):
+
+```
+python -m yoctoGPT.train \
+  --mode token \
+  --data_dir data/token_finance \
+  --tokenizer_path data/token_finance/tokenizer.json \
+  --ckpt_dir checkpoints/finance_token \
+  --model_type gpt_fast \
+  --device cuda \
+  --n_layer 8 --n_head 8 --n_embd 512 \
+  --block_size 256 --batch_size 160 \
+  --dropout 0.1 --weight_decay 0.1 \
+  --tie_weights --label_smoothing 0.03 \
+  --amp --amp_dtype bf16 \
+  --auto_microbatch \
+  --eval_interval 200 --eval_iters 120 \
+  --cosine_lr --warmup_iters 250 \
+  --min_lr 8e-6 --lr 1.5e-4 \
+  --max_iters 5000 \
+  --ema --ema_decay 0.999 \
+  --early_stopping_patience 8 \
+  --early_stopping_min_delta 0.0015
 ```
 
 5) Recommend a training configuration from a prepared corpus:
@@ -312,6 +347,9 @@ python -m yoctoGPT.chat --mode token --ckpt checkpoints/token/latest.pt --tokeni
 
 Notes:
 - Chat auto‑detects the architecture from the checkpoint (`arch` field). No extra flags are required whether the checkpoint is `gpt`, `gpt_plus`, or `gpt_fast`.
+- In token mode, `--tokenizer_path` is required for training/sampling/chat.
+- Model dimensions must be consistent (`n_embd % n_head == 0`).
+- If validation rises near the end, use `best.pt` for sampling/evaluation, not necessarily `latest.pt`.
 
 Resume or warm-start full training:
 
@@ -369,7 +407,7 @@ Overfitting appears when training loss continues to fall while validation loss r
 - Improve validation signal & data:
   - Use more data (`--all_txt_in_dir`) to broaden coverage and reduce variance.
   - Use `--random_split` in tokenization prep to reduce distribution drift between train and val.
-  - Consider a randomized validation split (not yet built in) if your corpus is ordered by topic; contiguous splits can exaggerate distribution shift.
+  - For small corpora, prefer chunk-level random split: `--random_split --split_level chunk`.
 
 - Tokenization choices:
   - Prefer BPE (default) with a reasonable `--vocab_size` (e.g., 4k–16k for small–medium corpora).
