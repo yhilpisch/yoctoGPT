@@ -1,3 +1,6 @@
+# (c) Dr. Yves J. Hilpisch
+# AI-Powered by Different LLMs.
+
 import unittest
 
 from yoctoGPT.tokenizer import TOKEN_BOS, TOKEN_EOS, TOKEN_UNK, BPETokenizer, WordLevelTokenizer, _hf_available

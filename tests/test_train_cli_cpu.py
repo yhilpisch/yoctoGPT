@@ -1,3 +1,6 @@
+# (c) Dr. Yves J. Hilpisch
+# AI-Powered by Different LLMs.
+
 import sys
 import unittest
 from unittest.mock import patch

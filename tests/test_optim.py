@@ -1,3 +1,6 @@
+# (c) Dr. Yves J. Hilpisch
+# AI-Powered by Different LLMs.
+
 import unittest
 
 from yoctoGPT.model import GPT, GPTConfig

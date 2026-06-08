@@ -1,4 +1,8 @@
-"""End-to-end tests for the sampler and chat CLI entry points."""
+"""End-to-end tests for the sampler and chat CLI entry points.
+
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+"""
 
 import subprocess
 import sys
