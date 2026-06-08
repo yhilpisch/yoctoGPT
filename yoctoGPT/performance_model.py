@@ -30,6 +30,7 @@ class CausalSelfAttention(nn.Module):
         assert config.n_embd % config.n_head == 0, "n_embd must be divisible by n_head"
         self.n_head = config.n_head
         self.head_dim = config.n_embd // config.n_head
+        self.block_size = config.block_size
         # Fused qkv projection
         self.c_attn = nn.Linear(config.n_embd, 3 * config.n_embd, bias=config.bias)
         self.c_proj = nn.Linear(config.n_embd, config.n_embd, bias=config.bias)
@@ -53,6 +54,11 @@ class CausalSelfAttention(nn.Module):
             past_len = pk.size(-2)
             k = torch.cat((pk, k), dim=-2)
             v = torch.cat((pv, v), dim=-2)
+            max_len = self.block_size
+            if k.size(-2) > max_len:
+                k = k[:, :, -max_len:, :]
+                v = v[:, :, -max_len:, :]
+                past_len = max(0, k.size(-2) - T)
         # SDPA will select the best backend (Flash, MemEfficient, Math)
         # dropout is applied only during training
         if past_len == 0:
