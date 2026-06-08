@@ -20,9 +20,8 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.utils.checkpoint as tckpt
 
-from .model import _top_k_top_p_mask
+from .base_model import GPTBase
 from .config import AdvancedModelConfig
 
 
@@ -210,7 +209,7 @@ class Block(nn.Module):
         return x
 
 
-class AdvancedGPT(nn.Module):
+class AdvancedGPT(GPTBase):
     def __init__(self, config: AdvancedGPTConfig) -> None:
         super().__init__()
         self.config = config
@@ -229,17 +228,47 @@ class AdvancedGPT(nn.Module):
                 nn.init.zeros_(b.attn.c_proj.weight)
                 nn.init.zeros_(b.mlp.w3.weight)
 
-        if config.tie_weights:
-            self.head.weight = self.tok_emb.weight
+        self._tie_weights()
+
+        # Track position offset across generate steps for RoPE.
+        self._pos_offset: int = 0
 
     def _init_weights(self, module: nn.Module) -> None:
         if isinstance(module, nn.Linear):
             nn.init.normal_(module.weight, mean=0.0, std=0.02)
-            if getattr(module, "bias", None) is not None:
-                if module.bias is not None:
-                    nn.init.zeros_(module.bias)
+            if module.bias is not None:
+                nn.init.zeros_(module.bias)
         elif isinstance(module, nn.Embedding):
             nn.init.normal_(module.weight, mean=0.0, std=0.02)
+
+    def _embed(
+        self,
+        idx: torch.Tensor,
+        past_kv: Optional[list[tuple[torch.Tensor, torch.Tensor]]],
+        use_cache: bool,
+    ) -> tuple[torch.Tensor, int, int]:
+        B, T = idx.shape
+        # AdvancedGPT uses RoPE and has no learned positional embeddings,
+        # so pos_start is effectively the pos_offset for RoPE.
+        pos_start = self._pos_offset
+        past_len = 0
+        if past_kv is not None and len(past_kv) > 0:
+            past_len = int(past_kv[0][0].size(-2))
+        x = self.tok_emb(idx)
+        x = self.drop(x)
+        return x, pos_start, past_len
+
+    def _block_kwargs(
+        self,
+        i: int,
+        layer_past: Optional[tuple[torch.Tensor, torch.Tensor]],
+        use_cache: bool,
+        pos_start: int,
+    ) -> dict:
+        return {"past_kv": layer_past, "use_cache": use_cache, "pos_offset": pos_start}
+
+    def _on_cache_reset(self) -> None:
+        self._pos_offset = 0
 
     def forward(
         self,
@@ -249,79 +278,13 @@ class AdvancedGPT(nn.Module):
         use_cache: bool = False,
         pos_offset: int = 0,
     ) -> torch.Tensor | Tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, list[tuple[torch.Tensor, torch.Tensor]]]:
-        B, T = idx.shape
-        if T > self.config.block_size:
-            raise ValueError("Sequence length exceeds block_size")
-
-        x = self.tok_emb(idx)
-        x = self.drop(x)
-        presents: list[tuple[torch.Tensor, torch.Tensor]] = []
-        use_act_ckpt = bool(
-            getattr(self, "activation_checkpointing", False)
-            and self.training
-            and torch.is_grad_enabled()
-            and not use_cache
-        )
-        for i, block in enumerate(self.blocks):
-            layer_past = past_kv[i] if past_kv is not None else None
-            if use_act_ckpt:
-                # Checkpointing only runs during training (use_cache is False),
-                # where pos_offset is always 0. KV cache is not used here.
-                x = tckpt.checkpoint(block, x, use_reentrant=False)
-                continue
-            out = block(x, past_kv=layer_past, use_cache=use_cache, pos_offset=pos_offset)
-            if use_cache:
-                assert isinstance(out, tuple)
-                x, present = out
-                presents.append(present)
-            else:
-                x = out
-        x = self.ln_f(x)
-        logits = self.head(x)
-        if use_cache:
-            return logits, presents
-        if labels is None:
-            return logits
-        loss = F.cross_entropy(logits.view(-1, logits.size(-1)), labels.view(-1))
-        return logits, loss
-
-    @torch.no_grad()
-    def generate(
-        self,
-        idx: torch.Tensor,
-        max_new_tokens: int,
-        temperature: float = 1.0,
-        top_k: Optional[int] = None,
-        top_p: Optional[float] = None,
-        eos_token: Optional[int] = None,
-    ) -> torch.Tensor:
-        self.eval()
-        finished: Optional[torch.Tensor] = None
-        if eos_token is not None:
-            finished = torch.zeros(idx.size(0), dtype=torch.bool, device=idx.device)
-        past_kv: Optional[list[tuple[torch.Tensor, torch.Tensor]]] = None
-        pos_offset = 0
-        for _ in range(max_new_tokens):
-            if past_kv is not None and len(past_kv) > 0 and past_kv[0][0].size(-2) >= self.config.block_size:
-                past_kv = None
-                pos_offset = 0
-            if past_kv is None:
-                idx_cond = idx[:, -self.config.block_size :]
-                pos_offset = 0
-            else:
-                idx_cond = idx[:, -1:]
-            out = self(idx_cond, past_kv=past_kv, use_cache=True, pos_offset=pos_offset)
-            assert isinstance(out, tuple)
-            logits, past_kv = out
-            pos_offset += idx_cond.size(1)
-            logits = logits[:, -1, :] / max(temperature, 1e-8)
-            probs = F.softmax(_top_k_top_p_mask(logits, top_k=top_k, top_p=top_p), dim=-1)
-            next_id = torch.multinomial(probs, num_samples=1)
-            if finished is not None and eos_token is not None:
-                eos_fill = torch.full_like(next_id, int(eos_token))
-                next_id = torch.where(finished.unsqueeze(1), eos_fill, next_id)
-                finished = finished | next_id.squeeze(1).eq(int(eos_token))
-            idx = torch.cat([idx, next_id], dim=1)
-            if finished is not None and bool(finished.all()):
-                break
-        return idx
+        # Stash pos_offset so the base-class forward loop can pass it to blocks.
+        self._pos_offset = pos_offset
+        out = super().forward(idx, labels=labels, past_kv=past_kv, use_cache=use_cache)
+        # Update pos_offset after a successful forward (used by generate).
+        if use_cache and isinstance(out, tuple):
+            _, presents = out
+            if presents:
+                seq_len = presents[0][0].size(-2)
+                self._pos_offset = pos_offset + idx.size(1)
+        return out
