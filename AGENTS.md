@@ -46,3 +46,5 @@ When editing or adding Jupyter/Colab notebooks (e.g. files under `notebooks/`):
 - Run the CPU test suite (`make test-cpu-fast`) before committing
   when a change touches source or test files.
 - Do not push unless explicitly asked.
+- Never add Co-authored-by, Signed-off-by, or any trailer lines to commit
+  messages. Commits must contain only the message body.
