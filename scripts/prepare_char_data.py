@@ -1,5 +1,8 @@
 """Prepare character-level training data for yoctoGPT.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 Reads a text corpus (default: data/philosophy.txt), builds a character
 vocabulary, encodes the entire text to integer IDs, splits into train/val, and
 writes `train.bin`, `val.bin`, and `vocab.json` to the output directory.

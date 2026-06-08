@@ -1,5 +1,8 @@
 """Training smoke test for yoctoGPT (prefers Apple Silicon).
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 This script performs a very short training run on the default corpus using a
 tiny model and prints losses to verify backprop, optimizer steps, and device
 handling. It defaults to Apple Silicon `mps` when available, then CUDA, then

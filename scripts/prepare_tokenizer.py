@@ -1,5 +1,8 @@
 """Prepare token-level training data for yoctoGPT using a minimal tokenizer.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 Trains a simple word-level tokenizer on the provided text (default:
 data/philosophy.txt), then encodes the corpus to token IDs, splits into
 train/val, and writes `train.bin`, `val.bin`, and `tokenizer.json` to the

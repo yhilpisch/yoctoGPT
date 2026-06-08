@@ -1,4 +1,8 @@
-"""Clean book-like corpora before tokenization."""
+"""Clean book-like corpora before tokenization.
+
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+"""
 
 from __future__ import annotations
 

@@ -1,5 +1,8 @@
 """Recommend a training configuration from a prepared corpus.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 Given a data directory containing train.bin/val.bin and (for token mode) a
 tokenizer.json, this script analyzes corpus size and recommends a model type
 and hyperparameters tailored to smaller corpora by default. It prints a full

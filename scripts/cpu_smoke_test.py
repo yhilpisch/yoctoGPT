@@ -1,5 +1,8 @@
 """CPU generation smoke test for yoctoGPT.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 This script exercises the minimal end-to-end generation stack on CPU without
 requiring a pre-trained checkpoint. It:
 
