@@ -1,0 +1,174 @@
+# GPU training profiles for yoctoGPT notebooks.
+# Auto-selected by the GPU detection cell; fallback is t4.
+#
+# Profiles per notebook section:
+#   char_small     — NB01 tiny 2-layer run
+#   char_deeper    — NB01 GPU-optimized run (gpt_fast + AMP)
+#   char_large     — NB02 large char-level run
+#   token          — NB03 token-level run
+#   token_finance  — NB04 finance token-level run
+
+t4:  # 15 GB, Turing, no native bf16
+  amp_dtype: fp16
+  char_small:
+    n_layer: 2
+    n_head: 4
+    n_embd: 128
+    block_size: 128
+    batch_size: 24
+  char_deeper:
+    n_layer: 6
+    n_head: 6
+    n_embd: 384
+    block_size: 256
+    batch_size: 48
+  char_large:
+    n_layer: 6
+    n_head: 6
+    n_embd: 384
+    block_size: 384
+    batch_size: 64
+  token:
+    n_layer: 4
+    n_head: 4
+    n_embd: 256
+    block_size: 256
+    batch_size: 48
+  token_finance:
+    n_layer: 4
+    n_head: 4
+    n_embd: 256
+    block_size: 128
+    batch_size: 48
+
+l4:  # 22.5 GB, Ada Lovelace, bf16
+  amp_dtype: bf16
+  char_small:
+    n_layer: 2
+    n_head: 4
+    n_embd: 128
+    block_size: 128
+    batch_size: 32
+  char_deeper:
+    n_layer: 8
+    n_head: 8
+    n_embd: 512
+    block_size: 384
+    batch_size: 128
+  char_large:
+    n_layer: 8
+    n_head: 8
+    n_embd: 512
+    block_size: 512
+    batch_size: 192
+  token:
+    n_layer: 6
+    n_head: 6
+    n_embd: 384
+    block_size: 512
+    batch_size: 128
+  token_finance:
+    n_layer: 4
+    n_head: 4
+    n_embd: 256
+    block_size: 128
+    batch_size: 64
+
+a100:  # 40/80 GB, Ampere, bf16
+  amp_dtype: bf16
+  char_small:
+    n_layer: 2
+    n_head: 4
+    n_embd: 128
+    block_size: 128
+    batch_size: 64
+  char_deeper:
+    n_layer: 8
+    n_head: 8
+    n_embd: 512
+    block_size: 512
+    batch_size: 256
+  char_large:
+    n_layer: 10
+    n_head: 10
+    n_embd: 512
+    block_size: 512
+    batch_size: 256
+  token:
+    n_layer: 8
+    n_head: 8
+    n_embd: 512
+    block_size: 512
+    batch_size: 192
+  token_finance:
+    n_layer: 6
+    n_head: 6
+    n_embd: 384
+    block_size: 256
+    batch_size: 128
+
+g4:  # 96 GB, Blackwell (RTX PRO 6000), bf16 + fp8
+  amp_dtype: bf16
+  char_small:
+    n_layer: 2
+    n_head: 4
+    n_embd: 128
+    block_size: 256
+    batch_size: 96
+  char_deeper:
+    n_layer: 10
+    n_head: 10
+    n_embd: 768
+    block_size: 512
+    batch_size: 384
+  char_large:
+    n_layer: 12
+    n_head: 12
+    n_embd: 768
+    block_size: 768
+    batch_size: 384
+  token:
+    n_layer: 10
+    n_head: 10
+    n_embd: 768
+    block_size: 768
+    batch_size: 256
+  token_finance:
+    n_layer: 8
+    n_head: 8
+    n_embd: 512
+    block_size: 512
+    batch_size: 192
+
+h100:  # 80 GB, Hopper, bf16 + fp8
+  amp_dtype: bf16
+  char_small:
+    n_layer: 2
+    n_head: 4
+    n_embd: 128
+    block_size: 256
+    batch_size: 96
+  char_deeper:
+    n_layer: 10
+    n_head: 10
+    n_embd: 768
+    block_size: 512
+    batch_size: 320
+  char_large:
+    n_layer: 12
+    n_head: 12
+    n_embd: 768
+    block_size: 768
+    batch_size: 320
+  token:
+    n_layer: 10
+    n_head: 10
+    n_embd: 768
+    block_size: 768
+    batch_size: 256
+  token_finance:
+    n_layer: 8
+    n_head: 8
+    n_embd: 512
+    block_size: 512
+    batch_size: 192
