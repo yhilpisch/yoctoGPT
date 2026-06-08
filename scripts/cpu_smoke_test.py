@@ -43,8 +43,8 @@ def parse_args():
     p.add_argument("--n_head", type=int, default=2)
     p.add_argument("--n_embd", type=int, default=128)
     p.add_argument("--temperature", type=float, default=1.0)
-    p.add_argument("--top_k", type=int, default=0)
-    p.add_argument("--top_p", type=float, default=0.0)
+    p.add_argument("--top_k", type=int, default=None, help="Top-k sampling (disabled if omitted)")
+    p.add_argument("--top_p", type=float, default=None, help="Nucleus sampling threshold (disabled if omitted)")
     p.add_argument("--model_type", choices=["gpt", "gpt_plus", "gpt_fast"], default="gpt")
     return p.parse_args()
 
@@ -113,8 +113,8 @@ def main() -> None:
         idx,
         max_new_tokens=args.max_new_tokens,
         temperature=args.temperature,
-        top_k=args.top_k if args.top_k > 0 else None,
-        top_p=args.top_p if args.top_p > 0 else None,
+        top_k=args.top_k,
+        top_p=args.top_p,
     )[0].tolist()
     print(vocab.decode(out))
 

@@ -28,8 +28,8 @@ def parse_args():
     p.add_argument("--prompt", type=str, default="")
     p.add_argument("--max_new_tokens", type=int, default=200)
     p.add_argument("--temperature", type=float, default=1.0)
-    p.add_argument("--top_k", type=int, default=0)
-    p.add_argument("--top_p", type=float, default=0.0)
+    p.add_argument("--top_k", type=int, default=None, help="Top-k sampling (disabled if omitted)")
+    p.add_argument("--top_p", type=float, default=None, help="Nucleus sampling threshold (disabled if omitted)")
     p.add_argument("--seed", type=int, default=1337)
     p.add_argument("--device", type=str, default=None, help="Device for inference: cpu, cuda, or mps (auto if omitted)")
     p.add_argument("--compile", action="store_true", help="Compile model.forward with torch.compile if available")
@@ -76,8 +76,8 @@ def main() -> None:
         idx,
         max_new_tokens=args.max_new_tokens,
         temperature=args.temperature,
-        top_k=args.top_k if args.top_k > 0 else None,
-        top_p=args.top_p if args.top_p > 0 else None,
+        top_k=args.top_k,
+        top_p=args.top_p,
         eos_token=eos_token,
     )
     generated = out[0].detach().cpu().tolist()
