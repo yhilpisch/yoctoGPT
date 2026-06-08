@@ -23,6 +23,7 @@ import time
 
 from yoctoGPT.data import load_bin, CharVocab
 from yoctoGPT.tokenizer import load_tokenizer
+from yoctoGPT.utils import detect_device
 import torch
 
 
@@ -32,16 +33,6 @@ def human(n: int) -> str:
             return f"{n}{unit}"
         n //= 1000
     return f"{n}T"
-
-
-def detect_device(explicit: str | None = None) -> str:
-    if explicit and explicit != "auto":
-        return explicit
-    if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
-        return "mps"
-    if torch.cuda.is_available():
-        return "cuda"
-    return "cpu"
 
 
 def total_mem_gb(device: str) -> float:

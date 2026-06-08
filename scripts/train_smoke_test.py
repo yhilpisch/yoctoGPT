@@ -28,16 +28,7 @@ from yoctoGPT.data import CharVocab
 from yoctoGPT.model import GPT, GPTConfig
 from yoctoGPT.advanced_model import AdvancedGPT, AdvancedGPTConfig
 from yoctoGPT.performance_model import PerformanceGPT, PerformanceGPTConfig
-
-
-def detect_device(explicit: str | None = None) -> str:
-    if explicit:
-        return explicit
-    if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
-        return "mps"
-    if torch.cuda.is_available():
-        return "cuda"
-    return "cpu"
+from yoctoGPT.utils import detect_device
 
 
 def parse_args():

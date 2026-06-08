@@ -16,6 +16,7 @@ from .model import GPT, GPTConfig
 from .advanced_model import AdvancedGPT, AdvancedGPTConfig
 from .performance_model import PerformanceGPT, PerformanceGPTConfig
 from .tokenizer import load_tokenizer
+from .utils import detect_device, load_model_from_checkpoint
 
 
 def parse_args():
@@ -35,32 +36,13 @@ def parse_args():
     return p.parse_args()
 
 
-def detect_device(explicit: str | None = None) -> str:
-    if explicit:
-        return explicit
-    if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
-        return "mps"
-    if torch.cuda.is_available():
-        return "cuda"
-    return "cpu"
-
-
 def main() -> None:
     args = parse_args()
     torch.manual_seed(args.seed)
     device = detect_device(args.device)
 
-    ckpt = torch.load(args.ckpt, map_location="cpu")
+    model, ckpt = load_model_from_checkpoint(args.ckpt, device=device)
     arch = ckpt.get("arch", "gpt")
-    if arch == "gpt_plus":
-        model = AdvancedGPT(AdvancedGPTConfig(**ckpt["model_config"]))
-    elif arch == "gpt_fast":
-        model = PerformanceGPT(PerformanceGPTConfig(**ckpt["model_config"]))
-    else:
-        model = GPT(GPTConfig(**ckpt["model_config"]))
-    model.load_state_dict(ckpt["model_state"])
-    model.to(device)
-    model.eval()
     if args.compile:
         if hasattr(torch, "compile"):
             try:

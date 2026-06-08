@@ -33,22 +33,7 @@ from .advanced_model import AdvancedGPT, AdvancedGPTConfig
 from .performance_model import PerformanceGPT, PerformanceGPTConfig
 from .tokenizer import load_tokenizer
 from .optim import build_weight_decay_param_groups
-
-
-def detect_device(explicit: str | None = None) -> str:
-    """Select the compute device with a preference for Apple Silicon (MPS).
-
-    On Macs with Apple Silicon, PyTorch's MPS backend provides good defaults.
-    This function prefers MPS when available, then falls back to CUDA, then CPU.
-    Users can override via --device.
-    """
-    if explicit:
-        return explicit
-    if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
-        return "mps"
-    if torch.cuda.is_available():
-        return "cuda"
-    return "cpu"
+from .utils import detect_device
 
 
 def parse_args() -> TrainConfig:
