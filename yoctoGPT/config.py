@@ -71,13 +71,13 @@ class TrainConfig:
 
     # Training
     batch_size: int = 64
-    max_iters: int = 5000
+    max_iters: int = 100
     lr: float = 3e-4
     min_lr: float = 1e-5
     weight_decay: float = 0.1
     grad_clip: float = 1.0
-    eval_interval: int = 500
-    eval_iters: int = 100
+    eval_interval: int = 50
+    eval_iters: int = 20
     label_smoothing: float = 0.0
     cosine_lr: bool = False
     warmup_iters: int = 100
@@ -87,10 +87,10 @@ class TrainConfig:
     n_layer: int = 6
     n_head: int = 6
     n_embd: int = 384
-    dropout: float = 0.0
+    dropout: float = 0.1
     tie_weights: bool = False
     auto_tie_weights: bool = False
-    model_type: str = "gpt"  # "gpt" or "gpt_plus"
+    model_type: str = "gpt"  # "gpt", "gpt_plus", or "gpt_fast"
     # EMA options
     ema: bool = False
     ema_decay: float = 0.999
