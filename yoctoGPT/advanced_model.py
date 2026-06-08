@@ -259,6 +259,8 @@ class AdvancedGPT(nn.Module):
         for i, block in enumerate(self.blocks):
             layer_past = past_kv[i] if past_kv is not None else None
             if use_act_ckpt:
+                # Checkpointing only runs during training (use_cache is False),
+                # where pos_offset is always 0. KV cache is not used here.
                 x = tckpt.checkpoint(block, x, use_reentrant=False)
                 continue
             out = block(x, past_kv=layer_past, use_cache=use_cache, pos_offset=pos_offset)
