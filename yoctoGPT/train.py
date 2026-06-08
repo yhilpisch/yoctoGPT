@@ -515,9 +515,13 @@ def main() -> None:
             return None
         return float(math.exp(min(float(loss_value), 20.0)))
 
+    # Unwrap DDP for checkpoint saving / state access so we never accidentally
+    # save a DDP-wrapped state_dict (which prefixes every key with "module.").
+    raw_model = model_train.module if isinstance(model_train, DDP) else model_train
+
     def make_checkpoint(iters_completed: int) -> dict:
         ckpt = {
-            "model_state": model.state_dict(),
+            "model_state": raw_model.state_dict(),
             "model_config": desired_config.__dict__,
             "arch": arch,
             "mode": cfg.mode,
