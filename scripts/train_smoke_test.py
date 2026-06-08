@@ -73,7 +73,7 @@ def main() -> None:
 
     start_iter = 0
     if args.resume:
-        ckpt = torch.load(args.resume, map_location="cpu")
+        ckpt = torch.load(args.resume, map_location="cpu", weights_only=True)
         arch = ckpt.get("arch", "gpt")
         if arch == "gpt_plus":
             cfg = AdvancedGPTConfig(**ckpt["model_config"])
@@ -91,7 +91,7 @@ def main() -> None:
         start_iter = int(ckpt.get("iters_completed", 0))
         print(f"Resumed from {args.resume} at iter {start_iter}")
     elif args.init_from:
-        ckpt = torch.load(args.init_from, map_location="cpu")
+        ckpt = torch.load(args.init_from, map_location="cpu", weights_only=True)
         arch = ckpt.get("arch", "gpt")
         if arch == "gpt_plus":
             cfg = AdvancedGPTConfig(**ckpt["model_config"])

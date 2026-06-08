@@ -149,13 +149,13 @@ class TestTrainIntegrationCPU(unittest.TestCase):
             best = ckpt_dir / "best.pt"
             self.assertTrue(latest.exists())
             self.assertTrue(best.exists())
-            initial_iters = int(torch.load(latest, map_location="cpu").get("iters_completed", 0))
+            initial_iters = int(torch.load(latest, map_location="cpu", weights_only=True).get("iters_completed", 0))
             self.assertGreater(initial_iters, 0)
 
             # Resume should advance completed iterations.
             res1 = self._run_train(base_args + ["--resume", str(latest), "--max_iters", "1"])
             self.assertEqual(res1.returncode, 0, msg=res1.stderr)
-            resumed_iters = int(torch.load(latest, map_location="cpu").get("iters_completed", 0))
+            resumed_iters = int(torch.load(latest, map_location="cpu", weights_only=True).get("iters_completed", 0))
             self.assertGreater(resumed_iters, initial_iters)
 
             # Warm start from best weights should run successfully into a new dir.

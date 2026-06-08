@@ -35,7 +35,7 @@ def detect_device(explicit: Optional[str] = None) -> str:
 def load_model_from_checkpoint(
     path: str,
     device: str = "cpu",
-    weights_only: bool = False,
+    weights_only: bool = True,
 ) -> tuple[nn.Module, dict]:
     """Load a model from a yoctoGPT checkpoint.
 

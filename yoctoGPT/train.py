@@ -361,7 +361,7 @@ def main() -> None:
         for p in ema_model.parameters():
             p.requires_grad_(False)
     if resume_path:
-        ckpt = torch.load(resume_path, map_location="cpu")
+        ckpt = torch.load(resume_path, map_location="cpu", weights_only=True)
         ckpt_cfg = ckpt.get("model_config")
         assert ckpt_cfg, "Checkpoint missing model_config"
         ckpt_arch = ckpt.get("arch", "gpt")
@@ -378,7 +378,7 @@ def main() -> None:
         if is_master:
             print(f"Resumed from {resume_path} at iter {start_iter}")
     elif init_from_path:
-        ckpt = torch.load(init_from_path, map_location="cpu")
+        ckpt = torch.load(init_from_path, map_location="cpu", weights_only=True)
         ckpt_cfg = ckpt.get("model_config")
         assert ckpt_cfg, "Checkpoint missing model_config"
         ckpt_arch = ckpt.get("arch", "gpt")
