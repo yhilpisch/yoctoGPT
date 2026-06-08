@@ -1,5 +1,8 @@
 """Advanced GPT variant focused on accuracy improvements.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 Implements a GPT-style Transformer with the following changes relative to the
 baseline model:
 - Rotary positional embeddings (RoPE) applied to Q/K (replaces learned pos_emb)

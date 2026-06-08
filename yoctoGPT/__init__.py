@@ -1,4 +1,7 @@
-"""yoctoGPT package
+"""yoctoGPT package — Minimal GPT from Scratch.
+
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
 
 Minimal GPT implementation and tooling.
 

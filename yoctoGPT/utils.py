@@ -1,5 +1,8 @@
 """Shared utilities for yoctoGPT.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 Centralizes device detection and checkpoint loading that were previously
 duplicated across multiple modules and scripts.
 """

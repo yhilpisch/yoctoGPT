@@ -1,5 +1,8 @@
 """Simple terminal chat interface for yoctoGPT.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 This module builds on the sampler to provide a stateful REPL that preserves a
 rolling context window. It formats turns as `User:` and `Assistant:` to guide
 the model's style. Since yoctoGPT is trained as a plain LM, this interface is a

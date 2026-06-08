@@ -1,5 +1,8 @@
 """Text quality metrics for yoctoGPT.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 Provides a unified scorecard that combines readability, diversity,
 repetition, vocabulary richness, and distributional metrics. Designed
 to be imported from Colab notebooks after cloning the repo.

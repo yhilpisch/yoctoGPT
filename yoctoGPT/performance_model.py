@@ -1,5 +1,8 @@
 """Performance-optimized GPT variant.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 Key changes for training speed (quality-neutral):
 - Uses PyTorch scaled_dot_product_attention (Flash/SDPA when available)
   with is_causal=True instead of explicit masking + softmax.

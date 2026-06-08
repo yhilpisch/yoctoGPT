@@ -1,5 +1,8 @@
 """Data utilities for yoctoGPT.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 This module provides:
 - A minimal character vocabulary (`CharVocab`) for char-level training.
 - Dataset helpers to read/write contiguous token ID arrays stored as raw

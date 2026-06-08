@@ -1,5 +1,8 @@
 """Tokenization utilities for yoctoGPT.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 Default: Use a standard Byte-Pair Encoding (BPE) tokenizer via Hugging Face
 `tokenizers` if available, which typically improves training and sampling
 results versus a simple word-level tokenizer. If the dependency is not

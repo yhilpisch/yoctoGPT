@@ -1,4 +1,8 @@
-"""Optimizer-related helpers for yoctoGPT."""
+"""Optimizer-related helpers for yoctoGPT.
+
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+"""
 
 from __future__ import annotations
 

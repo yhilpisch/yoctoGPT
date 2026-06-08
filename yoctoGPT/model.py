@@ -1,5 +1,8 @@
 """Minimal GPT model in PyTorch.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 This file implements a compact, readable GPT-style Transformer suitable for
 character- or token-level language modeling. It is intentionally light on
 abstractions, with careful in-line documentation to make the core algorithmic

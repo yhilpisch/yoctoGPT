@@ -1,5 +1,8 @@
 """Base class for GPT-family models in yoctoGPT.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 Extracts the shared forward-pass loop, weight initialization, autoregressive
 generation, and top-k/top-p sampling that were previously duplicated across
 the baseline, advanced, and performance model variants.

@@ -1,5 +1,8 @@
 """Centralized configuration dataclasses and CLI parsing helpers.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 These small dataclasses make it easy to pass configuration between modules
 without introducing a heavy dependency on external configuration libraries.
 Training scripts can override any of these via CLI flags and construct the

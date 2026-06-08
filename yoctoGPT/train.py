@@ -1,5 +1,8 @@
 """Training entry point for yoctoGPT.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 Supports both character-level and token-level training by sharing a common
 training loop and only switching out the vocabulary/encoding and dataset
 loading. Designed for clarity and minimal dependencies.

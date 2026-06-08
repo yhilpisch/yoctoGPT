@@ -1,5 +1,8 @@
 """Sampling script for yoctoGPT.
 
+(c) Dr. Yves J. Hilpisch
+AI-Powered by Different LLMs.
+
 Loads a trained checkpoint and generates text from a user-provided prompt
 using the same encoding used during training (char or token mode).
 """
