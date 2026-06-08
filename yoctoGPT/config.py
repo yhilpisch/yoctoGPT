@@ -65,7 +65,6 @@ class TrainConfig:
     mode: str = "char"  # "char" or "token"
     data_dir: str = "data/char"
     tokenizer_path: Optional[str] = None  # required for token mode
-    vocab_json: Optional[str] = None  # path to char vocab.json (auto-detected)
     memmap_threshold_mb: int = 128  # use memmap above this dataset size
     always_memmap: bool = False
 

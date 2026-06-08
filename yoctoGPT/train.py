@@ -212,17 +212,6 @@ def evaluate(
     return float(np.mean(losses))
 
 
-def _diff_model_configs(a: dict, b: GPTConfig) -> dict:
-    fields = ["vocab_size", "block_size", "n_layer", "n_head", "n_embd"]
-    diffs = {}
-    for k in fields:
-        av = a.get(k)
-        bv = getattr(b, k)
-        if av != bv:
-            diffs[k] = (av, bv)
-    return diffs
-
-
 def _reduce_mean_scalar(value: float, device: str, enabled: bool, world_size: int) -> float:
     if not enabled or world_size <= 1:
         return float(value)
@@ -556,8 +545,7 @@ def main() -> None:
         # Cosine decay from base_lr to min_lr
         progress = (step - warmup_iters) / max(1, (total_iters - warmup_iters))
         progress = min(max(progress, 0.0), 1.0)
-        import math as _math
-        return min_lr + 0.5 * (base_lr - min_lr) * (1 + _math.cos(_math.pi * progress))
+        return min_lr + 0.5 * (base_lr - min_lr) * (1 + math.cos(math.pi * progress))
 
     start_wall = time.time()
     tokens_per_step = current_batch_size * cfg.block_size * grad_accum_steps

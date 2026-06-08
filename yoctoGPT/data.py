@@ -162,8 +162,12 @@ def make_windows(data_ids: TokenIdArray, block_size: int, ixs: torch.LongTensor)
     """
 
     if isinstance(data_ids, torch.Tensor):
-        x = torch.stack([data_ids[i : i + block_size] for i in ixs])
-        y = torch.stack([data_ids[i + 1 : i + 1 + block_size] for i in ixs])
+        # Vectorized fancy indexing: faster than Python-loop + torch.stack
+        starts = ixs.unsqueeze(1)  # (B, 1)
+        offsets = torch.arange(block_size, device=data_ids.device).unsqueeze(0)  # (1, block_size)
+        indices = starts + offsets  # (B, block_size)
+        x = data_ids[indices]
+        y = data_ids[indices + 1]
         return x, y
 
     starts = ixs.detach().cpu().numpy().astype(np.int64, copy=False)

@@ -162,7 +162,7 @@ Reference L4 profile (from `notebooks/01_yoctoGPT_small_char_corpus.ipynb`):
 ```
 python -m yoctoGPT.train \
   --mode char \
-  --data_dir data/char_start \
+  --data_dir data/char \
   --ckpt_dir checkpoints/char_deeper_l4_tuned \
   --model_type gpt_fast \
   --n_layer 8 \
@@ -186,7 +186,7 @@ Optional continuation from best checkpoint:
 ```
 python -m yoctoGPT.train \
   --mode char \
-  --data_dir data/char_start \
+  --data_dir data/char \
   --ckpt_dir checkpoints/char_deeper_l4_tuned \
   --resume checkpoints/char_deeper_l4_tuned/best.pt \
   --model_type gpt_fast \
