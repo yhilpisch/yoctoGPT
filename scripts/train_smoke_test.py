@@ -219,7 +219,7 @@ def main() -> None:
         {
             "model_state": model.state_dict(),
             "model_config": cfg.__dict__,
-            "arch": ("gpt_plus" if isinstance(model, AdvancedGPT) else "gpt"),
+            "arch": ("gpt_plus" if isinstance(model, AdvancedGPT) else ("gpt_fast" if isinstance(model, PerformanceGPT) else "gpt")),
             "opt_state": opt.state_dict(),
             "iters_completed": start_iter + args.iters,
         },
