@@ -3,7 +3,9 @@
 #
 # Profiles per notebook section:
 #   char_small     — NB01 tiny 2-layer run
-#   char_deeper    — NB01 GPU-optimized run (gpt_fast + AMP)
+#   char_deeper    — NB01 GPU-optimized run (used for both baseline gpt
+#                    and gpt_fast; batch_size is safe for baseline O(n^2)
+#                    attention, batch_size_fast for gpt_fast/FlashAttention)
 #   char_large     — NB02 large char-level run
 #   token          — NB03 token-level run
 #   token_finance  — NB04 finance token-level run
@@ -21,7 +23,8 @@ t4:  # 15 GB, Turing, no native bf16
     n_head: 6
     n_embd: 384
     block_size: 256
-    batch_size: 48
+    batch_size: 24
+    batch_size_fast: 48
   char_large:
     n_layer: 6
     n_head: 6
@@ -54,7 +57,8 @@ l4:  # 22.5 GB, Ada Lovelace, bf16
     n_head: 8
     n_embd: 512
     block_size: 384
-    batch_size: 128
+    batch_size: 32
+    batch_size_fast: 128
   char_large:
     n_layer: 8
     n_head: 8
@@ -87,7 +91,8 @@ a100:  # 40/80 GB, Ampere, bf16
     n_head: 8
     n_embd: 512
     block_size: 512
-    batch_size: 256
+    batch_size: 64
+    batch_size_fast: 256
   char_large:
     n_layer: 10
     n_head: 10
@@ -120,7 +125,8 @@ g4:  # 96 GB, Blackwell (RTX PRO 6000), bf16 + fp8
     n_head: 10
     n_embd: 768
     block_size: 512
-    batch_size: 384
+    batch_size: 96
+    batch_size_fast: 384
   char_large:
     n_layer: 12
     n_head: 12
@@ -153,7 +159,8 @@ h100:  # 80 GB, Hopper, bf16 + fp8
     n_head: 10
     n_embd: 768
     block_size: 512
-    batch_size: 320
+    batch_size: 96
+    batch_size_fast: 320
   char_large:
     n_layer: 12
     n_head: 12
