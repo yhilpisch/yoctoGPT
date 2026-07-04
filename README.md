@@ -509,9 +509,10 @@ Use at your own risk.
 
 The training texts bundled in the `data/` and `finance/` directories
 consist primarily of works in the public domain, sourced from freely
-accessible archives. Some texts in `finance/` are original works by
-the author. No warranty is made regarding the legal status of any
-individual text. If you believe that any material included in this
-repository infringes upon your rights or the rights of a third party,
-please contact `team@tpq.io` and the affected text will be removed
-promptly.
+accessible archives. A small number of texts in `finance/` are more
+recent works that may still be subject to copyright protection; they
+are included for educational and research purposes only. No warranty
+is made regarding the legal status of any individual text. If you
+believe that any material included in this repository infringes upon
+your rights or the rights of a third party, please contact
+`team@tpq.io` and the affected text will be removed promptly.
