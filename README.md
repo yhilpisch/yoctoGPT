@@ -500,4 +500,18 @@ If you prefer CUDA on a multi-backend system, pass `--device cuda`.
 
 ## Disclaimer
 
-This repository and its contents are provided solely for illustration and educational purposes. No guarantees or representations of any kind are given, express or implied, including but not limited to fitness for a particular purpose or non-infringement, to the extent permitted by law. Use at your own risk.
+This repository and its contents --- including code, notebooks, and
+training corpora --- are provided solely for illustration and
+educational purposes. No guarantees or representations of any kind are
+given, express or implied, including but not limited to fitness for a
+particular purpose or non-infringement, to the extent permitted by law.
+Use at your own risk.
+
+The training texts bundled in the `data/` and `finance/` directories
+consist primarily of works in the public domain, sourced from freely
+accessible archives. Some texts in `finance/` are original works by
+the author. No warranty is made regarding the legal status of any
+individual text. If you believe that any material included in this
+repository infringes upon your rights or the rights of a third party,
+please contact `team@tpq.io` and the affected text will be removed
+promptly.
