@@ -57,7 +57,11 @@ def main() -> None:
     texts = []
     if args.all_txt_in_dir:
         dir_path = Path(args.text_dir)
-        files = sorted([p for p in dir_path.glob("*.txt") if p.is_file()])
+        files = sorted(
+            p
+            for p in dir_path.glob("*.txt")
+            if p.is_file() and p.name != "all_texts_char.txt"
+        )
         assert files, f"No .txt files found in {dir_path}"
         print(f"Found {len(files)} .txt files in {dir_path}")
         texts = [p.read_text(encoding="utf-8") for p in files]
