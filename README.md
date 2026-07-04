@@ -500,8 +500,8 @@ If you prefer CUDA on a multi-backend system, pass `--device cuda`.
 
 ## Disclaimer
 
-This repository and its contents --- including code, notebooks, and
-training corpora --- are provided solely for illustration and
+This repository and its contents, including code, notebooks, and
+training corpora, are provided solely for illustration and
 educational purposes. No guarantees or representations of any kind are
 given, express or implied, including but not limited to fitness for a
 particular purpose or non-infringement, to the extent permitted by law.
