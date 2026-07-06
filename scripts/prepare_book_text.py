@@ -25,6 +25,7 @@ def parse_args():
     p.add_argument("--out_dir", type=str, default="finance_clean", help="Output directory for cleaned .txt files")
     p.add_argument("--glob", type=str, default="*.txt", help="Glob pattern to select files")
     p.add_argument("--keep_back_matter", action="store_true", help="Keep references/index/appendix sections")
+    p.add_argument("--drop_formulas", action="store_true", help="Drop lines that look like math formulas or code fragments")
     p.add_argument("--lowercase", action="store_true", help="Lowercase cleaned text")
     p.add_argument("--no_collapse_whitespace", dest="collapse_whitespace", action="store_false")
     p.set_defaults(collapse_whitespace=True)
@@ -48,6 +49,7 @@ def main() -> None:
         cleaned = clean_book_text(
             src,
             drop_back_matter=(not args.keep_back_matter),
+            drop_formulas=args.drop_formulas,
             lowercase=args.lowercase,
             collapse_whitespace=args.collapse_whitespace,
         )

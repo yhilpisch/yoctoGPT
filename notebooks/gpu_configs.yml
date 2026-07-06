@@ -41,7 +41,7 @@ t4:  # 15 GB, Turing, no native bf16
     n_layer: 4
     n_head: 4
     n_embd: 256
-    block_size: 128
+    block_size: 256
     batch_size: 48
 
 l4:  # 22.5 GB, Ada Lovelace, bf16
@@ -72,11 +72,11 @@ l4:  # 22.5 GB, Ada Lovelace, bf16
     block_size: 512
     batch_size: 128
   token_finance:
-    n_layer: 4
-    n_head: 4
-    n_embd: 256
-    block_size: 128
-    batch_size: 64
+    n_layer: 6
+    n_head: 6
+    n_embd: 384
+    block_size: 256
+    batch_size: 96
 
 a100:  # 40/80 GB, Ampere, bf16
   amp_dtype: bf16
@@ -106,11 +106,11 @@ a100:  # 40/80 GB, Ampere, bf16
     block_size: 512
     batch_size: 192
   token_finance:
-    n_layer: 6
-    n_head: 6
-    n_embd: 384
-    block_size: 256
-    batch_size: 128
+    n_layer: 8
+    n_head: 8
+    n_embd: 512
+    block_size: 512
+    batch_size: 192
 
 g4:  # 96 GB, Blackwell (RTX PRO 6000), bf16 + fp8
   amp_dtype: bf16
