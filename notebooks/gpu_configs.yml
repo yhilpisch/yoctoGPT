@@ -145,13 +145,13 @@ g4:  # 96 GB, Blackwell (RTX PRO 6000), bf16 + fp8
     n_embd: 768
     block_size: 512
     batch_size: 96
-    batch_size_fast: 384
+    batch_size_fast: 192
   char_large:
     n_layer: 12
     n_head: 12
     n_embd: 768
     block_size: 768
-    batch_size: 384
+    batch_size: 192
   token:
     n_layer: 10
     n_head: 12
@@ -185,19 +185,19 @@ h100:  # 80 GB, Hopper, bf16 + fp8
     n_embd: 768
     block_size: 512
     batch_size: 96
-    batch_size_fast: 320
+    batch_size_fast: 128
   char_large:
     n_layer: 12
     n_head: 12
     n_embd: 768
     block_size: 768
-    batch_size: 320
+    batch_size: 128
   token:
     n_layer: 10
     n_head: 12
     n_embd: 768
     block_size: 768
-    batch_size: 256
+    batch_size: 192
   token_finance:
     n_layer: 8
     n_head: 8
@@ -209,4 +209,4 @@ h100:  # 80 GB, Hopper, bf16 + fp8
     n_head: 8
     n_embd: 512
     block_size: 768
-    batch_size: 320
+    batch_size: 256
