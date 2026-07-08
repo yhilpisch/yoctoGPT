@@ -9,6 +9,7 @@
 #   char_large     — NB02 large char-level run
 #   token          — NB03 token-level run
 #   token_finance  — NB04 finance token-level run
+#   transfer       — NB05 transfer learning (combined general + finance corpus)
 
 t4:  # 15 GB, Turing, no native bf16
   amp_dtype: fp16
@@ -38,6 +39,12 @@ t4:  # 15 GB, Turing, no native bf16
     block_size: 256
     batch_size: 48
   token_finance:
+    n_layer: 4
+    n_head: 4
+    n_embd: 256
+    block_size: 256
+    batch_size: 48
+  transfer:
     n_layer: 4
     n_head: 4
     n_embd: 256
@@ -77,6 +84,12 @@ l4:  # 22.5 GB, Ada Lovelace, bf16
     n_embd: 384
     block_size: 256
     batch_size: 96
+  transfer:
+    n_layer: 6
+    n_head: 6
+    n_embd: 384
+    block_size: 512
+    batch_size: 128
 
 a100:  # 40/80 GB, Ampere, bf16
   amp_dtype: bf16
@@ -106,6 +119,12 @@ a100:  # 40/80 GB, Ampere, bf16
     block_size: 512
     batch_size: 192
   token_finance:
+    n_layer: 8
+    n_head: 8
+    n_embd: 512
+    block_size: 512
+    batch_size: 192
+  transfer:
     n_layer: 8
     n_head: 8
     n_embd: 512
@@ -145,6 +164,12 @@ g4:  # 96 GB, Blackwell (RTX PRO 6000), bf16 + fp8
     n_embd: 512
     block_size: 512
     batch_size: 192
+  transfer:
+    n_layer: 8
+    n_head: 8
+    n_embd: 512
+    block_size: 768
+    batch_size: 384
 
 h100:  # 80 GB, Hopper, bf16 + fp8
   amp_dtype: bf16
@@ -179,3 +204,9 @@ h100:  # 80 GB, Hopper, bf16 + fp8
     n_embd: 512
     block_size: 512
     batch_size: 192
+  transfer:
+    n_layer: 8
+    n_head: 8
+    n_embd: 512
+    block_size: 768
+    batch_size: 320
