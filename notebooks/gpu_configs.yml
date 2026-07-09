@@ -163,7 +163,7 @@ g4:  # 96 GB, Blackwell (RTX PRO 6000), bf16 + fp8
     n_head: 8
     n_embd: 512
     block_size: 512
-    batch_size: 192
+    batch_size: 384
   transfer:
     n_layer: 8
     n_head: 8
