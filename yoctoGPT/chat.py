@@ -13,6 +13,7 @@ instruction-tuned models.
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 from typing import List
 
@@ -86,9 +87,9 @@ def main() -> None:
 
 
 def _run_raw(args, encode, decode, eos_token, model, device) -> None:
-    context = args.prime or ""
-    if context:
-        print(f"[primed] {context}")
+    prime = args.prime or ""
+    if prime:
+        print(f"[primed] {prime}")
     print("Type /exit to quit. Press Enter after your input.")
     while True:
         try:
@@ -100,7 +101,7 @@ def _run_raw(args, encode, decode, eos_token, model, device) -> None:
             break
         if not user:
             continue
-        context = context + user
+        context = prime + user
         ids = encode(context)
         ids = ids[-args.max_ctx_tokens:]
         idx = torch.tensor([ids], dtype=torch.long, device=device)
@@ -114,8 +115,8 @@ def _run_raw(args, encode, decode, eos_token, model, device) -> None:
         )[0].detach().cpu().tolist()
         gen_ids = out[len(ids):]
         gen_text = decode(gen_ids)
+        gen_text = re.sub(r"\s+", " ", gen_text).strip()
         print(gen_text)
-        context = context + gen_text
 
 
 def _run_formatted(args, encode, decode, eos_token, model, device) -> None:
